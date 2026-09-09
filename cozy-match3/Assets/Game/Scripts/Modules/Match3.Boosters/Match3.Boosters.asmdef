@@ -1,0 +1,14 @@
+{
+    "name": "Match3.Boosters",
+    "rootNamespace": "Match3.Boosters",
+    "references": ["Match3.Core", "Match3.Board", "Match3.Goals"],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": true
+}

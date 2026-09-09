@@ -1,0 +1,14 @@
+{
+    "name": "Match3.Levels.Authoring",
+    "rootNamespace": "Match3.Levels.Authoring",
+    "references": ["Match3.Core", "Match3.Board", "Match3.Goals", "Match3.Levels"],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "defineConstraints": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "versionDefines": [],
+    "noEngineReferences": false
+}

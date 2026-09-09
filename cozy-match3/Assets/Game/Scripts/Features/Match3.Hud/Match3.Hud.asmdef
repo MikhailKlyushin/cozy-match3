@@ -1,0 +1,14 @@
+{
+    "name": "Match3.Hud",
+    "rootNamespace": "Match3.Hud",
+    "references": ["Match3.Core", "Match3.Goals", "Match3.Resolve", "Match3.Levels", "Zenject", "UniTask", "DOTween.Modules"],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "defineConstraints": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "versionDefines": [],
+    "noEngineReferences": false
+}

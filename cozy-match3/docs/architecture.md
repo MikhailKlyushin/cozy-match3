@@ -72,7 +72,7 @@
 ## 3. Карта сборок
 
 ```
-Assets/Scripts/
+Assets/Game/Scripts/
   Modules/                                  КОД ТОЛЬКО. Никаких сцен, префабов, .asset
     Match3.Core/                            noEngineReferences
     Match3.Board/                           noEngineReferences
@@ -89,8 +89,9 @@ Assets/Scripts/
     Match3.Hud/
     Match3.Progression/
     Match3.Cheats/                          defineConstraints: [MATCH3_CHEATS]
-  Bootstrap/  Match3.Bootstrap/              Zenject-инсталлеры, композиция
-Assets/Tests/
+  Bootstrap/    Match3.Bootstrap/            Zenject-инсталлеры, композиция
+  EditorTools/  Match3.EditorTools/          includePlatforms: [Editor], см. §18
+Assets/Game/Tests/
   EditMode/  Match3.Tests.EditMode/
   PlayMode/  Match3.Tests.PlayMode/
 ```
@@ -208,14 +209,33 @@ public sealed class Board : IBoardReader { /* мутирующее API — inter
 
 public interface IBoardReader {                          // для matching/boosters/view/тестов
     int Width { get; } int Height { get; }
+    ElementCatalog Catalog { get; }                        // оси элемента читаются данными, не switch-ем
+    bool Contains(GridPos p);
     CellKind GetKind(GridPos p);
     ChipSlot GetSlot(GridPos p);
     bool TryGetElement(GridPos p, out ElementInstance e);
     bool IsPassableForFall(GridPos p);                    // §5.3, E10
     bool IsMovable(GridPos p);
+    bool IsSpawnerColumn(int x);                           // §3.3
     ulong ComputeHash();                                  // тесты детерминизма
 }
 ```
+
+**Уточнения контракта, внесённые при реализации T03:**
+
+- `Catalog`, `Contains`, `IsSpawnerColumn` добавлены в `IBoardReader`. Без `Catalog` любой
+  потребитель (гравитация, урон, наведение) вынужден был бы получать оси элемента отдельным
+  каналом или через `switch` по токену — то есть ровно через то, что §10 запрещает.
+- `ComputeHash()` хеширует **только состояние правил**: вид клетки, слот (вид/цвет/бустер),
+  определение элемента, hp, текущий цвет и вложенную цепочку. `InstanceId` (визуальная
+  идентичность) и транзитный флаг `Consumed` в хеш **не входят**: два поля с одинаковыми
+  цветами в одинаковых клетках — это одно и то же игровое состояние.
+- `BuiltInElementCatalog` живёт в **`Match3.Board`**, а не в `Match3.Levels` (как значилось в
+  таблице ниже). Каталог §7.2 — это данные о элементах; в `Match3.Levels` он заставлял бы тесты
+  самого `Match3.Board` зависеть от модуля уровней, которого на момент T03 ещё нет.
+- Мутирующее API `Board` — `internal` + `InternalsVisibleTo` для `Match3.Matching` (пробный свап
+  в `SwapValidator` делается свапом с откатом), `Match3.Resolve`, `Match3.Levels` и тестовых
+  сборок.
 
 `ChipSlot.InstanceId` — детерминированный счётчик (не `Guid`): по нему view сопоставляет фишку и
 её визуал при проигрывании транскрипта.
@@ -255,7 +275,8 @@ NotCountable`. `b2`/`b3` отличаются от `bx` **только** `MaxHea
 | `Match3.Goals` | `GoalDefinition`, `GoalState`, `IGoalTracker` (`CreditChip`, `CreditElement`, `CreditBoosterActivation`, `AllClosed`, `FirstUnclosedIndex`), `GoalTracker` |
 | `Match3.Boosters` | `IBoosterEffect`, `RocketEffect`/`BombEffect`/`RainbowEffect`/`AirplaneEffect`, `BoosterCatalog`, `ITargetingService`/`TargetingService`, `ComboMatrix`, `ComboPlan`, `ComboResolver` |
 | `Match3.Resolve` | `TurnRule`, `TurnTranscript`, `TurnEvent`, `ResolveLoopService`, стадийные сервисы (`BoosterSpawnService`, `ActivationService`, `DamageService`, `ClearService`, `GravityService`, `RefillService`), `ShuffleService`, `HintService`, `MovesBonusService`, `IChipSpawnPolicy`, `ResolveCaps` |
-| `Match3.Levels` | `LevelData`, `LayoutParser`, `TokenGrid`, `LevelValidator`, `ValidationReport`, `BoardBuilder`, `FlowReachabilityAnalyzer`, `MoveLimitCalculator`, `BuiltInElementCatalog` |
+| `Match3.Levels` | `LevelData`, `LayoutParser`, `TokenGrid`, `LevelValidator`, `ValidationReport`, `BoardBuilder`, `FlowReachabilityAnalyzer`, `MoveLimitCalculator` |
+| `Match3.Board` | `Cell`, `ChipSlot`, `ElementInstance`, `Board`, `IBoardReader`, `ElementDefinition`, `ElementCatalog`, `BuiltInElementCatalog`, `ElementTokens` |
 | `Match3.Levels.Authoring` | `LevelConfig`, `LevelCatalog`, `ElementDefinitionAsset`, `LevelConfigConverter` |
 
 ---
@@ -477,7 +498,7 @@ public interface IDamageSourceRule { DamageSourceKind Kind { get; } bool IsDamag
 ### 11.2 Тайминги
 
 Все значения §11.3 — в одном ассете `TimingProfile` (ScriptableObject,
-`Assets/Content/Gameplay/Configs/`). Магические числа в коде анимаций — Minor-находка. Профиль
+`Assets/Game/Content/Gameplay/Configs/`). Магические числа в коде анимаций — Minor-находка. Профиль
 читает только презентация: модель о времени не знает вообще (A01).
 
 ### 11.3 uGUI
@@ -569,7 +590,12 @@ public interface IDamageSourceRule { DamageSourceKind Kind { get; } bool IsDamag
 - Панель — **только экранные элементы, никаких горячих клавиш** (требование задания).
 - Полный список элементов — §12 GDD. Первые три («перейти на уровень», «выиграть», «проиграть») —
   прямые требования `Technical Task.md`: отсутствие любого = провал приёмки, а не Minor.
-- Все чит-команды идут через `TurnRule.ExecuteCheat` (A10) и возвращают транскрипт.
+- Все чит-команды, **меняющие поле**, идут через `TurnRule.ExecuteCheat` (A10) и возвращают
+  транскрипт: `WinLevel`, `LoseLevel`, `AddMoves`, `PlaceBooster`, `FreeMoves`
+  (`CheatCommand.IsBoardCommand`). `GoToLevel` и `SetSeed` поле не мутируют, а **пересоздают
+  попытку уровня**, поэтому презентер читов направляет их в `LevelFlowRule`. Это не ослабление
+  A10: инвариант A10 — «никто не правит поле в обход `TurnRule`», а пересоздание уровня строит
+  поле заново через `BoardBuilder`. Словарь команд при этом один — `CheatCommand`.
 
 ---
 
@@ -590,7 +616,7 @@ public interface IDamageSourceRule { DamageSourceKind Kind { get; } bool IsDamag
 
 - В домене цвет — индекс `ChipColor` (1…6), и только он. Ни одного «оранжевого кота» в модулях
   `Match3.*`.
-- `ChipVisualProfile` (SO, `Assets/Content/Gameplay/Configs/`): `ChipColor` → спрайт котика,
+- `ChipVisualProfile` (SO, `Assets/Game/Content/Gameplay/Configs/`): `ChipColor` → спрайт котика,
   форма/силуэт, цвет частиц, префаб FX уничтожения, опциональная idle-анимация (моргание,
   подёргивание уха — только визуал, без влияния на тайминги §11.3).
 - **Доступность:** цвета обязаны различаться **формой или аксессуаром**, а не только оттенком —
@@ -613,24 +639,36 @@ public interface IDamageSourceRule { DamageSourceKind Kind { get; } bool IsDamag
 
 ```
 Assets/
-  Scripts/        Modules/ · Features/ · Bootstrap/        (см. §3)
-  Tests/          EditMode/ · PlayMode/
-  Content/                                                 контент по фичам
-    Gameplay/     Art/ · Prefabs/ · FX/ · Configs/
-    Hud/          Art/ · Prefabs/ · Configs/
-    Cheats/       Prefabs/
-    Levels/       Level01.asset … Level12.asset · LevelCatalog.asset · Elements/
-  Scenes/         Boot.unity · Game.unity  (+ папки метаданных сцен)
+  Game/                                                    ВСЁ игровое — здесь
+    Scripts/      Modules/ · Features/ · Bootstrap/ · EditorTools/   (см. §3)
+    Tests/        EditMode/ · PlayMode/
+    Content/                                               контент по фичам
+      Gameplay/   Art/ · Prefabs/ · FX/ · Configs/
+      Hud/        Art/ · Prefabs/ · Configs/
+      Cheats/     Prefabs/
+      Levels/     Level01.asset … Level12.asset · LevelCatalog.asset · Elements/
+    Scenes/       Boot.unity · Game.unity  (+ папки метаданных сцен)
   Settings/       URP-ассеты (есть)
   Plugins/        Zenject · Demigiant (есть)
   Packages/       NuGet: R3 и зависимости (есть)
   Resources/      только DOTweenSettings. Графику и чит-префабы сюда НЕ кладём
 ```
 
+**Единый корень `Assets/Game/`** — требование заказчика: всё, что является игрой (код, контент,
+сцены, тесты), лежит под одной папкой. Снаружи остаётся только то, что игрой не является и чей
+путь диктуется третьей стороной: `Plugins/` (Zenject, DOTween), `Packages/` (NuGet-восстановление),
+`Resources/DOTweenSettings` (DOTween ищет ассет именно там), `Settings/` (URP).
+
 **Осознанное отклонение от буквы стандарта ICVR:** стандарт помещает контент фичи внутрь папки
-фичи (`Assets/Scripts/Features/<Name>/`). Мы держим код в `Assets/Scripts/**`, а контент — в
-`Assets/Content/<Feature>/`, сохраняя *смысл* правила (самодостаточная папка на фичу) и не смешивая
-`.cs` с артом. Отклонение зафиксировано здесь, чтобы ревью не считало его случайным.
+фичи (`Scripts/Features/<Name>/`). Мы держим код в `Assets/Game/Scripts/**`, а контент — в
+`Assets/Game/Content/<Feature>/`, сохраняя *смысл* правила (самодостаточная папка на фичу) и не
+смешивая `.cs` с артом. Отклонение зафиксировано здесь, чтобы ревью не считало его случайным.
+
+**`Match3.EditorTools`** (`Assets/Game/Scripts/EditorTools/`, `includePlatforms: [Editor]`) — сборка
+инструментов авторинга: генерация ассетов уровней, профилей и префабов, сборка сцен, headless-билд.
+Её нет в §3, потому что она не участвует в рантайме; добавлена, поскольку сцены, префабы и
+`.asset`-и в этом проекте создаются скриптами, а не руками в редакторе. Ссылаться на неё из
+рантайм-сборок запрещено (правило «рантайм → Editor»).
 
 Префабы: в `Prefabs/` — только варианты (`VAR_*`) и сборные view-префабы фичи.
 
@@ -686,7 +724,7 @@ ScriptableObject и без сцены. Если правило проверяе�
 | Цели уровня, несколько на уровне | `Match3.Goals` (`GoalTracker`, порядок = приоритет) |
 | Переход на следующий уровень / переигровка | `LevelFlowRule` + `ProgressRepository` (`Match3.Progression`) |
 | Параметры в конфиге уровня | `LevelConfig` → `LevelData` (§9) |
-| Минимум 10 уровней (в наборе 12) | `Assets/Content/Levels/Level01…12` + `LevelCatalog` |
+| Минимум 10 уровней (в наборе 12) | `Assets/Game/Content/Levels/Level01…12` + `LevelCatalog` |
 | Карта уровня (цвет / случайная фишка / ящик / бустер) | `LayoutParser` + токены §10.2 |
 | Читы: уровень / победа / поражение (+ остальные) | `Match3.Cheats`, §15 |
 

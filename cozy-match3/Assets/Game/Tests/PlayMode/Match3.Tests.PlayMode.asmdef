@@ -1,0 +1,39 @@
+{
+    "name": "Match3.Tests.PlayMode",
+    "rootNamespace": "Match3.Tests.PlayMode",
+    "references": [
+        "UnityEngine.TestRunner",
+        "UnityEditor.TestRunner",
+        "Match3.Core",
+        "Match3.Board",
+        "Match3.Matching",
+        "Match3.Goals",
+        "Match3.Boosters",
+        "Match3.Resolve",
+        "Match3.Levels",
+        "Match3.Levels.Authoring",
+        "Match3.Diagnostics",
+        "Match3.Gameplay",
+        "Match3.Hud",
+        "Match3.Progression",
+        "Match3.Bootstrap",
+        "Zenject",
+        "UniTask",
+        "DOTween.Modules"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "nunit.framework.dll",
+        "R3.dll",
+        "DOTween.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -45,7 +45,7 @@ New Input System · Unity Test Framework.
   в этой сборке R3 **не существует**.
 - DOTween-твины — `SetLink(gameObject)` или явный `Kill()`.
 - `PlayerPrefs.Save()` после каждой записи прогресса (в WebGL это IndexedDB).
-- Ядро правил (`Assets/Scripts/Modules/*`) тестируется edit-mode тестами без сцены. Правило,
+- Ядро правил (`Assets/Game/Scripts/Modules/*`) тестируется edit-mode тестами без сцены. Правило,
   проверяемое только запуском Play, — Major-находка.
 - `internal` по умолчанию в Modules, `public` — только контракт.
 - Именование: `PascalCase` типы и публичные члены, `_camelCase` приватные поля, `I*` интерфейсы,

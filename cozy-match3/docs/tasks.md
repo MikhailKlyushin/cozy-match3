@@ -88,9 +88,9 @@ W4  ПРИЁМКА
 
 | ID | Задача | Сборка | Зависит от | Волна |
 |---|---|---|---|---|
-| [ ] T01 | Контракты, словарь, транскрипт | `Match3.Core`, `Match3.Resolve` (только типы) | — | W0 |
-| [ ] T02 | Настройки проекта, сборки, чистка шаблона | ProjectSettings, `.asmdef` | — | W0 |
-| [ ] T03 | Модель поля `Board` + элементы | `Match3.Board` | T01 | W1 |
+| [x] T01 | Контракты, словарь, транскрипт | `Match3.Core`, `Match3.Resolve` (только типы) | — | W0 |
+| [x] T02 | Настройки проекта, сборки, чистка шаблона | ProjectSettings, `.asmdef` | — | W0 |
+| [x] T03 | Модель поля `Board` + элементы | `Match3.Board` | T01 | W1 |
 | [ ] T04 | Формат уровня: парсер, валидатор, генерация | `Match3.Levels` | T03, T05, T06 | W1 |
 | [ ] T05 | Матчи: примитивы, компоненты, классификация | `Match3.Matching` | T03 | W1 |
 | [ ] T06 | Цели уровня | `Match3.Goals` | T03 | W1 |
@@ -647,7 +647,7 @@ W4  ПРИЁМКА
 
 | | |
 |---|---|
-| Сборки | `Match3.Levels.Authoring`, `Match3.Levels.Authoring.Editor`; контент `Assets/Content/Levels/` |
+| Сборки | `Match3.Levels.Authoring`, `Match3.Levels.Authoring.Editor`; контент `Assets/Game/Content/Levels/` |
 | Зависимости | T04 |
 | GDD | §10.1–§10.4, §9.1–§9.3, §3.4 |
 | Архитектура | §9, §18 |
@@ -685,7 +685,7 @@ W4  ПРИЁМКА
 
 | | |
 |---|---|
-| Сборка | контент `Assets/Content/Gameplay/`, `Assets/Content/Hud/` |
+| Сборка | контент `Assets/Game/Content/Gameplay/`, `Assets/Game/Content/Hud/` |
 | Зависимости | T02 |
 | GDD | §11 (UI), §7.2 (визуальные состояния hp, пип `cx`) |
 | Архитектура | §17, `A12` |
