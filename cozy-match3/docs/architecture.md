@@ -83,6 +83,7 @@ Assets/Game/Scripts/
     Match3.Levels/                          noEngineReferences
     Match3.Levels.Authoring/                UnityEngine (ScriptableObject-типы)
       Editor/  Match3.Levels.Authoring.Editor   includePlatforms: [Editor]
+  Content/      Match3.Content/              ScriptableObject-профили презентации, см. ниже
   Features/
     Match3.Diagnostics/
     Match3.Gameplay/
@@ -109,10 +110,11 @@ Assets/Game/Tests/
 | `Match3.Levels` | Core, Board, Goals, Matching |
 | `Match3.Levels.Authoring` | Core, Board, Goals, Levels |
 | `Match3.Levels.Authoring.Editor` | + Levels.Authoring |
+| `Match3.Content` | Core, Board |
 | `Match3.Diagnostics` | Core, Goals, Resolve, Zenject |
-| `Match3.Gameplay` | Core, Board, Matching, Boosters, Resolve, Levels, Diagnostics, Zenject, UniTask, R3, DOTween(+Modules) |
-| `Match3.Hud` | Core, Goals, Resolve, Levels, Zenject, UniTask, R3, DOTween(+Modules) |
-| `Match3.Progression` | Core, Goals, Levels, Levels.Authoring, Resolve, Diagnostics, Zenject, UniTask, R3 |
+| `Match3.Gameplay` | Core, Board, Content, Matching, Goals, Boosters, Resolve, Levels, Diagnostics, Zenject, UniTask, R3, DOTween(+Modules), Unity.InputSystem |
+| `Match3.Hud` | Core, Content, Goals, Resolve, Levels, Zenject, UniTask, R3, DOTween(+Modules) |
+| `Match3.Progression` | Core, Content, Goals, Levels, Levels.Authoring, Resolve, Diagnostics, Zenject, UniTask, R3 |
 | `Match3.Cheats` | все Modules + Gameplay (только интерфейсы), Hud, Progression, Zenject, UniTask, R3 |
 | `Match3.Bootstrap` | все Modules + все Features + Zenject |
 | `Match3.Tests.EditMode` | все Modules + Levels.Authoring + nunit |
@@ -669,6 +671,14 @@ Assets/
 Её нет в §3, потому что она не участвует в рантайме; добавлена, поскольку сцены, префабы и
 `.asset`-и в этом проекте создаются скриптами, а не руками в редакторе. Ссылаться на неё из
 рантайм-сборок запрещено (правило «рантайм → Editor»).
+
+**`Match3.Content`** (`Assets/Game/Scripts/Content/`) — типы ScriptableObject-профилей презентации:
+`TimingProfile` (§11.2), `ChipVisualProfile`, `ElementVisualProfile` (§17). Появилась потому, что
+§3.1 не даёт `Match3.Gameplay` и `Match3.Hud` **ни одной общей сборки с `UnityEngine`**, а профили
+нужны обоим: тайминги §11.3 читают и плеер транскрипта, и тик счётчика целей; спрайты фишек нужны
+и полю, и иконкам целей в HUD. Ссылка `Hud → Gameplay` запрещена, `Match3.Levels` —
+`noEngineReferences` и `ScriptableObject` держать не может. Сборка содержит **только данные**:
+ни презентеров, ни view, ни логики правил.
 
 Префабы: в `Prefabs/` — только варианты (`VAR_*`) и сборные view-префабы фичи.
 

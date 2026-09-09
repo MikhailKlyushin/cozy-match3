@@ -1,7 +1,17 @@
 {
     "name": "Match3.Progression",
     "rootNamespace": "Match3.Progression",
-    "references": ["Match3.Core", "Match3.Goals", "Match3.Levels", "Match3.Levels.Authoring", "Match3.Resolve", "Match3.Diagnostics", "Zenject", "UniTask"],
+    "references": [
+        "Match3.Content",
+        "Match3.Core",
+        "Match3.Goals",
+        "Match3.Levels",
+        "Match3.Levels.Authoring",
+        "Match3.Resolve",
+        "Match3.Diagnostics",
+        "Zenject",
+        "UniTask"
+    ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "defineConstraints": [],

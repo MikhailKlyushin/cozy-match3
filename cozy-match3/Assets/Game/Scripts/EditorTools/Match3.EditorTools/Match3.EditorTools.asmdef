@@ -1,7 +1,27 @@
 {
     "name": "Match3.EditorTools",
     "rootNamespace": "Match3.EditorTools",
-    "references": ["Match3.Core", "Match3.Board", "Match3.Goals", "Match3.Levels", "Match3.Levels.Authoring", "Match3.Boosters", "Match3.Matching", "Match3.Resolve", "Match3.Gameplay", "Match3.Hud", "Match3.Progression", "Match3.Bootstrap", "Match3.Diagnostics", "Zenject", "UniTask", "DOTween.Modules"],
+    "references": [
+        "Match3.Core",
+        "Match3.Board",
+        "Match3.Content",
+        "Match3.Goals",
+        "Match3.Levels",
+        "Match3.Levels.Authoring",
+        "Match3.Boosters",
+        "Match3.Matching",
+        "Match3.Resolve",
+        "Match3.Gameplay",
+        "Match3.Hud",
+        "Match3.Progression",
+        "Match3.Bootstrap",
+        "Match3.Diagnostics",
+        "Zenject",
+        "UniTask",
+        "DOTween.Modules",
+        "UnityEngine.UI",
+        "Unity.InputSystem"
+    ],
     "includePlatforms": [
         "Editor"
     ],

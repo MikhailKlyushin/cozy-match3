@@ -1,7 +1,24 @@
 {
     "name": "Match3.Cheats",
     "rootNamespace": "Match3.Cheats",
-    "references": ["Match3.Core", "Match3.Board", "Match3.Matching", "Match3.Goals", "Match3.Boosters", "Match3.Resolve", "Match3.Levels", "Match3.Levels.Authoring", "Match3.Diagnostics", "Match3.Gameplay", "Match3.Hud", "Match3.Progression", "Zenject", "UniTask"],
+    "references": [
+        "Match3.Core",
+        "Match3.Board",
+        "Match3.Content",
+        "Match3.Matching",
+        "Match3.Goals",
+        "Match3.Boosters",
+        "Match3.Resolve",
+        "Match3.Levels",
+        "Match3.Levels.Authoring",
+        "Match3.Diagnostics",
+        "Match3.Gameplay",
+        "Match3.Hud",
+        "Match3.Progression",
+        "Zenject",
+        "UniTask",
+        "UnityEngine.UI"
+    ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "defineConstraints": [

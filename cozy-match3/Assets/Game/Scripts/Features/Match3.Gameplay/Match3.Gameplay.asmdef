@@ -1,7 +1,22 @@
 {
     "name": "Match3.Gameplay",
     "rootNamespace": "Match3.Gameplay",
-    "references": ["Match3.Core", "Match3.Board", "Match3.Matching", "Match3.Goals", "Match3.Boosters", "Match3.Resolve", "Match3.Levels", "Match3.Diagnostics", "Zenject", "UniTask", "DOTween.Modules", "Unity.InputSystem"],
+    "references": [
+        "Match3.Core",
+        "Match3.Board",
+        "Match3.Content",
+        "Match3.Matching",
+        "Match3.Goals",
+        "Match3.Boosters",
+        "Match3.Resolve",
+        "Match3.Levels",
+        "Match3.Diagnostics",
+        "Zenject",
+        "UniTask",
+        "DOTween.Modules",
+        "Unity.InputSystem",
+        "UnityEngine.UI"
+    ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "defineConstraints": [],

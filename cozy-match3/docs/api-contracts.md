@@ -137,6 +137,13 @@ public readonly struct GoalDelta
     public readonly int Delta;      // уже с учётом клампа (E18): может быть 0
     public readonly int NewValue;
 }
+```
+
+`Delta == 0` означает «цель уже закрыта, зачёт отброшен». **Потребитель (`ClearService`,
+`ActivationService`) не пишет `GoalProgress` на нулевую дельту** — HUD тикает счётчик по событию,
+и событие «прибавилось ноль» это шум в транскрипте.
+
+```csharp
 
 public interface IGoalTracker
 {

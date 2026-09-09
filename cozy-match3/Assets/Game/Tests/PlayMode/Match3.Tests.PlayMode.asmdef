@@ -6,6 +6,7 @@
         "UnityEditor.TestRunner",
         "Match3.Core",
         "Match3.Board",
+        "Match3.Content",
         "Match3.Matching",
         "Match3.Goals",
         "Match3.Boosters",
@@ -19,7 +20,8 @@
         "Match3.Bootstrap",
         "Zenject",
         "UniTask",
-        "DOTween.Modules"
+        "DOTween.Modules",
+        "UnityEngine.UI"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

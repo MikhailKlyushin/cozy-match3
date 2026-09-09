@@ -11,7 +11,12 @@
         "Match3.Boosters",
         "Match3.Resolve",
         "Match3.Levels",
-        "Match3.Levels.Authoring"
+        "Match3.Levels.Authoring",
+        "Match3.Content",
+        "Match3.Diagnostics",
+        "Match3.Progression",
+        "Zenject",
+        "UniTask"
     ],
     "includePlatforms": [
         "Editor"
@@ -20,7 +25,9 @@
     "allowUnsafeCode": false,
     "overrideReferences": true,
     "precompiledReferences": [
-        "nunit.framework.dll"
+        "nunit.framework.dll",
+        "R3.dll",
+        "DOTween.dll"
     ],
     "autoReferenced": false,
     "defineConstraints": [

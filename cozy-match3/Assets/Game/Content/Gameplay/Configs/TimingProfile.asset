@@ -1,0 +1,53 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1cfb0b234c5283246bb23d56a236e9db, type: 3}
+  m_Name: TimingProfile
+  m_EditorClassIdentifier: Match3.Content::Match3.Content.TimingProfile
+  _swapDuration: 0.15
+  _rejectedSwapOut: 0.1
+  _rejectedSwapBack: 0.1
+  _destroyPunchDuration: 0.06
+  _destroyPunchScale: 1.15
+  _destroyFadeDuration: 0.14
+  _fallAcceleration: 40
+  _fallMaxSpeed: 18
+  _landingSquashDuration: 0.06
+  _neighbourFallStagger: 0.03
+  _stepPause: 0.08
+  _waveBarrier: 0.12
+  _massTransformStagger: 0.07
+  _rocketCellDuration: 0.03
+  _rocketShakeDuration: 0.05
+  _rocketShakeAmplitude: 4
+  _bombWindUp: 0.1
+  _bombWindUpScale: 1.2
+  _bombShockwave: 0.25
+  _bombShakeDuration: 0.12
+  _bombShakeAmplitude: 10
+  _rainbowWindUp: 0.15
+  _rainbowBeamStagger: 0.04
+  _rainbowHitDelay: 0.1
+  _airplaneWindUp: 0.1
+  _airplaneFlight: 0.4
+  _goalTickPerUnit: 0.15
+  _goalTickTotalCap: 1
+  _cyclingBoxMorph: 0.25
+  _shuffleScatter: 0.35
+  _shuffleGather: 0.35
+  _movesBonusStagger: 0.15
+  _lowMovesPulseCycle: 0.6
+  _hintPulseCycle: 0.5
+  _hintPulseCycles: 3
+  _hintPulseScale: 1.08
+  _hintArrowFadeIn: 0.2
+  _hintRepeatPause: 2
+  _hintHide: 0.1

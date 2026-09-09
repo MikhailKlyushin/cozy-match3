@@ -1,7 +1,17 @@
 {
     "name": "Match3.Hud",
     "rootNamespace": "Match3.Hud",
-    "references": ["Match3.Core", "Match3.Goals", "Match3.Resolve", "Match3.Levels", "Zenject", "UniTask", "DOTween.Modules"],
+    "references": [
+        "Match3.Content",
+        "Match3.Core",
+        "Match3.Goals",
+        "Match3.Resolve",
+        "Match3.Levels",
+        "Zenject",
+        "UniTask",
+        "DOTween.Modules",
+        "UnityEngine.UI"
+    ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "defineConstraints": [],
