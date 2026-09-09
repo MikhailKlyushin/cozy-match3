@@ -72,12 +72,14 @@ namespace Match3.Gameplay.Playback
             if (_moveByInstance.TryGetValue(chip.InstanceId, out int existing))
             {
                 PendingMove move = _pendingMoves[existing];
-                _pendingMoves[existing] = new PendingMove(move.Chip, move.From, targetCell, move.Flags | flags);
+                _pendingMoves[existing] = new PendingMove(
+                    move.Chip, move.InstanceId, move.From, targetCell, move.Flags | flags);
                 return;
             }
 
             _moveByInstance[chip.InstanceId] = _pendingMoves.Count;
-            _pendingMoves.Add(new PendingMove(chip, chip.Rect.anchoredPosition, targetCell, flags));
+            _pendingMoves.Add(new PendingMove(
+                chip, chip.InstanceId, chip.Rect.anchoredPosition, targetCell, flags));
         }
 
         /// <summary>
@@ -97,6 +99,14 @@ namespace Match3.Gameplay.Playback
             for (int i = 0; i < _pendingMoves.Count; i++)
             {
                 PendingMove move = _pendingMoves[i];
+
+                // The view was pooled or recycled since the move was recorded: tweening it now
+                // would drag whatever chip owns it out of its cell.
+                if (move.Chip.InstanceId != move.InstanceId)
+                {
+                    continue;
+                }
+
                 Vector2 target = Board.Layout.CellCenter(move.To);
                 float distanceCells = cellSize > 0f
                     ? Vector2.Distance(move.From, target) / cellSize
@@ -157,13 +167,23 @@ namespace Match3.Gameplay.Playback
         private readonly struct PendingMove
         {
             public readonly ChipView Chip;
+
+            /// <summary>Identity the view carried when the move was recorded (§6, rule T5).</summary>
+            public readonly int InstanceId;
+
             public readonly Vector2 From;
             public readonly GridPos To;
             public readonly ChipMoveFlags Flags;
 
-            public PendingMove(ChipView chip, Vector2 from, GridPos to, ChipMoveFlags flags)
+            public PendingMove(
+                ChipView chip,
+                int instanceId,
+                Vector2 from,
+                GridPos to,
+                ChipMoveFlags flags)
             {
                 Chip = chip;
+                InstanceId = instanceId;
                 From = from;
                 To = to;
                 Flags = flags;

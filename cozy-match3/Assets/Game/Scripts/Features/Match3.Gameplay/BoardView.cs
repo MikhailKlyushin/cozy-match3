@@ -31,6 +31,7 @@ namespace Match3.Gameplay
 
         private ChipVisualProfile _chipProfile;
         private ElementVisualProfile _elementProfile;
+        private IMatch3Logger _logger;
         private ViewPool<ChipView> _chipPool;
         private ViewPool<ElementView> _elementPool;
         private ViewPool<Image> _cellTilePool;
@@ -50,10 +51,14 @@ namespace Match3.Gameplay
         public int BoardHeight => _height;
 
         [Inject]
-        public void Construct(ChipVisualProfile chipProfile, ElementVisualProfile elementProfile)
+        public void Construct(
+            ChipVisualProfile chipProfile,
+            ElementVisualProfile elementProfile,
+            IMatch3Logger logger)
         {
             _chipProfile = chipProfile;
             _elementProfile = elementProfile;
+            _logger = logger;
         }
 
         /// <summary>Builds the level's initial visuals. Reads the board exactly once (rule V1).</summary>
@@ -144,6 +149,8 @@ namespace Match3.Gameplay
 
         public ChipView SpawnChipAt(int instanceId, ChipColor color, GridPos cell)
         {
+            ReleaseChipAt(cell);
+
             ChipView chip = RentChip();
             chip.SetChip(instanceId, color, cell, Layout.CellCenter(cell), Layout.CellSize);
             Register(instanceId, chip);
@@ -152,33 +159,61 @@ namespace Match3.Gameplay
 
         public ChipView SpawnBoosterAt(int instanceId, BoosterType booster, GridPos cell)
         {
+            ReleaseChipAt(cell);
+
             ChipView chip = RentChip();
             chip.SetBooster(instanceId, booster, cell, Layout.CellCenter(cell), Layout.CellSize);
             Register(instanceId, chip);
             return chip;
         }
 
-        /// <summary>Spawns one cell above the top row, outside the mask, ready to fall in (§11.3).</summary>
-        public ChipView SpawnChipAboveBoard(int instanceId, ChipColor color, int column)
+        /// <summary>
+        /// Spawns one cell above the top row, outside the mask, ready to fall into
+        /// <paramref name="targetCell"/> (§11.3).
+        /// </summary>
+        public ChipView SpawnChipAboveBoard(int instanceId, ChipColor color, GridPos targetCell)
         {
+            ReleaseChipAt(targetCell);
+
             ChipView chip = RentChip();
-            var spawnCell = new GridPos(column, _height);
-            chip.SetChip(instanceId, color, spawnCell, Layout.SpawnPosition(column), Layout.CellSize);
+            var spawnCell = new GridPos(targetCell.X, _height);
+            chip.SetChip(instanceId, color, spawnCell, Layout.SpawnPosition(targetCell.X), Layout.CellSize);
             Register(instanceId, chip);
             return chip;
         }
 
         public void DespawnChip(int instanceId)
         {
-            if (!_chipsByInstance.TryGetValue(instanceId, out ChipView chip))
+            if (_chipsByInstance.TryGetValue(instanceId, out ChipView chip))
+            {
+                ReleaseChip(chip);
+            }
+        }
+
+        /// <summary>
+        /// Despawns the view that just finished dying. The despawn is delayed by that animation,
+        /// so by then the id can already belong to a newer view - releasing by id alone would
+        /// remove the live chip and leave the dead one on the board.
+        /// </summary>
+        public void DespawnChip(int instanceId, ChipView expected)
+        {
+            if (expected == null)
+            {
+                DespawnChip(instanceId);
+                return;
+            }
+
+            // A recycled view carries somebody else's identity by now, and killing it would erase
+            // a live chip.
+            if (expected.InstanceId != instanceId)
             {
                 return;
             }
 
-            _chipsByInstance.Remove(instanceId);
-            _activeChips.Remove(chip);
-            chip.KillTweens();
-            _chipPool.Release(chip);
+            if (_activeChips.Contains(expected))
+            {
+                ReleaseChip(expected);
+            }
         }
 
         public ElementView GetElement(GridPos cell)
@@ -376,8 +411,52 @@ namespace Match3.Gameplay
 
         private void Register(int instanceId, ChipView chip)
         {
+            // Two views for one identity means the model replaced a slot without destroying the
+            // id that left it. The stale one is dropped here: nothing would ever remove it, and it
+            // would sit on the board overlapping whatever arrives next.
+            if (_chipsByInstance.TryGetValue(instanceId, out ChipView existing) && existing != chip)
+            {
+                _logger?.Warn("Chip instance " + instanceId.ToString()
+                              + " was registered twice; releasing the stale view");
+                ReleaseChip(existing);
+            }
+
             _chipsByInstance[instanceId] = chip;
             _activeChips.Add(chip);
+        }
+
+        /// <summary>
+        /// Frees whatever view still claims <paramref name="cell"/> before something new lands
+        /// there. One cell can hold one chip, so a second claimant is a leaked view and the pool
+        /// would never get it back on its own.
+        /// </summary>
+        private void ReleaseChipAt(GridPos cell)
+        {
+            for (int i = _activeChips.Count - 1; i >= 0; i--)
+            {
+                ChipView chip = _activeChips[i];
+                if (chip.Cell != cell)
+                {
+                    continue;
+                }
+
+                _logger?.Warn("Cell " + cell.ToString() + " still held chip instance "
+                              + chip.InstanceId.ToString() + "; releasing the stale view");
+                ReleaseChip(chip);
+            }
+        }
+
+        private void ReleaseChip(ChipView chip)
+        {
+            // Only when the map still points here: a newer view may already own the id.
+            if (_chipsByInstance.TryGetValue(chip.InstanceId, out ChipView mapped) && mapped == chip)
+            {
+                _chipsByInstance.Remove(chip.InstanceId);
+            }
+
+            _activeChips.Remove(chip);
+            chip.KillTweens();
+            _chipPool.Release(chip);
         }
 
         private int Index(GridPos cell)

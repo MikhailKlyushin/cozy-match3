@@ -65,13 +65,17 @@ namespace Match3.Gameplay.Playback
             switch (e.Kind)
             {
                 case TurnEventKind.BoosterSpawned:
-                    return PlaySpawnAsync(context, e.A, e.Booster, e.InstanceId, ct);
+                    return PlaySpawnAsync(
+                        context, e.A, e.Booster, e.InstanceId, context.Timings.LandingSquashDuration, ct);
                 case TurnEventKind.BoosterActivated:
                     return PlayWindUpAsync(context, e.A, e.Booster, ct);
                 case TurnEventKind.BoosterEffectCells:
                     return PlayEffectAsync(context, e.A, e.Booster, e.CellsOffset, e.CellsCount, ct);
                 case TurnEventKind.MovesBonusRocket:
-                    return PlayPopAsync(context, e.A, e.Booster, context.Timings.MovesBonusStagger, ct);
+                    // The rocket takes over the chip that stood there (§8.4), so it resolves the
+                    // same way a spawned booster does instead of being FX only.
+                    return PlaySpawnAsync(
+                        context, e.A, e.Booster, e.InstanceId, context.Timings.MovesBonusStagger, ct);
                 default:
                     return UniTask.CompletedTask;
             }
@@ -86,6 +90,7 @@ namespace Match3.Gameplay.Playback
             GridPos cell,
             BoosterType booster,
             int instanceId,
+            float popDuration,
             CancellationToken ct)
         {
             if (instanceId != 0)
@@ -100,7 +105,7 @@ namespace Match3.Gameplay.Playback
                 }
             }
 
-            return PlayPopAsync(context, cell, booster, context.Timings.LandingSquashDuration, ct);
+            return PlayPopAsync(context, cell, booster, popDuration, ct);
         }
 
         /// <summary>Flare where a booster appears; §11.3 gives it no duration of its own.</summary>

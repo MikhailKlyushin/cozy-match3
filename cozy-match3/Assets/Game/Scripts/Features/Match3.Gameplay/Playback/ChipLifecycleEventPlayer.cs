@@ -72,6 +72,13 @@ namespace Match3.Gameplay.Playback
                 PlayerLoopTiming.Update,
                 ct);
 
+            // The view can be recycled mid-animation when something takes over its cell: it
+            // belongs to a live chip then, and finishing the death would erase that one.
+            if (chip.InstanceId != instanceId)
+            {
+                return;
+            }
+
             chip.Rect.DOScale(0f, timings.DestroyFadeDuration)
                 .SetEase(Ease.InQuad)
                 .SetLink(chip.gameObject);
@@ -83,7 +90,7 @@ namespace Match3.Gameplay.Playback
                 PlayerLoopTiming.Update,
                 ct);
 
-            context.Board.DespawnChip(instanceId);
+            context.Board.DespawnChip(instanceId, chip);
         }
 
         private void StartDestruction(PlaybackContext context, in TurnEvent e, CancellationToken ct)
@@ -101,7 +108,7 @@ namespace Match3.Gameplay.Playback
         {
             // §11.3: a refilled chip starts one cell above the top row, outside the mask, and
             // falls in with the rest of the step's batch.
-            ChipView chip = context.Board.SpawnChipAboveBoard(e.InstanceId, e.Color, e.A.X);
+            ChipView chip = context.Board.SpawnChipAboveBoard(e.InstanceId, e.Color, e.A);
             context.TrackMove(chip, e.A, ChipMoveFlags.Fall);
         }
 

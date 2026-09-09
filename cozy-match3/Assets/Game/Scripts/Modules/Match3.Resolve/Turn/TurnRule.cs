@@ -301,7 +301,7 @@ namespace Match3.Resolve
                 GridPos cell = _bonusCells[i];
                 BoosterType rocket = (i & 1) == 0 ? BoosterType.RocketH : BoosterType.RocketV;
 
-                int instanceId = _board.SetBooster(cell, rocket);
+                int instanceId = PlaceBoosterKeepingIdentity(cell, rocket);
                 _writer.MovesBonusRocket(cell, rocket, instanceId);
 
                 _context.BeginTurn();
@@ -311,6 +311,23 @@ namespace Match3.Resolve
 
             MovesLeft = 0;
             _legalMoves.Invalidate();
+        }
+
+        /// <summary>
+        /// Puts a booster into a cell keeping whatever identity already occupied it. The view maps
+        /// events by InstanceId, so a fresh id over a live chip would leave that chip on screen
+        /// with nothing left to ever remove it (§6, rule T5).
+        /// </summary>
+        private int PlaceBoosterKeepingIdentity(GridPos cell, BoosterType booster)
+        {
+            ChipSlot slot = _board.GetSlot(cell);
+            if (slot.Kind == SlotKind.Empty)
+            {
+                return _board.SetBooster(cell, booster);
+            }
+
+            _board.TransformToBooster(cell, booster);
+            return slot.InstanceId;
         }
 
         private TurnTranscript PlaceBoosterCheat(in CheatCommand command)
@@ -323,7 +340,7 @@ namespace Match3.Resolve
             }
 
             // §12: placing a booster does not spend a move.
-            int instanceId = _board.SetBooster(command.Cell, command.Booster);
+            int instanceId = PlaceBoosterKeepingIdentity(command.Cell, command.Booster);
             _legalMoves.Invalidate();
             _writer.BoosterSpawned(command.Cell, command.Booster, instanceId);
             _writer.SetOutcome(TurnOutcome.Resolved);
