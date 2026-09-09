@@ -7,6 +7,7 @@
         "Match3.Goals",
         "Match3.Resolve",
         "Match3.Levels",
+        "Match3.Progression",
         "Zenject",
         "UniTask",
         "DOTween.Modules",
