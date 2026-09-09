@@ -263,3 +263,6 @@ artifacts/
 
 # Unity CLI test report
 test-results.xml
+
+# Art references: multi-megabyte style frames, kept locally
+match3-test/docs/art/
