@@ -1,4 +1,5 @@
 using System;
+using Match3.Board;
 using Match3.Core;
 using Match3.Matching;
 using BoardModel = Match3.Board.Board;
@@ -62,11 +63,25 @@ namespace Match3.Resolve
                     continue;
                 }
 
-                _board.SetBooster(cell, component.Booster);
+                // One of the matched chips BECOMES the booster, so its identity survives: the
+                // spawn cell is excluded from CLEAR, and a fresh id would leave the view showing
+                // the old chip forever while the model referred to an id it never saw.
+                ChipSlot slot = _board.GetSlot(cell);
+                int instanceId;
+                if (slot.Kind == SlotKind.Empty)
+                {
+                    instanceId = _board.SetBooster(cell, component.Booster);
+                }
+                else
+                {
+                    instanceId = slot.InstanceId;
+                    _board.TransformToBooster(cell, component.Booster);
+                }
+
                 _board.SetConsumed(cell, true);
                 spawnCells?.Add(cell);
 
-                writer.BoosterSpawned(cell, component.Booster);
+                writer.BoosterSpawned(cell, component.Booster, instanceId);
                 spawned++;
             }
 

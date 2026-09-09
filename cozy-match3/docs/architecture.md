@@ -117,8 +117,16 @@ Assets/Game/Tests/
 | `Match3.Progression` | Core, Content, Goals, Levels, Levels.Authoring, Resolve, Diagnostics, Zenject, UniTask, R3 |
 | `Match3.Cheats` | все Modules + Gameplay (только интерфейсы), Hud, Progression, Zenject, UniTask, R3 |
 | `Match3.Bootstrap` | все Modules + все Features + Zenject |
-| `Match3.Tests.EditMode` | все Modules + Levels.Authoring + nunit |
+| `Match3.Tests.EditMode` | все Modules + Levels.Authoring + Content + Diagnostics + Progression + Gameplay + Hud + Zenject, UniTask, nunit |
 | `Match3.Tests.PlayMode` | + Features, Bootstrap |
+
+**Почему тестовая edit-mode сборка ссылается и на фичи.** Изначально в таблице стояло «все Modules
++ Levels.Authoring + nunit», но карточки T17/T19/T20/T21 требуют edit-mode тестов на **чистые
+части** презентации и прогрессии: расписание тика целей, профиль ускорения падения, геометрия
+свайпа, поток уровней на подменяемом хранилище. Правило «правило, проверяемое только запуском
+Play, — Major-находка» (§19) сильнее, чем узкий список ссылок, поэтому ссылки добавлены. Условие
+остаётся прежним: в edit-mode тестируется то, что не требует сцены; всё остальное — play-mode
+smoke (T23).
 
 Запрещено: `Modules` → `Features` (в любом виде), `Hud` → `Gameplay`, `Gameplay` → `Hud`,
 `Gameplay` → `Cheats`, циклы, рантайм-сборка → Editor-сборка.

@@ -301,8 +301,8 @@ namespace Match3.Resolve
                 GridPos cell = _bonusCells[i];
                 BoosterType rocket = (i & 1) == 0 ? BoosterType.RocketH : BoosterType.RocketV;
 
-                _board.SetBooster(cell, rocket);
-                _writer.MovesBonusRocket(cell, rocket);
+                int instanceId = _board.SetBooster(cell, rocket);
+                _writer.MovesBonusRocket(cell, rocket, instanceId);
 
                 _context.BeginTurn();
                 _activation.QueuePlayerActivation(_context, cell, ChipColor.None);
@@ -323,9 +323,9 @@ namespace Match3.Resolve
             }
 
             // §12: placing a booster does not spend a move.
-            _board.SetBooster(command.Cell, command.Booster);
+            int instanceId = _board.SetBooster(command.Cell, command.Booster);
             _legalMoves.Invalidate();
-            _writer.BoosterSpawned(command.Cell, command.Booster);
+            _writer.BoosterSpawned(command.Cell, command.Booster, instanceId);
             _writer.SetOutcome(TurnOutcome.Resolved);
             _writer.TurnEnd();
             return _transcript;

@@ -59,8 +59,17 @@ namespace Match3.Resolve
             Write(new TurnEvent(TurnEventKind.StepEnd, value: depth));
         }
 
-        public void BoosterSpawned(GridPos cell, BoosterType booster)
-            => Write(new TurnEvent(TurnEventKind.BoosterSpawned, a: cell, booster: booster));
+        /// <summary>
+        /// <paramref name="instanceId"/> is the id Board.SetBooster allocated: without it the
+        /// view cannot map the new booster to a visual, and every later ChipMoved for it names
+        /// an id the view never registered.
+        /// </summary>
+        public void BoosterSpawned(GridPos cell, BoosterType booster, int instanceId)
+            => Write(new TurnEvent(
+                TurnEventKind.BoosterSpawned,
+                a: cell,
+                booster: booster,
+                instanceId: instanceId));
 
         public void BoosterActivated(GridPos cell, BoosterType booster, BoosterActivationSource source)
             => Write(new TurnEvent(
@@ -171,8 +180,12 @@ namespace Match3.Resolve
         public void ShuffleEnd()
             => Write(new TurnEvent(TurnEventKind.ShuffleEnd));
 
-        public void MovesBonusRocket(GridPos cell, BoosterType booster)
-            => Write(new TurnEvent(TurnEventKind.MovesBonusRocket, a: cell, booster: booster));
+        public void MovesBonusRocket(GridPos cell, BoosterType booster, int instanceId)
+            => Write(new TurnEvent(
+                TurnEventKind.MovesBonusRocket,
+                a: cell,
+                booster: booster,
+                instanceId: instanceId));
 
         public void LevelWon(LevelEndReason reason)
         {

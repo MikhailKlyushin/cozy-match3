@@ -24,7 +24,10 @@ namespace Match3.Resolve
         /// <summary>Step is the cascade step index, from 0.</summary>
         StepBegin = 4,
 
-        /// <summary>Booster marked but not fired in the same step (D06, rule T2). A is the spawn cell (§4.3).</summary>
+        /// <summary>
+        /// Booster marked but not fired in the same step (D06, rule T2). A is the spawn cell
+        /// (§4.3), InstanceId the visual identity the view must register.
+        /// </summary>
         BoosterSpawned = 5,
 
         /// <summary>A is the cell, Wave the chain wave, Flags a <see cref="BoosterActivationSource"/>.</summary>

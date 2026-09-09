@@ -16,7 +16,11 @@
         "Match3.Diagnostics",
         "Match3.Progression",
         "Zenject",
-        "UniTask"
+        "UniTask",
+        "Match3.Gameplay",
+        "Match3.Hud",
+        "Unity.InputSystem",
+        "UnityEngine.UI"
     ],
     "includePlatforms": [
         "Editor"

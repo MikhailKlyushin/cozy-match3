@@ -102,13 +102,13 @@ W4  ПРИЁМКА
 | [x] T12 | Ход, POST-TURN, перемешивание, бонус | `Match3.Resolve` | T11 | W1 |
 | [x] T13 | Подсказка хода | `Match3.Resolve` | T12 | W1 |
 | [x] T14 | 12 уровней + авторинг-конфиги | `Match3.Levels.Authoring`, контент | T04 | W2 |
-| [ ] T15 | Визуальный стиль: котики, профили, палитра | контент | T02 | W3 |
-| [ ] T16 | View поля, layout, пулы | `Match3.Gameplay` | T01, T02, T15 | W3 |
-| [ ] T17 | Плеер транскрипта и базовые эффекты | `Match3.Gameplay` | T16 | W3 |
-| [ ] T18 | FX бустеров и комбинаций | `Match3.Gameplay` | T17 | W3 |
-| [ ] T19 | Ввод и отображение подсказки | `Match3.Gameplay` | T16 | W3 |
-| [ ] T20 | HUD, попапы, End of content | `Match3.Hud` | T01, T02 | W3 |
-| [ ] T21 | Прогрессия, сейв, поток уровней | `Match3.Progression` | T14, T20 | W3 |
+| [x] T15 | Визуальный стиль: котики, профили, палитра | контент | T02 | W3 |
+| [x] T16 | View поля, layout, пулы | `Match3.Gameplay` | T01, T02, T15 | W3 |
+| [x] T17 | Плеер транскрипта и базовые эффекты | `Match3.Gameplay` | T16 | W3 |
+| [x] T18 | FX бустеров и комбинаций | `Match3.Gameplay` | T17 | W3 |
+| [x] T19 | Ввод и отображение подсказки | `Match3.Gameplay` | T16 | W3 |
+| [x] T20 | HUD, попапы, End of content | `Match3.Hud` | T01, T02 | W3 |
+| [x] T21 | Прогрессия, сейв, поток уровней | `Match3.Progression` | T14, T20 | W3 |
 | [ ] T22 | Панель читов | `Match3.Cheats` | T12, T16, T21 | W3 |
 | [ ] T23 | Bootstrap, DI, сцены, метрики | `Match3.Bootstrap`, `Match3.Diagnostics` | T12, T16, T20, T21 | W3 |
 | [ ] T24 | Харнесс детерминизма и реплея | `Match3.Tests.EditMode` | T12 | W4 |

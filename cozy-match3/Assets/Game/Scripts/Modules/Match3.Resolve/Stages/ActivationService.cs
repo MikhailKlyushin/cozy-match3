@@ -167,8 +167,8 @@ namespace Match3.Resolve
 
             if (slot.Kind == SlotKind.Empty)
             {
-                _board.SetBooster(step.Cell, step.Booster);
-                writer.BoosterSpawned(step.Cell, step.Booster);
+                int instanceId = _board.SetBooster(step.Cell, step.Booster);
+                writer.BoosterSpawned(step.Cell, step.Booster, instanceId);
                 _board.SetConsumed(step.Cell, false);
                 return;
             }

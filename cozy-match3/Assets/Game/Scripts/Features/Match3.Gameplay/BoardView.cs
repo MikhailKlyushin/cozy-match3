@@ -122,6 +122,26 @@ namespace Match3.Gameplay
 
         public bool TryGetChip(int instanceId, out ChipView chip) => _chipsByInstance.TryGetValue(instanceId, out chip);
 
+        /// <summary>
+        /// Looks a chip up by the cell it believes it occupies. Needed by the events that carry
+        /// cells instead of ids - SwapPerformed, SwapRejected and the hint - and it stays inside
+        /// rule V1 because the cell comes from the view's own state, not from the board.
+        /// </summary>
+        public bool TryGetChipAt(GridPos cell, out ChipView chip)
+        {
+            for (int i = 0; i < _activeChips.Count; i++)
+            {
+                if (_activeChips[i].Cell == cell)
+                {
+                    chip = _activeChips[i];
+                    return true;
+                }
+            }
+
+            chip = null;
+            return false;
+        }
+
         public ChipView SpawnChipAt(int instanceId, ChipColor color, GridPos cell)
         {
             ChipView chip = RentChip();
