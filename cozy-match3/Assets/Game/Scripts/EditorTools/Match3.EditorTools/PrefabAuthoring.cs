@@ -76,6 +76,72 @@ namespace Match3.EditorTools
             so.ApplyModifiedPropertiesWithoutUndo();
         }
 
+        internal static void WireArray(Component component, string fieldName, Object[] values)
+        {
+            var so = new SerializedObject(component);
+            SerializedProperty property = so.FindProperty(fieldName);
+            if (property == null || !property.isArray)
+            {
+                Debug.LogError("[Match3] " + component.GetType().Name + " has no array field " + fieldName);
+                return;
+            }
+
+            property.arraySize = values.Length;
+            for (int i = 0; i < values.Length; i++)
+            {
+                property.GetArrayElementAtIndex(i).objectReferenceValue = values[i];
+            }
+
+            so.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        /// <summary>Legacy uGUI Text: TextMeshPro is deliberately not a dependency of this project.</summary>
+        internal static Text CreateText(string name, Transform parent, string content, int fontSize)
+        {
+            var go = new GameObject(name, typeof(RectTransform), typeof(CanvasRenderer), typeof(Text));
+            go.transform.SetParent(parent, false);
+
+            var text = go.GetComponent<Text>();
+            text.text = content;
+            text.fontSize = fontSize;
+            text.alignment = TextAnchor.MiddleCenter;
+            text.color = Color.white;
+            text.raycastTarget = false;
+            text.font = BuiltinFont();
+            text.horizontalOverflow = HorizontalWrapMode.Overflow;
+            text.verticalOverflow = VerticalWrapMode.Overflow;
+            return text;
+        }
+
+        internal static Button CreateButton(string name, Transform parent, string label, Vector2 size)
+        {
+            var go = new GameObject(name, typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button));
+            go.transform.SetParent(parent, false);
+
+            var rect = (RectTransform)go.transform;
+            rect.sizeDelta = size;
+
+            var image = go.GetComponent<Image>();
+            image.sprite = AssetDatabase.LoadAssetAtPath<Sprite>(
+                ArtAuthoring.HudArtFolder + "/T_Ui_Panel_2D.png");
+            image.color = new Color(0.24f, 0.28f, 0.38f, 1f);
+
+            Text text = CreateText("Label", rect, label, 34);
+            var textRect = (RectTransform)text.transform;
+            textRect.anchorMin = Vector2.zero;
+            textRect.anchorMax = Vector2.one;
+            textRect.offsetMin = Vector2.zero;
+            textRect.offsetMax = Vector2.zero;
+
+            return go.GetComponent<Button>();
+        }
+
+        internal static Font BuiltinFont()
+        {
+            Font font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            return font != null ? font : AssetDatabase.GetBuiltinExtraResource<Font>("Arial.ttf");
+        }
+
         /// <summary>A stretched RectTransform with an Image, the shape every view is built from.</summary>
         internal static Image CreateImageNode(string name, Transform parent, bool raycast = false)
         {

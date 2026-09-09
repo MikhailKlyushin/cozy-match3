@@ -109,8 +109,8 @@ W4  ПРИЁМКА
 | [x] T19 | Ввод и отображение подсказки | `Match3.Gameplay` | T16 | W3 |
 | [x] T20 | HUD, попапы, End of content | `Match3.Hud` | T01, T02 | W3 |
 | [x] T21 | Прогрессия, сейв, поток уровней | `Match3.Progression` | T14, T20 | W3 |
-| [ ] T22 | Панель читов | `Match3.Cheats` | T12, T16, T21 | W3 |
-| [ ] T23 | Bootstrap, DI, сцены, метрики | `Match3.Bootstrap`, `Match3.Diagnostics` | T12, T16, T20, T21 | W3 |
+| [x] T22 | Панель читов | `Match3.Cheats` | T12, T16, T21 | W3 |
+| [x] T23 | Bootstrap, DI, сцены, метрики | `Match3.Bootstrap`, `Match3.Diagnostics` | T12, T16, T20, T21 | W3 |
 | [ ] T24 | Харнесс детерминизма и реплея | `Match3.Tests.EditMode` | T12 | W4 |
 | [ ] T25 | WebGL-билд, перф, размер, исключение читов | — | T23, T22 | W4 |
 | [ ] T26 | Прогон 12 уровней ботом, сверка winrate | `Match3.Tests.EditMode` | T12, T14 | W4 |

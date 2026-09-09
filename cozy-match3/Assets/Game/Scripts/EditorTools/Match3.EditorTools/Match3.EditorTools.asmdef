@@ -20,7 +20,8 @@
         "UniTask",
         "DOTween.Modules",
         "UnityEngine.UI",
-        "Unity.InputSystem"
+        "Unity.InputSystem",
+        "Match3.Cheats"
     ],
     "includePlatforms": [
         "Editor"

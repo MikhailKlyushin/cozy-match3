@@ -5,20 +5,30 @@ using UnityEngine;
 namespace Match3.EditorTools
 {
     /// <summary>
-    /// Single entry point that regenerates every generated asset. Public so it can be driven
-    /// headlessly: unity run &lt;project&gt; -- -executeMethod Match3.EditorTools.AuthoringPipeline.GenerateAll
+    /// Regenerates every generated asset in dependency order. Public so it can be driven
+    /// headlessly: unity run &lt;project&gt; -- -executeMethod Match3.EditorTools.AuthoringPipeline.GenerateAllBatch
     /// </summary>
     public static class AuthoringPipeline
     {
         [MenuItem("Match3/Authoring/Generate All")]
         public static void GenerateAll()
         {
+            // Order is a dependency chain: sprites, then the profiles and prefabs that reference
+            // them, then the level context, then the scenes that reference all of it.
             ArtAuthoring.GenerateArt();
             ContentAuthoring.GenerateProfiles();
             LevelAuthoring.GenerateLevels();
-            SceneAuthoring.GenerateScenes();
+            PrefabAuthoring.GeneratePrefabs();
+            LevelContextAuthoring.GenerateLevelContext();
+#if MATCH3_CHEATS
+            CheatsAuthoring.GenerateCheatsPrefab();
+#endif
+            SceneAuthoring.GenerateBootScene();
+            GameSceneAuthoring.GenerateGameScene();
+            SceneAuthoring.RegisterScenes();
 
             AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
 
             if (!LevelAuthoring.VerifyLevelAssets())
             {
