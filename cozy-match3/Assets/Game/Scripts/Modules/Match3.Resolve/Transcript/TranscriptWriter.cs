@@ -103,8 +103,17 @@ namespace Match3.Resolve
         public void ChipDestroyed(GridPos cell, ChipColor color, int instanceId)
             => Write(new TurnEvent(TurnEventKind.ChipDestroyed, a: cell, color: color, instanceId: instanceId));
 
-        public void ChipTransformed(GridPos cell, BoosterType booster, int instanceId)
-            => Write(new TurnEvent(TurnEventKind.ChipTransformed, a: cell, booster: booster, instanceId: instanceId));
+        /// <summary>
+        /// <paramref name="delayMilliseconds"/> carries the ComboStep stagger (§6.3): mass
+        /// transformations must read as a series, so the player offsets each one by it.
+        /// </summary>
+        public void ChipTransformed(GridPos cell, BoosterType booster, int instanceId, int delayMilliseconds = 0)
+            => Write(new TurnEvent(
+                TurnEventKind.ChipTransformed,
+                a: cell,
+                booster: booster,
+                amount: delayMilliseconds,
+                instanceId: instanceId));
 
         public void ElementDamaged(GridPos cell, ElementId element, int amount, int remainingHealth)
             => Write(new TurnEvent(

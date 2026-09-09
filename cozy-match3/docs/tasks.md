@@ -98,9 +98,9 @@ W4  ПРИЁМКА
 | [x] T08 | Бустеры и матрица комбинаций | `Match3.Boosters` | T07 | W1 |
 | [x] T09 | Гравитация и refill | `Match3.Resolve` | T03 | W1 |
 | [x] T10 | Урон, clear, вложенность | `Match3.Resolve` | T03, T06 | W1 |
-| [ ] T11 | Цикл RESOLVE, волны, капы | `Match3.Resolve` | T05, T08, T09, T10 | W1 |
-| [ ] T12 | Ход, POST-TURN, перемешивание, бонус | `Match3.Resolve` | T11 | W1 |
-| [ ] T13 | Подсказка хода | `Match3.Resolve` | T12 | W1 |
+| [x] T11 | Цикл RESOLVE, волны, капы | `Match3.Resolve` | T05, T08, T09, T10 | W1 |
+| [x] T12 | Ход, POST-TURN, перемешивание, бонус | `Match3.Resolve` | T11 | W1 |
+| [x] T13 | Подсказка хода | `Match3.Resolve` | T12 | W1 |
 | [ ] T14 | 12 уровней + авторинг-конфиги | `Match3.Levels.Authoring`, контент | T04 | W2 |
 | [ ] T15 | Визуальный стиль: котики, профили, палитра | контент | T02 | W3 |
 | [ ] T16 | View поля, layout, пулы | `Match3.Gameplay` | T01, T02, T15 | W3 |
