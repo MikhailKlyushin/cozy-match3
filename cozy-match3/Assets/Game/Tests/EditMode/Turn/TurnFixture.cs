@@ -73,7 +73,7 @@ namespace Match3.Tests.EditMode.Turn
             var refill = new RefillService(board, policy);
             var loop = new ResolveLoopService(
                 board, detection, spawn, activation, damage, clear, gravity, refill, logger);
-            var shuffle = new ShuffleService(board, detection, legalMoves, policy, random, logger);
+            var shuffle = new ShuffleService(board, detection, legalMoves, policy, rules, random, logger);
             var bonus = new MovesBonusService(board, random);
             var hint = new HintService(board, legalMoves, detection, tracker, rules);
 

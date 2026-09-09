@@ -26,9 +26,7 @@ namespace Match3.Levels
         /// </summary>
         private const int MaxGenerationAttempts = 50;
 
-        private const int MinLineLength = 3;
-
-        public BoardBuilder(ElementCatalog catalog, IMatch3Logger logger)
+            public BoardBuilder(ElementCatalog catalog, IMatch3Logger logger)
         {
             _catalog = catalog ?? throw new ArgumentNullException(nameof(catalog));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -217,35 +215,18 @@ namespace Match3.Levels
             }
         }
 
-        /// <summary>
-        /// E20: re-roll a colour that would close a match, at most colorCount - 1 times, then
-        /// take any colour that does not close one. A closed match here is a line of 3 or a 2x2
-        /// square — both are primitives (§4.2) and §3.4 rule 2 forbids either in the initial board.
-        /// </summary>
+        /// <summary>E20: re-roll a colour that would close a match, at most colorCount - 1 times.</summary>
         private static ChipColor PickColor(BoardModel board, GridPos cell, int colorCount, IRandom random)
         {
             ChipColor color = ChipColors.FromIndex(random.NextInt(colorCount) + 1);
-            for (int reroll = 0; reroll < colorCount - 1 && WouldCloseMatch(board, cell, color); reroll++)
+            for (int reroll = 0;
+                 reroll < colorCount - 1 && MatchFreePlacement.WouldCloseMatch(board, cell, color);
+                 reroll++)
             {
                 color = ChipColors.FromIndex(random.NextInt(colorCount) + 1);
             }
 
-            if (!WouldCloseMatch(board, cell, color))
-            {
-                return color;
-            }
-
-            for (int index = 1; index <= colorCount; index++)
-            {
-                ChipColor candidate = ChipColors.FromIndex(index);
-                if (!WouldCloseMatch(board, cell, candidate))
-                {
-                    return candidate;
-                }
-            }
-
-            // Fully constrained cell: the validator reports the ready-made match (§3.4 rule 2).
-            return color;
+            return MatchFreePlacement.FirstColorWithoutMatch(board, cell, colorCount, color);
         }
 
         /// <summary>
@@ -326,84 +307,6 @@ namespace Match3.Levels
                         : board.ElementAt(element.NestedIndex);
                 }
             }
-        }
-
-        private static bool WouldCloseMatch(BoardModel board, GridPos cell, ChipColor color)
-        {
-            if (RunLength(board, cell, color, -1, 0) + 1 + RunLength(board, cell, color, 1, 0) >= MinLineLength)
-            {
-                return true;
-            }
-
-            if (RunLength(board, cell, color, 0, -1) + 1 + RunLength(board, cell, color, 0, 1) >= MinLineLength)
-            {
-                return true;
-            }
-
-            return ClosesSquare(board, cell, color);
-        }
-
-        private static int RunLength(BoardModel board, GridPos cell, ChipColor color, int stepX, int stepY)
-        {
-            int length = 0;
-            var next = new GridPos(cell.X + stepX, cell.Y + stepY);
-            while (ColorAt(board, next) == color)
-            {
-                length++;
-                next = new GridPos(next.X + stepX, next.Y + stepY);
-            }
-
-            return length;
-        }
-
-        private static bool ClosesSquare(BoardModel board, GridPos cell, ChipColor color)
-        {
-            for (int offsetY = -1; offsetY <= 0; offsetY++)
-            {
-                for (int offsetX = -1; offsetX <= 0; offsetX++)
-                {
-                    var origin = new GridPos(cell.X + offsetX, cell.Y + offsetY);
-                    if (!board.Contains(origin) || !board.Contains(new GridPos(origin.X + 1, origin.Y + 1)))
-                    {
-                        continue;
-                    }
-
-                    if (IsSquareOfColor(board, origin, cell, color))
-                    {
-                        return true;
-                    }
-                }
-            }
-
-            return false;
-        }
-
-        private static bool IsSquareOfColor(BoardModel board, GridPos origin, GridPos placed, ChipColor color)
-        {
-            for (int y = 0; y <= 1; y++)
-            {
-                for (int x = 0; x <= 1; x++)
-                {
-                    var corner = new GridPos(origin.X + x, origin.Y + y);
-                    if (corner != placed && ColorAt(board, corner) != color)
-                    {
-                        return false;
-                    }
-                }
-            }
-
-            return true;
-        }
-
-        private static ChipColor ColorAt(BoardModel board, GridPos cell)
-        {
-            if (!board.Contains(cell) || board.GetKind(cell) != CellKind.Playable)
-            {
-                return ChipColor.None;
-            }
-
-            ChipSlot slot = board.GetSlot(cell);
-            return slot.Kind == SlotKind.Chip ? slot.Color : ChipColor.None;
         }
     }
 }

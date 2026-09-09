@@ -281,7 +281,7 @@ NotCountable`. `b2`/`b3` отличаются от `bx` **только** `MaxHea
 
 | Сборка | Публичные типы (контракт) |
 |---|---|
-| `Match3.Matching` | `MatchComponent` (цвет, клетки, ранг, клетка появления, бустер), `MatchDetectionService`, `SwapValidator`, `LegalMoveService` (+ кэш), `ComponentClassifier`, `SpawnCellResolver` |
+| `Match3.Matching` | `MatchComponent` (цвет, клетки, ранг, клетка появления, бустер), `MatchDetectionService`, `SwapValidator`, `LegalMoveService` (+ кэш), `ComponentClassifier`, `SpawnCellResolver`, `MatchFreePlacement` (подбор цвета без готового матча: `E20` и третья фаза §5.4) |
 | `Match3.Goals` | `GoalDefinition`, `GoalState`, `IGoalTracker` (`CreditChip`, `CreditElement`, `CreditBoosterActivation`, `AllClosed`, `FirstUnclosedIndex`), `GoalTracker` |
 | `Match3.Boosters` | `IBoosterEffect`, `RocketEffect`/`BombEffect`/`RainbowEffect`/`AirplaneEffect`, `BoosterCatalog`, `ITargetingService`/`TargetingService`, `ComboMatrix`, `ComboPlan`, `ComboResolver` |
 | `Match3.Resolve` | `TurnRule`, `TurnTranscript`, `TurnEvent`, `ResolveLoopService`, стадийные сервисы (`BoosterSpawnService`, `ActivationService`, `DamageService`, `ClearService`, `GravityService`, `RefillService`), `ShuffleService`, `HintService`, `MovesBonusService`, `IChipSpawnPolicy`, `ResolveCaps` |
@@ -383,7 +383,7 @@ public sealed class TurnRule {
 | VALIDATE | `SwapValidator` (Matching) | легален, если обе клетки играемы и подвижны И (свап создаёт матч ИЛИ хотя бы в одной клетке бустер). Нелегален → `SwapRejected`, ход **не** списывается (`E16`) |
 | COMMIT | `TurnRule` | `SwapPerformed` + `MoveCharged` здесь (`D04`, `E15`) |
 | 1 DETECT | `MatchDetectionService` | примитивы (линия ≥3, квадрат 2×2) → union-find по общим клеткам → компоненты (`D02`) |
-| 2 CLASSIFY | `ComponentClassifier`, `SpawnCellResolver` | ранги 1–5 (§4.2), клетка появления (§4.3); в каскаде пункт 1 правила пропускается (`E03`) |
+| 2 CLASSIFY | `ComponentClassifier`, `SpawnCellResolver`, `MatchFreePlacement` (подбор цвета без готового матча: `E20` и третья фаза §5.4) | ранги 1–5 (§4.2), клетка появления (§4.3); в каскаде пункт 1 правила пропускается (`E03`) |
 | 3 SPAWN | `BoosterSpawnService` | помечает, не активирует (`D06`) |
 | 4 ACTIVATE | `ActivationService` + `BoosterCatalog` + `ComboResolver` | **волнами**: сначала собрать список, потом стрелять. Флаг `consumed`, кап 20 волн (`D08`, `E05`) |
 | 5 DAMAGE | `DamageService` + стратегии по `DamageSourceKind` | 1 урон на **источник** за шаг (`D07`), overkill отбрасывается, `##` не получает урона и эффект не тормозит |
@@ -394,7 +394,7 @@ public sealed class TurnRule {
 | 10 STABLE? | `ResolveLoopService` | новые матчи → шаг 1, `depth += 1`; кап 30 → `CapHit` + `logger.Error` |
 | POST-TURN | `TurnRule` | строго: `CycleColor` (`cx`) → **цели** → ходы → легальные ходы/перемешивание. Победа приоритетнее поражения (`D14`, `E13`/`E14`) |
 | Бонус | `MovesBonusService` | каждый остаток → ракета, шаг 0.15 с, кап 10; провалить уровень не может (`E23`, §8.4) |
-| Перемешивание | `ShuffleService` | Fisher–Yates из RNG попытки, до 10 + 10 попыток, иначе `deadlock` + `logger.Error` (`E19`, §5.4) |
+| Перемешивание | `ShuffleService` | Fisher–Yates из RNG попытки (10 попыток) → регенерация цветов (10 попыток) → детерминированная расстановка без матчей + ремонтный свап; только потом `deadlock` + `logger.Error` (`E19`, §5.4) |
 | Подсказка | `HintService` | приоритеты 1–4 (§5.5), тай-брейки `y↑, x↑`, горизонталь раньше вертикали; «бустер+бустер» исключены (`D15`) |
 
 **Раскладка файлов в `Match3.Resolve`.** Над этой сборкой работают сразу несколько агентов

@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using Match3.Board;
 using Match3.Boosters;
-using Match3.Content;
 using Match3.Core;
 using Match3.Gameplay;
 using Match3.Gameplay.Playback;
@@ -12,7 +11,6 @@ using Match3.Progression;
 using Match3.Resolve;
 using UnityEngine;
 using Zenject;
-using BoardModel = Match3.Board.Board;
 
 namespace Match3.Bootstrap
 {
@@ -35,96 +33,50 @@ namespace Match3.Bootstrap
             var logger = Container.Resolve<IMatch3Logger>();
             var elements = Container.Resolve<ElementCatalog>();
 
-            IRandom random = new DeterministicRandom(request.Seed);
-            logger.Info("level_start id=" + level.Id + " attempt=" + request.Attempt + " seed=" + request.Seed);
+            // The same wiring the determinism and bot harnesses use, so they cannot drift apart.
+            LevelRuntime runtime = LevelRuntime.Create(level, request.Seed, elements, logger);
 
-            BoardModel board = new BoardBuilder(elements, logger).Build(level, random);
-            var goals = new GoalTracker(level.Goals);
+            logger.Info("level_start id=" + level.Id + " attempt=" + request.Attempt + " seed=" + request.Seed);
 
             var session = new LevelSessionState(
                 level.Id,
                 level.Tier,
                 request.Seed,
                 level.MoveLimit,
-                goals,
+                runtime.Goals,
                 level.HintDelaySeconds);
 
-            Container.BindInstance(request);
-            Container.BindInstance(request.Rules);
-            Container.BindInstance(random);
-            Container.BindInstance(board);
-            Container.BindInstance<IBoardReader>(board);
-            Container.Bind<IGoalTracker>().FromInstance(goals).AsSingle();
-            Container.BindInstance(goals);
-            Container.Bind(typeof(LevelSessionState), typeof(System.IDisposable))
-                .FromInstance(session)
-                .AsSingle();
-            Container.Bind<ILevelInputState>().To<LevelInputState>().AsSingle();
-
-            InstallRules(board, goals, random, request.Rules, level, logger);
+            InstallRuntime(request, runtime, session);
             InstallPresentation();
         }
 
-        private void InstallRules(
-            BoardModel board,
-            GoalTracker goals,
-            IRandom random,
-            LevelRules rules,
-            LevelData level,
-            IMatch3Logger logger)
+        private void InstallRuntime(LevelSessionRequest request, LevelRuntime runtime, LevelSessionState session)
         {
-            var detection = new MatchDetectionService(board);
-            var validator = new SwapValidator(board, detection);
-            var legalMoves = new LegalMoveService(board, validator);
-            var targeting = new TargetingService(board, goals, random);
+            Container.BindInstance(request);
+            Container.BindInstance(runtime);
+            Container.BindInstance(runtime.Rules);
+            Container.BindInstance(runtime.Random);
+            Container.BindInstance(runtime.Board);
+            Container.BindInstance<IBoardReader>(runtime.Board);
+            Container.BindInstance(runtime.Goals);
+            Container.Bind<IGoalTracker>().FromInstance(runtime.Goals).AsSingle();
+            Container.BindInstance(runtime.Detection);
+            Container.BindInstance(runtime.Validator);
+            Container.BindInstance(runtime.LegalMoves);
+            Container.Bind<ITargetingService>().FromInstance(runtime.Targeting).AsSingle();
+            Container.BindInstance(runtime.Boosters);
+            Container.BindInstance(runtime.Combos);
+            Container.Bind<IChipSpawnPolicy>().FromInstance(runtime.SpawnPolicy).AsSingle();
+            Container.BindInstance(runtime.Activation);
+            Container.BindInstance(runtime.Hint);
+            Container.BindInstance(runtime.TurnRule);
 
-            var boosters = new BoosterCatalog(new IBoosterEffect[]
-            {
-                new RocketEffect(BoosterType.RocketH),
-                new RocketEffect(BoosterType.RocketV),
-                new BombEffect(),
-                new RainbowEffect(targeting),
-                new AirplaneEffect(targeting),
-            });
+            // Bound as IDisposable too, so destroying the context closes its R3 subjects.
+            Container.Bind(typeof(LevelSessionState), typeof(System.IDisposable))
+                .FromInstance(session)
+                .AsSingle();
 
-            IChipSpawnPolicy spawnPolicy =
-                new WeightedChipSpawnPolicy(random, level.ColorCount, level.SpawnWeights);
-
-            var combos = new ComboResolver(board, targeting);
-            var spawn = new BoosterSpawnService(board);
-            var activation = new ActivationService(board, boosters, goals, logger);
-            var damage = new DamageService(board, DamageRules.CreateDefault(), logger);
-            var clear = new ClearService(board, goals, logger);
-            var gravity = new GravityService(board);
-            var refill = new RefillService(board, spawnPolicy);
-            var loop = new ResolveLoopService(
-                board, detection, spawn, activation, damage, clear, gravity, refill, logger);
-            var shuffle = new ShuffleService(board, detection, legalMoves, spawnPolicy, random, logger);
-            var bonus = new MovesBonusService(board, random);
-            var hint = new HintService(board, legalMoves, detection, goals, rules);
-
-            var turnRule = new TurnRule(
-                board, rules, validator, legalMoves, combos, activation, loop, goals,
-                shuffle, bonus, hint, random, logger, new TurnTranscript(), new ResolveContext());
-
-            Container.BindInstance(detection);
-            Container.BindInstance(validator);
-            Container.BindInstance(legalMoves);
-            Container.Bind<ITargetingService>().FromInstance(targeting).AsSingle();
-            Container.BindInstance(boosters);
-            Container.BindInstance(combos);
-            Container.Bind<IChipSpawnPolicy>().FromInstance(spawnPolicy).AsSingle();
-            Container.BindInstance(spawn);
-            Container.BindInstance(activation);
-            Container.BindInstance(damage);
-            Container.BindInstance(clear);
-            Container.BindInstance(gravity);
-            Container.BindInstance(refill);
-            Container.BindInstance(loop);
-            Container.BindInstance(shuffle);
-            Container.BindInstance(bonus);
-            Container.BindInstance(hint);
-            Container.BindInstance(turnRule);
+            Container.Bind<ILevelInputState>().To<LevelInputState>().AsSingle();
         }
 
         private void InstallPresentation()

@@ -260,3 +260,6 @@ ProfilerCaptures/reports/
 
 .claude/
 artifacts/
+
+# Unity CLI test report
+test-results.xml

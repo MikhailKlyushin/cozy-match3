@@ -21,7 +21,8 @@
         "Match3.Hud",
         "Unity.InputSystem",
         "UnityEngine.UI",
-        "Match3.Cheats"
+        "Match3.Cheats",
+        "Match3.Bootstrap"
     ],
     "includePlatforms": [
         "Editor"
