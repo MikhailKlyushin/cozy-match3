@@ -14,28 +14,28 @@ MonoBehaviour:
   m_EditorClassIdentifier: Match3.Content::Match3.Content.ChipVisualProfile
   _chips:
   - _color: 1
-    _sprite: {fileID: 21300000, guid: 6243280a63b505f4fa2a40b03a575b6d, type: 3}
-    _particleColor: {r: 1, g: 0.86, b: 0.72, a: 1}
+    _sprite: {fileID: 21300000, guid: cc709757d22a36c459c773302f661d4f, type: 3}
+    _particleColor: {r: 0.9960785, g: 0.7607844, b: 0.80392164, a: 1}
     _destroyFx: {fileID: 0}
   - _color: 2
-    _sprite: {fileID: 21300000, guid: f8f59f411c94bda4ba3aaa0268c1b0ce, type: 3}
-    _particleColor: {r: 0.47, g: 0.68, b: 0.92, a: 1}
+    _sprite: {fileID: 21300000, guid: cbfe08acd45d92247b88a3105b1694d9, type: 3}
+    _particleColor: {r: 0.5058824, g: 0.3529412, b: 0.6392157, a: 1}
     _destroyFx: {fileID: 0}
   - _color: 3
-    _sprite: {fileID: 21300000, guid: 91d93ec946026c3488b6d7d5e851a39e, type: 3}
-    _particleColor: {r: 0.13, g: 0.42, b: 0.42, a: 1}
+    _sprite: {fileID: 21300000, guid: 9b5837ed74de0af43a6aa16ca4413807, type: 3}
+    _particleColor: {r: 0.98823535, g: 0.8705883, b: 0.6039216, a: 1}
     _destroyFx: {fileID: 0}
   - _color: 4
-    _sprite: {fileID: 21300000, guid: fbde0ef591f516649b16225e5de77f96, type: 3}
-    _particleColor: {r: 0.83, g: 0.79, b: 0.96, a: 1}
+    _sprite: {fileID: 21300000, guid: 321e9b9aa60222949900c1915f6d163b, type: 3}
+    _particleColor: {r: 0.48235297, g: 0.627451, b: 0.7607844, a: 1}
     _destroyFx: {fileID: 0}
   - _color: 5
-    _sprite: {fileID: 21300000, guid: bca8ad23a8447604db67b9730b49d476, type: 3}
-    _particleColor: {r: 0.4, g: 0.72, b: 0.44, a: 1}
+    _sprite: {fileID: 21300000, guid: 82a7539a847ee004e88bd7ba6d83b4c2, type: 3}
+    _particleColor: {r: 0.92156863, g: 0.5803922, b: 0.40784314, a: 1}
     _destroyFx: {fileID: 0}
   - _color: 6
-    _sprite: {fileID: 21300000, guid: adc1c204e233e894084682fb72d4cbed, type: 3}
-    _particleColor: {r: 0.44, g: 0.16, b: 0.29, a: 1}
+    _sprite: {fileID: 21300000, guid: 93c935d7d77a69d4cb9b3f1f1557ce1e, type: 3}
+    _particleColor: {r: 0.6666667, g: 0.7607844, b: 0.6156863, a: 1}
     _destroyFx: {fileID: 0}
   _boosters:
   - _booster: 1

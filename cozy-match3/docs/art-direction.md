@@ -2,9 +2,10 @@
 
 | | |
 |---|---|
-| Версия | 0.1 |
+| Версия | 0.2 |
 | Дата | 2026-09-10 |
 | Статус | принят. Решение A1 (§2.5) внесено в `architecture.md` §17, задачи T27–T32 заведены в `docs/tasks.md` (волна W5) |
+| Изменения 0.2 | Ревизия §7 по расхождениям с реестрами §4–§6 и с кодом. Разведены `{FRAME}` и `{FRAME_UI}` — наклон 10° больше не попадает в плоский UI; введены оговорки `{NEG, except …}` (лист-якорь и спрайт-листы больше не требуют «не больше одного объекта», рамка подсказки — «никаких рамок»); в промпте клетки закрыт фон под кеинг; у листов убраны межкадровые зазоры, ломавшие `Grid By Cell Size`. Дописаны промпты A20, B10–B13, F08, F09, D03, D06, D08, D10. В §8.1 добавлена постобработка UI и иконок, в §2.2 — акцент подсказки |
 | Автор | m.klyushin |
 | Основание | `docs/gdd-match3.md` §7, §11; `docs/architecture.md` §17, §18; референсы `docs/art/ref-01-title.png`, `docs/art/ref-02-level.png` |
 | Назначение | Контракт на **всю** графику сборки: что рисуем, в каком стиле, под какие технические ограничения, какими промптами генерируем в Nano Banana 2 и как принимаем |
@@ -103,6 +104,7 @@
 | Подложка поля | `#DFC7A6` + контур `#8B6B55` | панель под сеткой (группа B) |
 | Акцент «успех» | `#7FB069` | галочка закрытой цели |
 | Акцент «тревога» | `#D9646E` | счётчик ходов ≤ 5 |
+| Акцент «подсказка» | `#FFF3DC` штрих + `#FFC978` свечение | маркер и стрелка подсказки, тёплые свечения FX |
 
 **Фишки.** Шесть предметов: у каждого свой силуэт **и** своя ступень светлоты. Шаг ≥ 8 единиц L\* —
 это и есть страховка требования §17 `architecture.md` «различимы в обесцвеченном виде».
@@ -355,7 +357,7 @@ _particleColor:  C1 #F6B7C7 · C2 #5E93C4 · C3 #F8DC96 · C4 #9CBF96 · C5 #E08
 | B15 | `T_Fx_HintArrow_2D.png` | 256² | Стрелка свапа, носом **вправо** (код поворачивает) | `HintView._arrow` — §4.3 |
 | B16 | `T_Mascot_CatSleep_2D.png` | 512² | Спящий рыжий кот на коврике | новый `Image` в `Game.unity` |
 
-**9-slice.** Для B03–B05, B10–B12 в `Sprite Editor` обязательно выставить `Border`, иначе углы
+**9-slice.** Для A20, B03–B05, B10–B12 в `Sprite Editor` обязательно выставить `Border`, иначе углы
 растянутся. Сегодня у `T_Ui_Panel_2D` бордера нет — это отдельный дефект внешнего вида попапов,
 чинится в тот же заход.
 
@@ -539,12 +541,18 @@ D05 и D07 можно не делать вовсе: шлейф ракеты и �
 2. **Сначала лист, потом поштучно.** Первый проход — все шесть фишек одной картинкой (§7.3): так
    модель держит единый стиль. Затем **этот лист** подаётся референсом при поштучной перегенерации
    каждой фишки в чистом квадратном кадре. В работу идут поштучные; лист — только якорь стиля.
-3. **Квадрат 1:1, максимальное разрешение.** Даунсемпл до 128 сохраняет форму, апскейл — нет.
+3. **Максимальное разрешение, аспект — из реестра §4.** Авторинг спрайтов геймплея — 256²
+   (§3.2), и просить у модели меньше нельзя: даунсемпл до 256 форму сохраняет, апскейл — нет.
+   Неквадратные ассеты (`Pill`, кнопка, прогресс-бар, логотип) генерируются сразу в своём аспекте:
+   растянутый из квадрата контур перестаёт быть равнотолщинным.
 4. **Фон — плоская магента `#FF00FF`.** Её нет ни в одном ассете палитры, поэтому кеинг (§8.1) не
-   съест края. Прозрачный фон у модели просить не надо: альфа приходит нестабильно.
+   съест края. Прозрачный фон у модели просить не надо: альфа приходит нестабильно. Исключение —
+   свечения и лучи FX (§7.8): у них фон **чёрный**, потому что кеятся они по яркости, а не по цвету.
 5. **Промпты — на английском.** Русская формулировка стиля даёт заметно более рыхлый результат.
    Документ на русском, промпты — нет; это инструмент, а не непоследовательность.
-6. **Один объект на генерацию**, кроме листов §7.3 и §7.9.
+6. **Один объект на генерацию**, кроме листов §7.3 и §7.9. У них запрет на несколько объектов
+   снимается явной оговоркой в промпте (`{NEG, except the single-object rule}`, §7.2) — иначе
+   промпт требует и шесть фишек в сетке, и «не больше одного объекта» одновременно.
 7. **Пары и серии не генерируются по отдельности:**
    - `RocketV` генерируем, `RocketH` получаем поворотом на −90° в §8.1 — так пара гарантированно
      из одного объекта;
@@ -566,14 +574,29 @@ only, under 6% contrast. Warm cream colour world. Clean silhouette that stays
 readable when scaled down to 64x64 pixels.
 ```
 
-**`{FRAME}`**
+**`{FRAME}`** — объекты поля: фишки, бустеры, коробки, блокер. У фона и маскота (§7.7) кадр свой,
+там он описан в самом промпте.
 
 ```
-One single object, centred, occupying about 80% of a square 1:1 frame, with an
+One single object, centred, occupying about 84% of a square 1:1 frame, with an
 even empty margin on all four sides. The object must not touch the frame edge.
 Perfectly flat solid magenta background #FF00FF, absolutely uniform, with
 nothing cast onto it - no shadow, no glow, no vignette. Front-on view with a
 slight 10-degree top-down tilt, no perspective distortion.
+```
+
+**`{FRAME_UI}`** — всё, что живёт в HUD: иконки, галочка, маркер и стрелка подсказки, панели,
+кнопки, прогресс-бар. Отличие одно, но принципиальное: **никакого наклона**. Наклон 10° у
+`{FRAME}` делает объект «предметом на столе», а элемент интерфейса обязан лежать в плоскости
+экрана, иначе круговая стрелка «Заново» и галочка цели читаются как перекошенные.
+
+```
+One single flat UI element, dead-on front view with no tilt and no perspective
+at all, as if drawn straight onto the screen plane. Centred, with an even empty
+margin on all four sides; the element must not touch the frame edge. Perfectly
+flat solid magenta background #FF00FF, absolutely uniform, with nothing cast
+onto it - no shadow, no glow, no vignette. Frame aspect and how much of it the
+element fills are stated in the prompt below.
 ```
 
 **`{NEG}`**
@@ -585,7 +608,18 @@ harsh contrast; busy background; frames or borders; more than one object;
 cropping; motion blur; outline gaps; multiple light sources.
 ```
 
-Ниже эти блоки обозначены как `{STYLE}`, `{FRAME}`, `{NEG}` — подставляйте текстом.
+Ниже эти блоки обозначены как `{STYLE}`, `{FRAME}`, `{FRAME_UI}`, `{NEG}` — подставляйте текстом.
+
+**Оговорки к `{NEG}`.** Четыре его запрета для части ассетов ложны, поэтому в промптах встречается
+запись `{NEG, except …}`: подставляя блок, **выбросьте из него названную строку**, остальное
+оставьте как есть. Оговорка — не пожелание модели, а инструкция человеку, который собирает промпт.
+
+| Запись | Что выбросить | Где применяется и почему |
+|---|---|---|
+| `{NEG, except the shadow rule}` | «drop shadow or cast shadow on the background» | Фон комнаты и маскот (§7.7): там мягкая живописная тень нужна |
+| `{NEG, except the single-object rule}` | «more than one object» | Лист-якорь §7.3 и все листы §7.9: в кадре осознанно 6–12 объектов |
+| `{NEG, except the frame rule}` | «frames or borders» | Маркер подсказки и рамка ячейки цели: сам ассет **и есть** рамка |
+| `{NEG, except the text rule}` | «text, letters, numbers, logos» | **Только** логотип Boot-экрана (§7.6). На любом другом ассете текст в растре — брак приёмки, §2.3 п. 6 |
 
 ### 7.3 Фишки
 
@@ -609,7 +643,7 @@ style, line weight and lighting:
 Each object must have a clearly different silhouette from all the others, and a
 clearly different brightness, so the whole set stays distinguishable when
 converted to greyscale.
-{NEG}
+{NEG, except the single-object rule}
 ```
 
 **Поштучно** (референсом подаём лист и оба скриншота):
@@ -791,7 +825,7 @@ Still recognisably the same box, but one hit from collapsing.
 
 ```
 {STYLE, but ignore every colour instruction in it}
-Subject: a ribbon bow tied on the lid of a gift box, drawn as a PURE WHITE
+Subject: a ribbon bow tied on the lid of a cardboard box, drawn as a PURE WHITE
 silhouette (#FFFFFF). Internal detail - the knot, the two loops, the two hanging
 ends - is indicated only with light grey lines no darker than 20% grey. No brown
 outline, no colour of any kind, no shading: this is a flat white mask that will
@@ -802,13 +836,15 @@ spanning about 70% of the frame width; the rest of the frame is flat magenta
 {NEG}
 ```
 
-`T_Element_BoxPip_2D` — **белая маска**:
+`T_Element_BoxPip_2D` — **белая маска**. Кружок заполняет кадр: рамку 30 px ему задаёт префаб
+(§4.1), а не картинка.
 
 ```
 Subject: a simple filled circle in pure white (#FFFFFF) with a slightly thicker
 white ring around it and a narrow transparent gap between circle and ring, drawn
-as a flat mask with no colour and no shading. The circle plus ring fills about
-90% of a square 1:1 frame, centred, on flat magenta #FF00FF.
+as a flat mask with no colour and no shading. The circle plus ring fills the
+whole square 1:1 frame edge to edge, centred, with only a hairline of flat
+magenta #FF00FF left in the corners.
 {NEG}
 ```
 
@@ -825,7 +861,7 @@ object in the whole game set. No cat inside, no soft parts, no fabric.
 {NEG}
 ```
 
-### 7.6 Поле и HUD
+### 7.6 Поле, HUD и Boot-экран
 
 `T_Board_Cell_2D`:
 
@@ -835,7 +871,9 @@ Subject: an empty board cell for a match-3 grid - a softly rounded square tile i
 warm pale beige (#EEDFC8) with a barely visible slightly darker inner edge
 (#E7D4B8) and a faint linen texture. Very low contrast, calm and recessed: game
 pieces will be drawn on top of it and must dominate. No dark brown outline, only
-a soft edge. The tile fills 96% of a square 1:1 frame.
+a soft edge. Dead-on front view, no tilt. The tile fills 96% of a square 1:1
+frame, on a perfectly flat solid magenta #FF00FF background with nothing cast
+onto it - no shadow, no glow, no vignette.
 {NEG}
 ```
 
@@ -846,9 +884,10 @@ a soft edge. The tile fills 96% of a square 1:1 frame.
 Subject: a rounded rectangular wooden panel that will sit behind a match-3 grid -
 warm honey wood (#DFC7A6) with a thick soft brown outline (#8B6B55), gently
 rounded corners of a large uniform radius, a subtle inner bevel and faint wood
-grain. Perfectly symmetrical, flat front view, drawn so it can be sliced as a
-nine-patch: all four corners identical, the edges between them uniform.
-Square 1:1 frame, panel fills 96% of it, background flat magenta #FF00FF.
+grain. Perfectly symmetrical, drawn so it can be sliced as a nine-patch: all four
+corners identical, the edges between them uniform.
+{FRAME_UI}
+Square 1:1 frame, panel fills 96% of it.
 {NEG}
 ```
 
@@ -858,9 +897,12 @@ Square 1:1 frame, panel fills 96% of it, background flat magenta #FF00FF.
 {STYLE}
 Subject: a horizontal pill-shaped UI plate - cream fill (#FBF0DE) with a thick
 soft brown outline (#8B6B55), fully rounded left and right ends, a very soft
-inner highlight along the top. Perfectly symmetrical left to right, flat front
-view, nothing inside it - it will hold text. Frame is 8:3 landscape, the pill
-fills 94% of it, background flat magenta #FF00FF.
+inner highlight along the top. Perfectly symmetrical left to right, nothing
+inside it - it will hold text. Drawn so it can be sliced as a nine-patch: the two
+rounded ends identical mirror images, the straight stretch between them perfectly
+uniform along its whole length.
+{FRAME_UI}
+Frame is 8:3 landscape, the pill fills 94% of it.
 {NEG}
 ```
 
@@ -871,8 +913,10 @@ fills 94% of it, background flat magenta #FF00FF.
 Subject: a cosy game button - a rounded rectangle with cream fill (#FBF0DE), a
 thick soft brown outline (#8B6B55), a soft warm inner shadow along the bottom
 edge giving it a slight pillow thickness, and a gentle highlight along the top
-edge. Nothing written on it, no icon. Frame is 8:3 landscape, the button fills
-94% of it, background flat magenta #FF00FF.
+edge. Nothing written on it, no icon. Drawn so it can be sliced as a nine-patch:
+all four corners identical, the edges between them uniform.
+{FRAME_UI}
+Frame is 8:3 landscape, the button fills 94% of it.
 {NEG}
 ```
 
@@ -882,12 +926,16 @@ edge. Nothing written on it, no icon. Frame is 8:3 landscape, the button fills
 {STYLE}
 Subject: a round cosy game button - a circle with cream fill (#FBF0DE), a thick
 soft brown outline (#8B6B55), a soft inner shadow at the bottom and a highlight
-at the top. Completely empty inside: no icon, no text. Fills 92% of a square 1:1
-frame on flat magenta #FF00FF.
+at the top. Completely empty inside: no icon, no text.
+{FRAME_UI}
+Square 1:1 frame, the button fills 92% of it.
 {NEG}
 ```
 
-Иконки `T_Ui_IconRestart_2D`, `T_Ui_IconCheats_2D`, `T_Ui_Tick_2D`:
+Иконки `T_Ui_IconRestart_2D`, `T_Ui_IconCheats_2D`, `T_Ui_Tick_2D`. Поля у них шире, чем у
+геймплея: `Restart` и `Cheats` лежат поверх круглой кнопки и не должны налезать на её контур, а
+галочка рендерится как бейдж 40 × 40 (`GameSceneAuthoring.cs:185`) — при обрезке вплотную она
+коснётся соседнего текста.
 
 ```
 {STYLE}
@@ -895,7 +943,8 @@ Subject: a single flat icon in warm dark brown (#5B3A2E), drawn with the same
 rounded hand-drawn feel as the rest of the set, soft rounded line caps, uniform
 stroke weight: <ICON>.
 Solid single colour, no fill variation, no shading, no outline of another colour.
-{FRAME}
+{FRAME_UI}
+Square 1:1 frame, the icon fills 76% of it.
 {NEG}
 
 <ICON>:
@@ -913,9 +962,10 @@ Solid single colour, no fill variation, no shading, no outline of another colour
 Subject: a highlight frame for one board cell - a rounded square outline made of
 short warm cream dashes (#FFF3DC) with a soft golden glow behind them (#FFC978),
 completely hollow in the middle so the game piece underneath stays fully visible.
-Only the frame is drawn; the centre is empty. Fills 96% of a square 1:1 frame on
-flat magenta #FF00FF.
-{NEG}
+Only the dashed cell outline is drawn; the centre is empty magenta, not a fill.
+{FRAME_UI}
+Square 1:1 frame, the dashed outline fills 96% of it.
+{NEG, except the frame rule}
 ```
 
 `T_Fx_HintArrow_2D`:
@@ -925,9 +975,97 @@ flat magenta #FF00FF.
 Subject: a short thick arrow pointing to the RIGHT, warm cream (#FFF3DC) with a
 soft brown outline (#5B3A2E), a rounded triangular head and a stubby rounded
 tail, with a faint golden glow around it. Simple and unmistakable at small size.
-{FRAME}
+{FRAME_UI}
+Square 1:1 frame, the arrow fills 80% of it.
 {NEG}
 ```
+
+`T_Ui_Panel_2D` (A20, **белая маска**, 9-slice): попапы и кнопки красятся кодом
+(`GameSceneAuthoring.cs:296`, `PrefabAuthoring.cs:127`), поэтому спрайт обязан быть белым — цветная
+маска даст перемноженный грязный оттенок, как и у банта (§3.2).
+
+```
+{STYLE, but ignore every colour instruction in it}
+Subject: a rounded rectangular UI panel plate drawn as a PURE WHITE silhouette
+(#FFFFFF): a filled white rounded rectangle with large uniform corner radius and
+a slightly brighter 1-2% inner edge. No brown outline, no colour of any kind, no
+shading, no texture, nothing inside it - this is a flat white mask that will be
+tinted by the game engine. Drawn so it can be sliced as a nine-patch: all four
+corners identical, the edges between them perfectly uniform.
+{FRAME_UI}
+Square 1:1 frame, the plate fills 96% of it.
+{NEG}
+```
+
+`T_Ui_GoalSlot_2D` (B10, 160², 9-slice):
+
+```
+{STYLE}
+Subject: an empty frame for one level-goal slot - a small rounded square window
+with a cream fill (#FBF0DE) and a thick soft brown outline (#8B6B55), a faint
+inner shadow just inside the outline so the slot reads as recessed. Completely
+empty inside: the goal icon and its counter are drawn on top by the game. Calm
+and low contrast - the icon inside must dominate. Drawn so it can be sliced as a
+nine-patch: all four corners identical, the edges between them uniform.
+{FRAME_UI}
+Square 1:1 frame, the slot fills 94% of it.
+{NEG, except the frame rule}
+```
+
+`T_Ui_ProgressTrack_2D` и `T_Ui_ProgressFill_2D` (B11, B12, 256 × 48, 9-slice) — генерировать
+**парой в одном аспекте**, причём заливку — **с готовым треком в качестве референс-изображения**:
+она ложится внутрь трека, и разный радиус скругления читается как брак. Трек:
+
+```
+{STYLE}
+Subject: an empty horizontal progress bar track - a long thin capsule with fully
+rounded ends, warm sand fill (#DFC7A6) with a thick soft brown outline (#8B6B55)
+and a soft inner shadow along the top edge so it reads as a groove. Completely
+empty inside. Drawn so it can be sliced as a nine-patch: the two rounded ends
+identical mirror images, the straight stretch between them perfectly uniform.
+{FRAME_UI}
+Frame is 16:3 landscape, the track fills 94% of its width and 80% of its height.
+{NEG}
+```
+
+Заливка:
+
+```
+{STYLE}
+Subject: the fill bar that sits inside the progress groove of the reference
+image - the same capsule shape, slightly smaller, with no outline at all: a solid
+warm honey-amber body (#F2A03F) with a soft cream highlight (#FBF0DE) running
+along its upper half and fully rounded ends. Nothing else in the frame. Drawn so
+it can be sliced as a nine-patch: the two rounded ends identical mirror images,
+the straight stretch between them perfectly uniform.
+{FRAME_UI}
+Frame is 16:3 landscape, the fill bar fills 90% of its width and 64% of its
+height.
+{NEG}
+```
+
+`T_Ui_LogoBoot_2D` (B13, 1024 × 512) — **единственный ассет, которому §2.3 разрешает текст.**
+
+Название в промпт подставляется вместо `<TITLE>`; на сегодня его нет — `productName` в
+`ProjectSettings` всё ещё `match3-test`. **Имя референсной игры из §2.1 брать нельзя**: это чужой
+продукт, а не наш заголовок. До того как заказчик назовёт игру, генерировать логотип
+преждевременно — Boot-экран живёт с текстовым заголовком, и это не блокер.
+
+```
+{STYLE}
+Subject: a cosy game logo lockup for a cat-themed match-3 puzzle: the words
+"<TITLE>" set in one or two lines in a soft rounded hand-lettered display face,
+warm dark brown letters (#5B3A2E) with a thick cream outline (#FBF0DE) around the
+whole lockup and a small ball of pink yarn (#F6B7C7) with a loose thread resting
+against the lower right corner of the lettering. The lettering must be perfectly
+legible, evenly spaced and spelled exactly as given, with no extra words. No
+other objects.
+{FRAME_UI}
+Frame is 2:1 landscape, the lockup fills 92% of its width.
+{NEG, except the text rule}
+```
+
+Оговорка `{NEG, except the text rule}` (§7.2) применяется **только** здесь.
 
 ### 7.7 Фон и маскот
 
@@ -978,6 +1116,9 @@ because this asset sits on the room background, not on the board.
 
 ### 7.8 Текстуры VFX
 
+Коды из §5.3: F01–F05 — это `T_Fx_Glow_2D`, `_Warm`, `_Blast`, `_Prism`, `_Sky`; F06–F09 —
+`T_Fx_Beam_2D`, `T_Fx_Ring_2D`, `T_Fx_Star_2D`, `T_Fx_PawPuff_2D`.
+
 Общая рамка для F01–F05:
 
 ```
@@ -1004,7 +1145,9 @@ photographic bokeh.
                    horizontally than vertically
 ```
 
-F06 и F07 — для расширенного набора §5.4:
+F06–F09 — для расширенного набора §5.4. У них есть форма, поэтому общая рамка выше не годится: она
+формой запрещает («no shape or motif inside it»). Фон и способ кеинга те же — чёрный, по яркости
+(§8.1):
 
 ```
 F06: Subject: a horizontal light beam sprite for a 2D game - a bright white core
@@ -1017,12 +1160,37 @@ F07: Subject: a shockwave ring sprite for a 2D game - a single thin bright ring,
 white on its inner edge and warm coral (#FF9A5C) on its outer edge, completely
 transparent inside and outside the ring, with a soft blur on both edges.
 Perfectly circular and centred. Square 1:1 frame, background black #000000.
+
+F08: Subject: a four-point sparkle sprite for a 2D game - two crossed soft light
+streaks, the vertical one slightly longer than the horizontal one, meeting in a
+small white-hot core, warm cream (#FFF3DC) fading to fully transparent well
+before the frame edge, with a faint round halo around the core. Perfectly
+symmetrical about both axes. Square 1:1 frame, background black #000000.
+
+F09: Subject: a cat paw-print puff sprite for a 2D game - a soft round cloud
+puff in cream and white (#FBF0DE) with a slightly brighter core, and a paw print
+(four toe beans plus one large pad) reading as a soft brighter shape inside the
+cloud, its edges dissolving into the puff. Warm, cosy and unmistakable at small
+size; no outline, no hard edge. Square 1:1 frame, background black #000000.
 ```
+
+`Avoid` для F06–F09 тот же, что у F01–F05, **минус** запрет на форму: «Avoid: text, logos, hard
+edges, lens flares, photographic bokeh, geometric precision, banding.»
 
 ### 7.9 Спрайт-листы анимаций
 
 Общее правило: просить **сетку с равными ячейками** и описывать, что происходит в **каждом** кадре.
 Модель заметно надёжнее держит покадровую логику, когда кадры перечислены по одному.
+
+**Никаких зазоров между кадрами.** `Sprite Editor → Slice → Grid By Cell Size` (§8.2 п. 3) режет
+лист по ровному шагу от левого верхнего угла: любой межкадровый зазор сдвигает все кадры, кроме
+первого, и анимация приезжает нарезанной по стыкам. Ячейки обязаны стоять вплотную, а внешний край
+листа — быть краем крайних ячеек. Пустое поле вокруг эффекта делается **внутри** ячейки, а не
+зазором. Если модель зазоры всё же поставила — лист под удаление, обрезкой это не спасается.
+
+Промпты D02, D03, D04, D06, D08, D09, D10 приводятся **только списком кадров**: каркас — начало
+промпта D01 с заменой сетки, размера ячейки и описания эффекта, и та же концовка вместе с
+`{NEG, except the single-object rule}`.
 
 `T_Fx_ChipPuff_Sheet_2D` (D01):
 
@@ -1030,9 +1198,11 @@ Perfectly circular and centred. Square 1:1 frame, background black #000000.
 {STYLE, applied to an effect rather than an object}
 Subject: an 8-frame animation sprite sheet for a puff effect, laid out as a
 4-columns x 2-rows grid of equal square cells, read left to right then top to
-bottom, on a flat magenta #FF00FF background with thin magenta gutters between
-cells. The effect is a soft cream-and-white cloud puff with a few small
-four-point sparkles.
+bottom. The cells are packed edge to edge with NO gutters, NO separators and NO
+outer margin: cell borders are invisible and the outer edge of the sheet is the
+outer edge of the corner cells. Flat magenta #FF00FF background inside every
+cell. The effect is a soft cream-and-white cloud puff with a few small four-point
+sparkles.
 Frame 1: a small bright dot at the centre.
 Frame 2: the dot has grown into a small round puff with two tiny sparkles.
 Frame 3: the puff is at full size, four sparkles flying outward.
@@ -1043,7 +1213,7 @@ Frame 7: only faint wisps and one last sparkle remain.
 Frame 8: almost empty, a barely visible trace.
 Every cell must be exactly the same size and the effect must stay centred in its
 cell.
-{NEG}
+{NEG, except the single-object rule}
 ```
 
 `T_Fx_BoxBreak_Sheet_2D` (D02) — тот же каркас, содержание кадров:
@@ -1057,6 +1227,32 @@ Frame 5: shards tumble and start to shrink, the dust cloud is at its widest.
 Frame 6: shards small and fading, dust thinning.
 Frame 7: only faint dust and two tiny shards.
 Frame 8: almost empty.
+```
+
+`T_Fx_BoosterPop_Sheet_2D` (D03) — сетка 3 × 2, 6 кадров, эффект: «a bright cream-and-amber flash
+with four short rays». Играется 0.06 с под появление бустера, поэтому кадры — вспышка, а не
+история: рисунок бустера в них не входит, он и так под эффектом.
+
+```
+Frame 1: a tiny bright cream core with four very short rays.
+Frame 2: the core flares to full size, rays shoot out to their full length.
+Frame 3: brightest frame - a wide amber halo around the white core.
+Frame 4: the halo starts to fade, rays shorten.
+Frame 5: only a soft amber ring remains, rays gone.
+Frame 6: a faint trace, almost empty.
+```
+
+`T_Fx_CxMorph_Sheet_2D` (D06) — сетка 3 × 2, 6 кадров, эффект: «small cream-white sparks circling
+one cell». Красить нельзя: цвет ящика уже несёт бант, а `Prepare` тинтит эффект белым (§5.1 п. 3),
+поэтому искры **нейтральные** — они обязаны читаться над всеми шестью цветами.
+
+```
+Frame 1: four tiny cream sparks close together at the centre.
+Frame 2: the sparks spread outward along a circle, each with a short trail.
+Frame 3: eight sparks now, spread widest, brightest frame.
+Frame 4: sparks continue around the circle and begin to shrink.
+Frame 5: two or three faint sparks left, trails gone.
+Frame 6: one last speck, almost empty.
 ```
 
 `T_Fx_BombBlast_Sheet_2D` (D04) — сетка 5 × 2, 10 кадров:
@@ -1074,6 +1270,25 @@ Frame 9: smoke dispersing.
 Frame 10: almost empty.
 ```
 
+Три листа маскота (D08–D10) — сетка ячейками **512**, кот в каждой ячейке в одном и том же
+масштабе и в одной и той же точке: он лежит на фоне комнаты, и «дрожание» позы между кадрами
+читается как подёргивание всего кота. Референсом подаём готовый `T_Mascot_CatSleep_2D`.
+
+`T_Mascot_CatBreath_Sheet_2D` (D08) — сетка 4 × 3, 12 кадров, **бесшовный луп**: кадр 12 обязан
+переходить в кадр 1 без скачка, поэтому вдох и выдох занимают по шесть кадров и амплитуда
+минимальна.
+
+```
+Frames 1-3: the sleeping ginger cat inhales - the flank rises very slightly and
+the body lengthens by a hair.
+Frames 4-6: the inhale peaks, then the flank begins to settle.
+Frames 7-9: the cat exhales - the flank sinks slightly below the resting line.
+Frames 10-12: the body returns exactly to the pose of frame 1, and the tail tip
+finishes one slow small twitch.
+The motion must be tiny: nothing but the flank, the tail tip and one ear moves,
+and the outline stays the same everywhere else.
+```
+
 `T_Mascot_CatHappy_Sheet_2D` (D09) — сетка 4 × 3, 12 кадров:
 
 ```
@@ -1087,6 +1302,22 @@ Frame 12: the cat lifts one front paw in a small wave.
 The cat must be identical in shape and colour in every frame - only the pose
 changes.
 ```
+
+`T_Mascot_CatSad_Sheet_2D` (D10) — сетка 4 × 2, 8 кадров. Проигрывается на проигрыше, поэтому
+границу «расстроен, но не наказан» держим явно: кот огорчён, не испуган и не плачет.
+
+```
+Frames 1-2: the ginger cat is curled up asleep, exactly as in the reference.
+Frames 3-4: both ears flatten backwards and the eyes open a little, downcast.
+Frames 5-6: the cat tucks its nose under one paw and the tail curls in tighter.
+Frames 7-8: the cat settles into a small sad huddle and holds that pose, with a
+single tiny sigh puff of cream mist above its nose in the last frame.
+The cat must stay cosy and cute - disappointed, never frightened, never crying.
+```
+
+**D05 и D07 промптов не имеют осознанно.** §6.3 разрешает их не делать вовсе: шлейф ракеты и
+перемешивание уже читаются твинами, и лист здесь добавит вес атласа, а не выразительность. Если
+всё-таки понадобятся — каркас берётся из D01, сетки 4 × 1 и 3 × 2 соответственно.
 
 ---
 
@@ -1121,6 +1352,17 @@ magick T_Booster_RocketV_2D.png -rotate -90 T_Booster_RocketH_2D.png
 magick raw_bow.png -fuzz 12% -transparent "#FF00FF" -resize 256x256! T_Element_BoxBow_2D.png
 ```
 
+Ассеты UI — целевой размер из реестра §4.1–§4.2, и у **9-slice** (A20, B03–B05, B10–B12) прозрачных
+полей не бывает: спрайт тянется кодом, а отступы задаёт `Border`. Поэтому обрезаем вплотную и
+тянем в точный размер, без `-extent`:
+
+```bash
+magick raw_pill.png -fuzz 12% -transparent "#FF00FF" -trim +repage -resize 256x96! T_Ui_Pill_2D.png
+```
+
+Иконки (B07–B09) — наоборот, с полями: `-resize 194x194` и `-extent 256x256`, как у геймплея, иначе
+галочка и стрелка лягут в обрез своего 40-пиксельного слота.
+
 Свечения FX кеятся по **яркости**, а не по цвету (фон был чёрный): нужна альфа = яркость при
 сохранённом RGB. Способ не принципиален (ImageMagick `-compose CopyOpacity` с серой копией либо
 ручное «Screen»-извлечение в редакторе), принципиален результат.
@@ -1142,7 +1384,9 @@ magick in.png -channel A -morphology Erode Diamond:1 +channel out.png
    FX-свечений (§3.2). Если тип не `Sprite`, Unity импортировал файл до настройщика — выставить
    вручную и `Apply`.
 3. Спрайт-листы (§6.3): `Sprite Mode = Multiple`, `Sprite Editor → Slice → Grid By Cell Size`.
-4. 9-slice (B03–B05, B10–B12): в `Sprite Editor` выставить `Border`, иначе углы растянутся.
+   Если первый кадр сел ровно, а последние съехали — в листе зазоры между ячейками (§7.9), лист
+   перегенерировать.
+4. 9-slice (A20, B03–B05, B10–B12): в `Sprite Editor` выставить `Border`, иначе углы растянутся.
 5. Обновить `_particleColor` у всех шести фишек (§2.2). Это не косметика: поле красит банты
    цветных ящиков.
 6. Собрать `SA_Gameplay.spriteatlas`: 2048², `Padding = 16`, `Tight Packing` выключен (§3.3).

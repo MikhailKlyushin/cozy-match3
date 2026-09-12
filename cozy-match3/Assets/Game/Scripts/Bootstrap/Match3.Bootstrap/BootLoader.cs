@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using Match3.Core;
+using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -14,7 +15,7 @@ namespace Match3.Bootstrap
     /// </summary>
     public sealed class BootLoader : MonoBehaviour
     {
-        [SerializeField] private Text _progressLabel;
+        [SerializeField] private TMP_Text _progressText;
         [SerializeField] private Image _progressFill;
         [SerializeField] private string _gameSceneName = "Game";
 
@@ -66,9 +67,9 @@ namespace Match3.Bootstrap
                 _progressFill.fillAmount = Mathf.Clamp01(normalized);
             }
 
-            if (_progressLabel != null)
+            if (_progressText != null)
             {
-                _progressLabel.text = Mathf.RoundToInt(Mathf.Clamp01(normalized) * 100f) + "%";
+                _progressText.text = Mathf.RoundToInt(Mathf.Clamp01(normalized) * 100f) + "%";
             }
         }
 
