@@ -1,5 +1,6 @@
 #if MATCH3_CHEATS
 using Match3.Cheats;
+using TMPro;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
@@ -83,7 +84,7 @@ namespace Match3.EditorTools
             RectTransform rect = LevelContextAuthoring.CreateStretched("GridOverlay", parent);
             RectTransform labelRoot = LevelContextAuthoring.CreateStretched("LabelRoot", rect);
 
-            Text template = PrefabAuthoring.CreateText("LabelTemplate", labelRoot, "(0, 0)", 22);
+            TextMeshProUGUI template = PrefabAuthoring.CreateText("LabelTemplate", labelRoot, "(0, 0)", 22);
             template.color = new Color(1f, 1f, 0.6f, 0.85f);
             var templateRect = (RectTransform)template.transform;
             templateRect.anchorMin = new Vector2(0.5f, 0.5f);
@@ -120,12 +121,12 @@ namespace Match3.EditorTools
 
             _cursor = -20f;
 
-            Text title = AddLabel(windowRect, "Title", "Читы", 40);
+            TextMeshProUGUI title = AddLabel(windowRect, "Title", "Читы", 40);
             Button close = AddButton(windowRect, "CloseButton", "Закрыть");
 
-            InputField levelInput = AddInput(windowRect, "LevelInput", "Номер уровня");
+            TMP_InputField levelInput = AddInput(windowRect, "LevelInput", "Номер уровня");
             Button goTo = AddButton(windowRect, "GoToLevelButton", "Перейти");
-            Text levelStatus = AddLabel(windowRect, "LevelStatus", string.Empty, 26);
+            TextMeshProUGUI levelStatus = AddLabel(windowRect, "LevelStatus", string.Empty, 26);
 
             Button win = AddButton(windowRect, "WinLevelButton", "Выиграть уровень");
             Button lose = AddButton(windowRect, "LoseLevelButton", "Проиграть уровень");
@@ -136,11 +137,11 @@ namespace Match3.EditorTools
             Button rainbow = AddButton(windowRect, "RainbowBoosterButton", "Радужный шар");
             Button airplane = AddButton(windowRect, "AirplaneBoosterButton", "Самолётик");
             Button disarm = AddButton(windowRect, "DisarmBoosterButton", "Убрать выбор");
-            Text armedLabel = AddLabel(windowRect, "ArmedBoosterLabel", string.Empty, 26);
+            TextMeshProUGUI armedLabel = AddLabel(windowRect, "ArmedBoosterLabel", string.Empty, 26);
             Image armedIcon = AddIcon(windowRect, "ArmedBoosterIcon");
 
-            Text seedLabel = AddLabel(windowRect, "SeedLabel", "Seed:", 26);
-            InputField seedInput = AddInput(windowRect, "SeedInput", "Seed");
+            TextMeshProUGUI seedLabel = AddLabel(windowRect, "SeedLabel", "Seed:", 26);
+            TMP_InputField seedInput = AddInput(windowRect, "SeedInput", "Seed");
             Button applySeed = AddButton(windowRect, "ApplySeedButton", "Применить");
             Button restart = AddButton(windowRect, "RestartAttemptButton", "Заново");
 
@@ -201,12 +202,12 @@ namespace Match3.EditorTools
             return rect;
         }
 
-        private static Text AddLabel(RectTransform parent, string name, string content, int size)
+        private static TextMeshProUGUI AddLabel(RectTransform parent, string name, string content, int size)
         {
             RectTransform row = NextRow(parent, name, size + 14f);
-            Text text = PrefabAuthoring.CreateText("Text", row, content, size);
+            TextMeshProUGUI text = PrefabAuthoring.CreateText("Text", row, content, size);
             Stretch((RectTransform)text.transform);
-            text.alignment = TextAnchor.MiddleLeft;
+            text.alignment = TextAlignmentOptions.Left;
             return text;
         }
 
@@ -233,7 +234,7 @@ namespace Match3.EditorTools
             return button;
         }
 
-        private static InputField AddInput(RectTransform parent, string name, string placeholder)
+        private static TMP_InputField AddInput(RectTransform parent, string name, string placeholder)
         {
             RectTransform row = NextRow(parent, name, RowHeight);
 
@@ -242,20 +243,30 @@ namespace Match3.EditorTools
             Stretch((RectTransform)fieldGo.transform);
             fieldGo.GetComponent<Image>().color = new Color(1f, 1f, 1f, 0.12f);
 
-            Text text = PrefabAuthoring.CreateText("Text", (RectTransform)fieldGo.transform, string.Empty, 30);
-            Stretch((RectTransform)text.transform);
-            text.alignment = TextAnchor.MiddleLeft;
-            text.supportRichText = false;
+            // TMP_InputField reads its viewport rect without a null check, so the masked area is
+            // built here rather than left to whoever opens the prefab.
+            var viewportGo = new GameObject("TextArea", typeof(RectTransform), typeof(RectMask2D));
+            viewportGo.transform.SetParent(fieldGo.transform, false);
+            var viewport = (RectTransform)viewportGo.transform;
+            Stretch(viewport);
+            viewport.offsetMin = new Vector2(10f, 0f);
+            viewport.offsetMax = new Vector2(-10f, 0f);
 
-            Text hint = PrefabAuthoring.CreateText("Placeholder", (RectTransform)fieldGo.transform, placeholder, 28);
+            TextMeshProUGUI text = PrefabAuthoring.CreateText("Text", viewport, string.Empty, 30);
+            Stretch((RectTransform)text.transform);
+            text.alignment = TextAlignmentOptions.Left;
+            text.richText = false;
+
+            TextMeshProUGUI hint = PrefabAuthoring.CreateText("Placeholder", viewport, placeholder, 28);
             Stretch((RectTransform)hint.transform);
-            hint.alignment = TextAnchor.MiddleLeft;
+            hint.alignment = TextAlignmentOptions.Left;
             hint.color = new Color(1f, 1f, 1f, 0.4f);
 
-            var input = fieldGo.AddComponent<InputField>();
+            var input = fieldGo.AddComponent<TMP_InputField>();
+            input.textViewport = viewport;
             input.textComponent = text;
             input.placeholder = hint;
-            input.contentType = InputField.ContentType.IntegerNumber;
+            input.contentType = TMP_InputField.ContentType.IntegerNumber;
             return input;
         }
 
@@ -276,13 +287,13 @@ namespace Match3.EditorTools
             Stretch((RectTransform)check.transform);
             check.color = new Color(0.5f, 0.9f, 0.6f, 1f);
 
-            Text text = PrefabAuthoring.CreateText("Label", row, label, 28);
+            TextMeshProUGUI text = PrefabAuthoring.CreateText("Label", row, label, 28);
             var textRect = (RectTransform)text.transform;
             textRect.anchorMin = new Vector2(0f, 0f);
             textRect.anchorMax = new Vector2(1f, 1f);
             textRect.offsetMin = new Vector2(52f, 0f);
             textRect.offsetMax = Vector2.zero;
-            text.alignment = TextAnchor.MiddleLeft;
+            text.alignment = TextAlignmentOptions.Left;
 
             var toggle = row.gameObject.AddComponent<Toggle>();
             toggle.targetGraphic = boxGo.GetComponent<Image>();

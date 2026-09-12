@@ -2,6 +2,7 @@ using Match3.Bootstrap;
 using Match3.Content;
 using Match3.Hud;
 using Match3.Levels.Authoring;
+using TMPro;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -96,14 +97,14 @@ namespace Match3.EditorTools
             rect.anchoredPosition = new Vector2(30f, -20f);
             rect.sizeDelta = new Vector2(200f, 200f);
 
-            Text value = PrefabAuthoring.CreateText("Value", rect, "0", 96);
+            TextMeshProUGUI value = PrefabAuthoring.CreateText("Value", rect, "0", 96);
             var valueRect = (RectTransform)value.transform;
             valueRect.anchorMin = new Vector2(0f, 0.35f);
             valueRect.anchorMax = new Vector2(1f, 1f);
             valueRect.offsetMin = Vector2.zero;
             valueRect.offsetMax = Vector2.zero;
 
-            Text caption = PrefabAuthoring.CreateText("Caption", rect, "ходов", 32);
+            TextMeshProUGUI caption = PrefabAuthoring.CreateText("Caption", rect, "ходов", 32);
             var captionRect = (RectTransform)caption.transform;
             captionRect.anchorMin = new Vector2(0f, 0f);
             captionRect.anchorMax = new Vector2(1f, 0.35f);
@@ -169,7 +170,7 @@ namespace Match3.EditorTools
             iconRect.sizeDelta = new Vector2(90f, 90f);
             icon.preserveAspect = true;
 
-            Text counter = PrefabAuthoring.CreateText("Counter", rect, "0/0", 34);
+            TextMeshProUGUI counter = PrefabAuthoring.CreateText("Counter", rect, "0/0", 34);
             var counterRect = (RectTransform)counter.transform;
             counterRect.anchorMin = new Vector2(0f, 0f);
             counterRect.anchorMax = new Vector2(1f, 0f);
@@ -235,8 +236,8 @@ namespace Match3.EditorTools
             group.alpha = 0f;
             group.blocksRaycasts = false;
 
-            RectTransform panel = CreatePopupPanel(root, out Text titleLabel, out Button primary,
-                out Text primaryLabel, title, button);
+            RectTransform panel = CreatePopupPanel(root, out TextMeshProUGUI titleLabel, out Button primary,
+                out TextMeshProUGUI primaryLabel, title, button);
 
             GoalsPanelView goals = CreateGoalsPanel(panel, "PopupGoals", new Vector2(0.5f, 0.5f));
 
@@ -253,10 +254,10 @@ namespace Match3.EditorTools
             group.alpha = 0f;
             group.blocksRaycasts = false;
 
-            RectTransform panel = CreatePopupPanel(root, out Text titleLabel, out Button primary,
-                out Text primaryLabel, HudStringsSafe.EndTitle, HudStringsSafe.PlayAgain);
+            RectTransform panel = CreatePopupPanel(root, out TextMeshProUGUI titleLabel, out Button primary,
+                out TextMeshProUGUI primaryLabel, HudStringsSafe.EndTitle, HudStringsSafe.PlayAgain);
 
-            Text last = PrefabAuthoring.CreateText("LastLevel", panel, string.Empty, 40);
+            TextMeshProUGUI last = PrefabAuthoring.CreateText("LastLevel", panel, string.Empty, 40);
             var lastRect = (RectTransform)last.transform;
             lastRect.anchorMin = new Vector2(0f, 0.5f);
             lastRect.anchorMax = new Vector2(1f, 0.5f);
@@ -272,9 +273,9 @@ namespace Match3.EditorTools
 
         private static RectTransform CreatePopupPanel(
             RectTransform root,
-            out Text titleLabel,
+            out TextMeshProUGUI titleLabel,
             out Button primary,
-            out Text primaryLabel,
+            out TextMeshProUGUI primaryLabel,
             string title,
             string button)
         {
@@ -310,7 +311,7 @@ namespace Match3.EditorTools
             primaryRect.pivot = new Vector2(0.5f, 0f);
             primaryRect.anchoredPosition = new Vector2(0f, 50f);
 
-            primaryLabel = primary.GetComponentInChildren<Text>();
+            primaryLabel = primary.GetComponentInChildren<TextMeshProUGUI>();
             return panel;
         }
 
@@ -318,9 +319,9 @@ namespace Match3.EditorTools
             PopupView view,
             CanvasGroup group,
             RectTransform panel,
-            Text title,
+            TMP_Text title,
             Button primary,
-            Text primaryLabel)
+            TMP_Text primaryLabel)
         {
             PrefabAuthoring.Wire(view, "_canvasGroup", group);
             PrefabAuthoring.Wire(view, "_panel", panel);

@@ -20,6 +20,7 @@
         "UniTask",
         "DOTween.Modules",
         "UnityEngine.UI",
+        "Unity.TextMeshPro",
         "Unity.InputSystem",
         "Match3.Cheats"
     ],

@@ -8,10 +8,10 @@ namespace Match3.Tests.EditMode.Levels
 {
     public sealed class LevelValidatorTests
     {
-        /// <summary>Wall block of width 3: the cell under its centre is never refilled (§10.3).</summary>
-        private const string WideWallBlock = @"
+        /// <summary>Hole block of width 3: the cell under its centre is never refilled (§3.4).</summary>
+        private const string WideHoleBlock = @"
             .. .. .. .. ..
-            .. ## ## ## ..
+            .. __ __ __ ..
             .. .. .. .. ..";
 
         private const string Open4X4 = @"
@@ -61,9 +61,9 @@ namespace Match3.Tests.EditMode.Levels
         }
 
         [Test]
-        public void Validate_RejectsDeadPocketUnderAWideWallBlock()
+        public void Validate_RejectsDeadPocketUnderAWideHoleBlock()
         {
-            ValidationReport report = Validate(TestLevel.From(WideWallBlock));
+            ValidationReport report = Validate(TestLevel.From(WideHoleBlock));
 
             Assert.IsTrue(report.HasErrors);
             Assert.IsTrue(Contains(report, ValidationSeverity.Error, "dead pocket"), report.Describe());
@@ -73,7 +73,7 @@ namespace Match3.Tests.EditMode.Levels
         [Test]
         public void Validate_WarnsOnSolidWallBlockWiderThanTwo()
         {
-            ValidationReport report = Validate(TestLevel.From(WideWallBlock));
+            ValidationReport report = Validate(TestLevel.From(WideHoleBlock));
 
             Assert.IsTrue(Contains(report, ValidationSeverity.Warning, "solid wall block of width 3"), report.Describe());
         }
@@ -83,10 +83,24 @@ namespace Match3.Tests.EditMode.Levels
         {
             ValidationReport report = Validate(TestLevel.From(@"
                 .. .. .. .. ..
-                .. ## ## .. ..
+                .. __ __ .. ..
                 .. .. .. .. .."));
 
             Assert.IsFalse(Contains(report, ValidationSeverity.Warning, "solid wall block"), report.Describe());
+            Assert.IsFalse(report.HasErrors, report.Describe());
+        }
+
+        [Test]
+        public void Validate_DoesNotWarnOnABlockerWallOfAnyWidth()
+        {
+            ValidationReport report = Validate(TestLevel.From(@"
+                .. .. .. .. ..
+                .. ## ## ## ..
+                .. .. .. .. .."));
+
+            Assert.IsFalse(
+                Contains(report, ValidationSeverity.Warning, "solid wall block"),
+                "§5.3: the column above a blocker still feeds the cells below it");
             Assert.IsFalse(report.HasErrors, report.Describe());
         }
 

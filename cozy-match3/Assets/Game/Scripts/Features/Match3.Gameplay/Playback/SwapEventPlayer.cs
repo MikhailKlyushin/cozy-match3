@@ -23,8 +23,6 @@ namespace Match3.Gameplay.Playback
             TurnEventKind.SwapRejected
         };
 
-        private readonly List<ChipView> _activeChips = new List<ChipView>(128);
-
         public SwapEventPlayer(IMatch3Logger logger)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -42,8 +40,10 @@ namespace Match3.Gameplay.Playback
                 return;
             }
 
-            if (!TryFindChipAt(context.Board, e.A, out ChipView chipA)
-                || !TryFindChipAt(context.Board, e.B, out ChipView chipB))
+            // The swap events carry cells, not instance ids, so the participants are looked up by
+            // the cell the views themselves claim. Twice per turn, never per cell.
+            if (!context.Board.TryGetChipAt(e.A, out ChipView chipA)
+                || !context.Board.TryGetChipAt(e.B, out ChipView chipB))
             {
                 _logger.Warn("Swap between " + e.A.ToString() + " and " + e.B.ToString()
                              + " has no chip view on one of the cells");
@@ -93,27 +93,5 @@ namespace Match3.Gameplay.Playback
                     DelayType.DeltaTime,
                     PlayerLoopTiming.Update,
                     ct);
-
-        /// <summary>
-        /// The swap events carry cells, not instance ids, and the view indexes chips by id, so the
-        /// two participants are located among the active chip views. Once per turn, never per cell.
-        /// </summary>
-        private bool TryFindChipAt(BoardView board, GridPos cell, out ChipView chip)
-        {
-            _activeChips.Clear();
-            board.GetComponentsInChildren<ChipView>(false, _activeChips);
-
-            for (int i = 0; i < _activeChips.Count; i++)
-            {
-                if (_activeChips[i].Cell == cell)
-                {
-                    chip = _activeChips[i];
-                    return true;
-                }
-            }
-
-            chip = null;
-            return false;
-        }
     }
 }

@@ -52,8 +52,13 @@ namespace Match3.Gameplay
             return new Vector2(originX + p.X * CellSize, originY + p.Y * CellSize);
         }
 
-        /// <summary>Spawn position one cell above the top row, outside the board mask (§11.3).</summary>
-        public Vector2 SpawnPosition(int x) => CellCenter(new GridPos(x, _height));
+        /// <summary>
+        /// Spawn position outside the board mask (§11.3): one cell above the top row, plus one row
+        /// per chip the column already queued this step, so a column refilling three cells releases
+        /// a solid stack instead of three chips from a single point.
+        /// </summary>
+        public Vector2 SpawnPosition(int x, int rowsAbove)
+            => CellCenter(new GridPos(x, _height + rowsAbove));
 
         /// <summary>Inverse of <see cref="CellCenter"/>; used by input and the cheat cell picker.</summary>
         public GridPos PositionToCell(Vector2 local)

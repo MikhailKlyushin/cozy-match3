@@ -5,16 +5,17 @@ using Match3.Board;
 namespace Match3.Levels
 {
     /// <summary>
-    /// Flow graph of GDD §5.3 used by the §3.4 dead-pocket check: a cell is fed either from
-    /// straight above or, when the cell above is impassable, by a diagonal slide from above-left
-    /// or above-right. Only permanent obstructions block — holes and the indestructible element;
-    /// destructible obstacles are passable (§3.4 rule 1).
+    /// Flow graph of GDD §5.3 used by the §3.4 dead-pocket check: a cell is fed from straight
+    /// above, through the run of pass-through cells above it, or - when neither delivers - by a
+    /// diagonal slide from above-left or above-right. Only permanent obstructions block — holes
+    /// and the indestructible element; destructible obstacles are passable (§3.4 rule 1).
     /// </summary>
     public sealed class FlowReachabilityAnalyzer
     {
         private readonly ElementCatalog _catalog;
 
         private bool[] _blocked = Array.Empty<bool>();
+        private bool[] _fallThrough = Array.Empty<bool>();
         private bool[] _reachable = Array.Empty<bool>();
         private TokenGrid _grid;
         private IReadOnlyList<int> _spawners;
@@ -63,6 +64,7 @@ namespace Match3.Levels
             if (_blocked.Length < count)
             {
                 _blocked = new bool[count];
+                _fallThrough = new bool[count];
                 _reachable = new bool[count];
             }
 
@@ -75,7 +77,9 @@ namespace Match3.Levels
             {
                 for (int x = 0; x < _width; x++)
                 {
-                    _blocked[y * _width + x] = LevelTokens.IsPermanentObstruction(grid.TokenAt(x, y), _catalog);
+                    string token = grid.TokenAt(x, y);
+                    _blocked[y * _width + x] = LevelTokens.IsPermanentObstruction(token, _catalog);
+                    _fallThrough[y * _width + x] = LevelTokens.IsFallThrough(token, _catalog);
                 }
             }
 
@@ -107,8 +111,24 @@ namespace Match3.Levels
                 return true;
             }
 
-            // §5.3 rule 2: the diagonal slide is only checked when the cell straight above is
-            // impassable. A passable but unreachable cell above means nothing ever arrives.
+            // §5.3 rule 2: a chip drops through the run of pass-through cells above, so the cell
+            // is fed by its own column whenever anything above that run is reachable.
+            if (_fallThrough[above])
+            {
+                int row = y + 1;
+                while (row < _height && _fallThrough[row * _width + x])
+                {
+                    row++;
+                }
+
+                if (row < _height && _reachable[row * _width + x])
+                {
+                    return true;
+                }
+            }
+
+            // §5.3 rule 3: the diagonal slide is only checked when the cell straight above cannot
+            // take a chip. A passable but unreachable cell above means nothing ever arrives.
             if (!_blocked[above])
             {
                 return false;

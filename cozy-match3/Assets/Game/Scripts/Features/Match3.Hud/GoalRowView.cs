@@ -1,5 +1,6 @@
 using System.Text;
 using DG.Tweening;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -12,7 +13,7 @@ namespace Match3.Hud
     public sealed class GoalRowView : MonoBehaviour
     {
         [SerializeField] private Image _icon;
-        [SerializeField] private Text _counterLabel;
+        [SerializeField] private TMP_Text _counterLabel;
         [SerializeField] private Image _closedTick;
         [SerializeField] private RectTransform _pulseTarget;
         [SerializeField] private float _tickPulseScale = 1.15f;

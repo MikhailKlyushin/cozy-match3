@@ -11,7 +11,8 @@
         "Zenject",
         "UniTask",
         "DOTween.Modules",
-        "UnityEngine.UI"
+        "UnityEngine.UI",
+        "Unity.TextMeshPro"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

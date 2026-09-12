@@ -71,6 +71,15 @@ namespace Match3.Gameplay
             _colorCount = colorCount;
 
             EnsurePools();
+
+            // Elements draw over chips: a chip now drops through a blocker's cell (§5.3) and has
+            // to pass behind it. Nothing in scope shares a cell with a chip otherwise, since every
+            // element on the occupancy axis is OccupiesCell (§7.1).
+            if (_elementLayer != null)
+            {
+                _elementLayer.SetAsLastSibling();
+            }
+
             Layout.SetBoardSize(_width, _height);
             RefreshArea(force: true);
 
@@ -129,8 +138,8 @@ namespace Match3.Gameplay
 
         /// <summary>
         /// Looks a chip up by the cell it believes it occupies. Needed by the events that carry
-        /// cells instead of ids - SwapPerformed, SwapRejected and the hint - and it stays inside
-        /// rule V1 because the cell comes from the view's own state, not from the board.
+        /// cells instead of ids - SwapPerformed and SwapRejected - and it stays inside rule V1
+        /// because the cell comes from the view's own state, not from the board.
         /// </summary>
         public bool TryGetChipAt(GridPos cell, out ChipView chip)
         {
@@ -168,16 +177,28 @@ namespace Match3.Gameplay
         }
 
         /// <summary>
-        /// Spawns one cell above the top row, outside the mask, ready to fall into
-        /// <paramref name="targetCell"/> (§11.3).
+        /// Spawns one chip above the top row, outside the mask, ready to fall into
+        /// <paramref name="targetCell"/> (§11.3). REFILL releases one chip per column per pass, so
+        /// a column that lost three cells spawns three times in one step;
+        /// <paramref name="stackOffset"/> is how many of them are already queued above it, and
+        /// without it they would all start from the same point and fan out on the way down.
         /// </summary>
-        public ChipView SpawnChipAboveBoard(int instanceId, ChipColor color, GridPos targetCell)
+        public ChipView SpawnChipAboveBoard(
+            int instanceId,
+            ChipColor color,
+            GridPos targetCell,
+            int stackOffset)
         {
             ReleaseChipAt(targetCell);
 
             ChipView chip = RentChip();
-            var spawnCell = new GridPos(targetCell.X, _height);
-            chip.SetChip(instanceId, color, spawnCell, Layout.SpawnPosition(targetCell.X), Layout.CellSize);
+            var spawnCell = new GridPos(targetCell.X, _height + stackOffset);
+            chip.SetChip(
+                instanceId,
+                color,
+                spawnCell,
+                Layout.SpawnPosition(targetCell.X, stackOffset),
+                Layout.CellSize);
             Register(instanceId, chip);
             return chip;
         }
@@ -402,10 +423,9 @@ namespace Match3.Gameplay
             for (int i = 0; i < _activeChips.Count; i++)
             {
                 ChipView chip = _activeChips[i];
-                Vector2 position = chip.Cell.Y >= _height
-                    ? Layout.SpawnPosition(chip.Cell.X)
-                    : Layout.CellCenter(chip.Cell);
-                chip.ApplyLayout(position, size);
+                // CellCenter extrapolates past the top row, which is where a chip waiting to fall
+                // in sits, so the spawn stack survives a resolution change like everything else.
+                chip.ApplyLayout(Layout.CellCenter(chip.Cell), size);
             }
         }
 

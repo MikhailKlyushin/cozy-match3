@@ -165,6 +165,83 @@ namespace Match3.Tests.EditMode.Resolve
         }
 
         [Test]
+        public void Blocker_LetsTheColumnAboveItFallThrough()
+        {
+            BoardModel board = BoardFixture.From(@"
+                t1 t2 t3
+                ## ## ##
+                .. .. ..");
+            TranscriptWriter writer = NewWriter(out TurnTranscript transcript);
+
+            new GravityService(board).RunUntilStable(writer);
+
+            Assert.AreEqual(ChipColor.C1, board.GetSlot(new GridPos(0, 0)).Color);
+            Assert.AreEqual(ChipColor.C2, board.GetSlot(new GridPos(1, 0)).Color);
+            Assert.AreEqual(ChipColor.C3, board.GetSlot(new GridPos(2, 0)).Color);
+
+            for (int i = 0; i < transcript.EventCount; i++)
+            {
+                TurnEvent e = transcript.GetEvent(i);
+                if (e.Kind != TurnEventKind.ChipMoved)
+                {
+                    continue;
+                }
+
+                Assert.AreEqual(
+                    ChipMoveFlags.Fall,
+                    e.MoveFlags,
+                    "GDD §5.3: a cell under a blocker is fed by its own column, never by a slide");
+                Assert.AreEqual(e.A.X, e.B.X, "the chip must not change column");
+            }
+        }
+
+        [Test]
+        public void PocketAboveABlocker_FeedsItsOwnColumnBeforeTheNeighbour()
+        {
+            BoardModel board = BoardFixture.From(@"
+                t1 t2 t3
+                ## t4 t5
+                ## t6 ..
+                .. .. ..");
+            TranscriptWriter writer = NewWriter(out TurnTranscript transcript);
+
+            new GravityService(board).RunUntilStable(writer);
+
+            Assert.AreEqual(
+                ChipColor.C1,
+                board.GetSlot(new GridPos(0, 0)).Color,
+                "the chip above the blocker fills the cell under it, not the neighbour column");
+
+            for (int i = 0; i < transcript.EventCount; i++)
+            {
+                TurnEvent e = transcript.GetEvent(i);
+                if (e.Kind != TurnEventKind.ChipMoved || e.B.X != 0)
+                {
+                    continue;
+                }
+
+                Assert.AreEqual(ChipMoveFlags.Fall, e.MoveFlags, "column 0 is fed vertically");
+                Assert.AreEqual(0, e.A.X, "column 0 is fed from column 0");
+            }
+        }
+
+        [Test]
+        public void LiveObstacle_StillBlocksFall_AndIsNotFallenThrough()
+        {
+            BoardModel board = BoardFixture.From(@"
+                t1
+                bx
+                ..");
+            TranscriptWriter writer = NewWriter(out _);
+
+            int moves = new GravityService(board).RunUntilStable(writer);
+
+            Assert.AreEqual(0, moves, "only the blocker is on the pass-through gravity axis (§7.1)");
+            Assert.AreEqual(ChipColor.C1, board.GetSlot(new GridPos(0, 2)).Color);
+            Assert.IsTrue(board.GetSlot(new GridPos(0, 0)).IsEmpty);
+        }
+
+        [Test]
         public void Hole_BlocksFall()
         {
             BoardModel board = BoardFixture.From(@"

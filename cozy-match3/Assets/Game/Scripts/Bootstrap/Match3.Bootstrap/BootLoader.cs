@@ -17,7 +17,7 @@ namespace Match3.Bootstrap
     {
         [SerializeField] private TMP_Text _progressText;
         [SerializeField] private Image _progressFill;
-        [SerializeField] private string _gameSceneName = "Game";
+        [SerializeField] private int _gameSceneIndex = 1;
 
         private readonly CancellationTokenSource _cancellation = new CancellationTokenSource();
 
@@ -39,11 +39,11 @@ namespace Match3.Bootstrap
 
         private async UniTask LoadAsync(CancellationToken ct)
         {
-            AsyncOperation operation = SceneManager.LoadSceneAsync(_gameSceneName, LoadSceneMode.Single);
+            AsyncOperation operation = SceneManager.LoadSceneAsync(_gameSceneIndex, LoadSceneMode.Single);
             if (operation == null)
             {
                 throw new InvalidOperationException(
-                    "Scene '" + _gameSceneName + "' is not in the build settings.");
+                    "Scene index '" + _gameSceneIndex + "' is not in the build settings.");
             }
 
             operation.allowSceneActivation = false;

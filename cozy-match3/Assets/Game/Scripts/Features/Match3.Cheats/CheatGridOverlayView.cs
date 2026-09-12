@@ -2,8 +2,8 @@ using System.Collections.Generic;
 using System.Text;
 using Match3.Core;
 using Match3.Gameplay;
+using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace Match3.Cheats
 {
@@ -16,10 +16,10 @@ namespace Match3.Cheats
     public sealed class CheatGridOverlayView : MonoBehaviour
     {
         [SerializeField] private RectTransform _labelRoot;
-        [SerializeField] private Text _labelPrefab;
+        [SerializeField] private TMP_Text _labelPrefab;
         [SerializeField] private int _labelPrewarm = 64;
 
-        private readonly List<Text> _active = new List<Text>(64);
+        private readonly List<TMP_Text> _active = new List<TMP_Text>(64);
         private readonly StringBuilder _text = new StringBuilder(8);
 
         private CheatLabelPool _pool;
@@ -144,7 +144,7 @@ namespace Match3.Cheats
             {
                 for (int x = 0; x < _width; x++)
                 {
-                    Text label = _pool.Rent();
+                    TMP_Text label = _pool.Rent();
                     label.transform.SetParent(_labelRoot, false);
                     label.text = Caption(x, y);
                     _active.Add(label);

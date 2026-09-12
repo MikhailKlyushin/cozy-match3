@@ -10,30 +10,49 @@ namespace Match3.Tests.EditMode.Levels
     {
         private static readonly int[] NoSpawners = Array.Empty<int>();
 
-        /// <summary>One wall column: the cell under it is fed diagonally (§5.3, §10.3).</summary>
-        private const string WallWidthOne = @"
-            .. .. ..
-            .. ## ..
-            .. .. ..";
-
-        /// <summary>Wall block of width 3: the cell under its centre is a dead pocket (§10.3).</summary>
-        private const string WallWidthThree = @"
+        /// <summary>Blocker wall: the column above it feeds the cells below it (§5.3).</summary>
+        private const string BlockerWallWidthThree = @"
             .. .. .. .. ..
             .. ## ## ## ..
             .. .. .. .. ..";
 
-        [Test]
-        public void IsReachableFromSpawner_FeedsCellUnderASingleWallDiagonally()
-        {
-            TokenGrid grid = Parse(WallWidthOne, 3, 3);
+        /// <summary>Hole block of width 3: the cell under its centre is a dead pocket (§3.4).</summary>
+        private const string HoleWidthThree = @"
+            .. .. .. .. ..
+            .. __ __ __ ..
+            .. .. .. .. ..";
 
-            Assert.IsTrue(Analyzer().IsReachableFromSpawner(grid, NoSpawners, 1, 0));
+        [Test]
+        public void IsReachableFromSpawner_FeedsCellUnderABlockerFromItsOwnColumn()
+        {
+            TokenGrid grid = Parse(@"
+                .. .. ..
+                .. ## ..
+                .. .. ..", 3, 3);
+
+            Assert.IsTrue(
+                Analyzer().IsReachableFromSpawner(grid, NoSpawners, 1, 0),
+                "§5.3: the chip above the blocker drops through it");
         }
 
         [Test]
-        public void IsReachableFromSpawner_ReportsCellUnderAWideWallBlockAsUnreachable()
+        public void IsReachableFromSpawner_AcceptsCellsUnderAWideBlockerWall()
         {
-            TokenGrid grid = Parse(WallWidthThree, 5, 3);
+            TokenGrid grid = Parse(BlockerWallWidthThree, 5, 3);
+            FlowReachabilityAnalyzer analyzer = Analyzer();
+
+            for (int x = 1; x <= 3; x++)
+            {
+                Assert.IsTrue(
+                    analyzer.IsReachableFromSpawner(grid, NoSpawners, x, 0),
+                    "a blocker wall of any width is fed through, never a dead pocket (§3.4), column " + x);
+            }
+        }
+
+        [Test]
+        public void IsReachableFromSpawner_ReportsCellUnderAWideHoleBlockAsUnreachable()
+        {
+            TokenGrid grid = Parse(HoleWidthThree, 5, 3);
             FlowReachabilityAnalyzer analyzer = Analyzer();
 
             Assert.IsFalse(analyzer.IsReachableFromSpawner(grid, NoSpawners, 2, 0), "centre cell has no diagonal source");
@@ -76,7 +95,9 @@ namespace Match3.Tests.EditMode.Levels
             FlowReachabilityAnalyzer analyzer = Analyzer();
 
             Assert.IsTrue(analyzer.IsReachableFromSpawner(grid, NoSpawners, 0, 2), "§3.3 default spawner");
-            Assert.IsTrue(analyzer.IsReachableFromSpawner(grid, NoSpawners, 1, 1), "diagonal slide under the wall");
+            Assert.IsTrue(
+                analyzer.IsReachableFromSpawner(grid, NoSpawners, 1, 1),
+                "nothing sits above the top-row blocker, so the diagonal slide feeds it");
         }
 
         [Test]

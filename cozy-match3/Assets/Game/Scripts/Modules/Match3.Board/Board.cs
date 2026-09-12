@@ -111,6 +111,29 @@ namespace Match3.Board
             return !element.IsAlive || !Catalog.Get(element.Definition).OccupiesCell;
         }
 
+        public bool IsFallThrough(GridPos p)
+        {
+            if (!_cells.Contains(p))
+            {
+                return false;
+            }
+
+            ref readonly Cell cell = ref _cells[p];
+            if (cell.Kind != CellKind.Playable || cell.ElementIndex == Cell.NoElement)
+            {
+                return false;
+            }
+
+            ElementInstance element = _elements[cell.ElementIndex];
+            if (!element.IsAlive)
+            {
+                return false;
+            }
+
+            ElementDefinition definition = Catalog.Get(element.Definition);
+            return definition.OccupiesCell && !definition.BlocksFall;
+        }
+
         public bool IsSpawnerColumn(int x) => x >= 0 && x < _spawnerColumns.Length && _spawnerColumns[x];
 
         /// <summary>Fills <paramref name="buffer"/> (length 4) with in-bounds orthogonal neighbours.</summary>

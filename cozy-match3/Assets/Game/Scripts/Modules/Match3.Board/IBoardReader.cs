@@ -28,6 +28,12 @@ namespace Match3.Board
         /// <summary>Chip or booster that can be swapped or fall.</summary>
         bool IsMovable(GridPos p);
 
+        /// <summary>
+        /// Cell a fall drops straight through: a live element holds it, so no chip can rest
+        /// there, but its gravity axis does not stop the fall (GDD §5.3, §7.1).
+        /// </summary>
+        bool IsFallThrough(GridPos p);
+
         /// <summary>GDD §3.3: default is every column with a non-blocker top cell, unless overridden.</summary>
         bool IsSpawnerColumn(int x);
 

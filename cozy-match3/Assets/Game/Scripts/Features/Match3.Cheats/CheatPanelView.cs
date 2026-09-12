@@ -1,5 +1,6 @@
 using System;
 using Match3.Core;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -13,12 +14,12 @@ namespace Match3.Cheats
     public sealed class CheatPanelView : MonoBehaviour
     {
         [SerializeField] private GameObject _window;
-        [SerializeField] private Text _titleLabel;
+        [SerializeField] private TMP_Text _titleLabel;
         [SerializeField] private Button _closeButton;
 
-        [SerializeField] private InputField _levelInput;
+        [SerializeField] private TMP_InputField _levelInput;
         [SerializeField] private Button _goToLevelButton;
-        [SerializeField] private Text _levelStatusLabel;
+        [SerializeField] private TMP_Text _levelStatusLabel;
 
         [SerializeField] private Button _winLevelButton;
         [SerializeField] private Button _loseLevelButton;
@@ -29,11 +30,11 @@ namespace Match3.Cheats
         [SerializeField] private Button _rainbowBoosterButton;
         [SerializeField] private Button _airplaneBoosterButton;
         [SerializeField] private Button _disarmBoosterButton;
-        [SerializeField] private Text _armedBoosterLabel;
+        [SerializeField] private TMP_Text _armedBoosterLabel;
         [SerializeField] private Image _armedBoosterIcon;
 
-        [SerializeField] private Text _seedLabel;
-        [SerializeField] private InputField _seedInput;
+        [SerializeField] private TMP_Text _seedLabel;
+        [SerializeField] private TMP_InputField _seedInput;
         [SerializeField] private Button _applySeedButton;
         [SerializeField] private Button _restartAttemptButton;
 
@@ -199,23 +200,23 @@ namespace Match3.Cheats
                 return;
             }
 
-            Text label = target.GetComponentInChildren<Text>(true);
+            TMP_Text label = target.GetComponentInChildren<TMP_Text>(true);
             if (label != null)
             {
                 label.text = caption;
             }
         }
 
-        private static void SetPlaceholder(InputField field, string caption)
+        private static void SetPlaceholder(TMP_InputField field, string caption)
         {
             if (field == null)
             {
                 return;
             }
 
-            field.contentType = InputField.ContentType.IntegerNumber;
+            field.contentType = TMP_InputField.ContentType.IntegerNumber;
 
-            if (field.placeholder is Text placeholder)
+            if (field.placeholder is TMP_Text placeholder)
             {
                 placeholder.text = caption;
             }

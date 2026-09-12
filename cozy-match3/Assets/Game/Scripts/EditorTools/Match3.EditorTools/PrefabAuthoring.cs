@@ -1,4 +1,5 @@
 using Match3.Gameplay;
+using TMPro;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
@@ -95,21 +96,27 @@ namespace Match3.EditorTools
             so.ApplyModifiedPropertiesWithoutUndo();
         }
 
-        /// <summary>Legacy uGUI Text: TextMeshPro is deliberately not a dependency of this project.</summary>
-        internal static Text CreateText(string name, Transform parent, string content, int fontSize)
+        /// <summary>
+        /// Every label in the game goes through here, so the font, the wrapping and the auto-size
+        /// switch are decided in one place. Auto-size stays off: the move counter and the goal
+        /// rows change their string every turn, and resizing on each change is the per-turn CPU
+        /// spike §14 forbids.
+        /// </summary>
+        internal static TextMeshProUGUI CreateText(string name, Transform parent, string content, int fontSize)
         {
-            var go = new GameObject(name, typeof(RectTransform), typeof(CanvasRenderer), typeof(Text));
+            var go = new GameObject(name, typeof(RectTransform), typeof(CanvasRenderer), typeof(TextMeshProUGUI));
             go.transform.SetParent(parent, false);
 
-            var text = go.GetComponent<Text>();
+            var text = go.GetComponent<TextMeshProUGUI>();
+            text.font = FontAuthoring.LoadUiFont();
             text.text = content;
             text.fontSize = fontSize;
-            text.alignment = TextAnchor.MiddleCenter;
+            text.alignment = TextAlignmentOptions.Center;
             text.color = Color.white;
             text.raycastTarget = false;
-            text.font = BuiltinFont();
-            text.horizontalOverflow = HorizontalWrapMode.Overflow;
-            text.verticalOverflow = VerticalWrapMode.Overflow;
+            text.enableAutoSizing = false;
+            text.textWrappingMode = TextWrappingModes.NoWrap;
+            text.overflowMode = TextOverflowModes.Overflow;
             return text;
         }
 
@@ -126,7 +133,7 @@ namespace Match3.EditorTools
                 ArtAuthoring.HudArtFolder + "/T_Ui_Panel_2D.png");
             image.color = new Color(0.24f, 0.28f, 0.38f, 1f);
 
-            Text text = CreateText("Label", rect, label, 34);
+            TextMeshProUGUI text = CreateText("Label", rect, label, 34);
             var textRect = (RectTransform)text.transform;
             textRect.anchorMin = Vector2.zero;
             textRect.anchorMax = Vector2.one;
@@ -134,12 +141,6 @@ namespace Match3.EditorTools
             textRect.offsetMax = Vector2.zero;
 
             return go.GetComponent<Button>();
-        }
-
-        internal static Font BuiltinFont()
-        {
-            Font font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            return font != null ? font : AssetDatabase.GetBuiltinExtraResource<Font>("Arial.ttf");
         }
 
         /// <summary>A stretched RectTransform with an Image, the shape every view is built from.</summary>

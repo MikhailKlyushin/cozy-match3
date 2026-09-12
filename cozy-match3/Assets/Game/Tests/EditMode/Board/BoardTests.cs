@@ -9,7 +9,7 @@ namespace Match3.Tests.EditMode.Boards
     public sealed class BoardTests
     {
         [Test]
-        public void Blocker_IsImmovableImpassableAndUndamaged()
+        public void Blocker_IsImmovableFallenThroughAndUndamaged()
         {
             BoardModel board = BoardFixture.From(@"
                 .. .. ..
@@ -18,7 +18,10 @@ namespace Match3.Tests.EditMode.Boards
             var blocker = new GridPos(1, 1);
 
             Assert.IsFalse(board.IsMovable(blocker));
-            Assert.IsFalse(board.IsPassableForFall(blocker));
+            Assert.IsTrue(
+                board.IsPassableForFall(blocker),
+                "§5.3: the blocker takes the cell but a fall drops through it");
+            Assert.IsTrue(board.IsFallThrough(blocker));
             Assert.IsTrue(board.TryGetElement(blocker, out ElementInstance element));
             Assert.IsTrue(element.IsIndestructible);
             Assert.AreEqual(DamageSourceKind.None, board.Catalog.Get(element.Definition).DamageSource);

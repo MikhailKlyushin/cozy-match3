@@ -94,6 +94,25 @@ namespace Match3.Levels
             return catalog.TryResolve(token, out ElementDefinition definition) && definition.IsIndestructible;
         }
 
+        /// <summary>
+        /// GDD §5.3 rule 2: an element that takes the cell but lets a fall drop straight through,
+        /// so the column above it still feeds the cells below. Resolved off the gravity axis, not
+        /// off the token (§10).
+        /// </summary>
+        internal static bool IsFallThrough(string token, ElementCatalog catalog)
+            => !IsHole(token)
+               && catalog.TryResolve(token, out ElementDefinition definition)
+               && definition.OccupiesCell
+               && !definition.BlocksFall;
+
+        /// <summary>
+        /// GDD §3.4 rule 1: a permanent obstruction that also cuts its column, so the cells below
+        /// it can only be fed from the sides. Only the hole does that - the blocker is fallen
+        /// through (§5.3).
+        /// </summary>
+        internal static bool BlocksColumnFlow(string token, ElementCatalog catalog)
+            => IsPermanentObstruction(token, catalog) && !IsFallThrough(token, catalog);
+
         /// <summary>Does an element of this token count towards the goal (GDD §8.1)?</summary>
         internal static bool ServesGoal(string token, in GoalDefinition goal, ElementCatalog catalog)
         {

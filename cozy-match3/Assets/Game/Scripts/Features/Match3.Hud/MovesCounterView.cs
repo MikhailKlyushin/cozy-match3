@@ -1,7 +1,7 @@
 using System.Globalization;
 using DG.Tweening;
+using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace Match3.Hud
 {
@@ -11,8 +11,8 @@ namespace Match3.Hud
     /// </summary>
     public sealed class MovesCounterView : MonoBehaviour
     {
-        [SerializeField] private Text _valueLabel;
-        [SerializeField] private Text _captionLabel;
+        [SerializeField] private TMP_Text _valueLabel;
+        [SerializeField] private TMP_Text _captionLabel;
         [SerializeField] private RectTransform _pulseTarget;
         [SerializeField] private float _pulseScale = 1.12f;
 

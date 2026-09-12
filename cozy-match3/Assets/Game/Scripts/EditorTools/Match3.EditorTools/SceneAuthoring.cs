@@ -1,4 +1,5 @@
 using Match3.Bootstrap;
+using TMPro;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -26,6 +27,9 @@ namespace Match3.EditorTools
 
         private const float ScreenMatch = 0.5f;
 
+        /// <summary>Game.unity is the second entry of RegisterScenes below.</summary>
+        private const int GameSceneBuildIndex = 1;
+
         [MenuItem("Match3/Authoring/Generate Boot Scene")]
         public static void GenerateBootScene()
         {
@@ -39,10 +43,10 @@ namespace Match3.EditorTools
             background.color = new Color(0.09f, 0.10f, 0.14f, 1f);
             background.raycastTarget = false;
 
-            Text title = PrefabAuthoring.CreateText("Title", panel, "MATCH-3", 96);
+            TextMeshProUGUI title = PrefabAuthoring.CreateText("Title", panel, "MATCH-3", 96);
             Place(title.rectTransform, new Vector2(0f, 140f), new Vector2(900f, 140f));
 
-            Text progressLabel = PrefabAuthoring.CreateText("Progress", panel, "0%", 48);
+            TextMeshProUGUI progressLabel = PrefabAuthoring.CreateText("Progress", panel, "0%", 48);
             Place(progressLabel.rectTransform, new Vector2(0f, -40f), new Vector2(900f, 80f));
 
             Image fill = CreateProgressBar(panel);
@@ -50,8 +54,9 @@ namespace Match3.EditorTools
             var loaderGo = new GameObject("BootLoader");
             loaderGo.transform.SetParent(canvas.transform, false);
             var loader = loaderGo.AddComponent<BootLoader>();
-            PrefabAuthoring.Wire(loader, "_progressLabel", progressLabel);
+            PrefabAuthoring.Wire(loader, "_progressText", progressLabel);
             PrefabAuthoring.Wire(loader, "_progressFill", fill);
+            PrefabAuthoring.WireInt(loader, "_gameSceneIndex", GameSceneBuildIndex);
 
             var contextGo = new GameObject("SceneContext", typeof(SceneContext));
             var installer = contextGo.AddComponent<BootInstaller>();

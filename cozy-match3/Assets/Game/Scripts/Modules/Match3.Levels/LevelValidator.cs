@@ -178,14 +178,16 @@ namespace Match3.Levels
                 int x = 0;
                 while (x < grid.Width)
                 {
-                    if (!LevelTokens.IsPermanentObstruction(grid.TokenAt(x, y), _catalog))
+                    // A blocker run is harmless: its own column still feeds the cells below it
+                    // (§5.3), so only a run that cuts the column is worth a warning.
+                    if (!LevelTokens.BlocksColumnFlow(grid.TokenAt(x, y), _catalog))
                     {
                         x++;
                         continue;
                     }
 
                     int start = x;
-                    while (x < grid.Width && LevelTokens.IsPermanentObstruction(grid.TokenAt(x, y), _catalog))
+                    while (x < grid.Width && LevelTokens.BlocksColumnFlow(grid.TokenAt(x, y), _catalog))
                     {
                         x++;
                     }

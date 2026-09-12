@@ -106,9 +106,11 @@ namespace Match3.Gameplay.Playback
 
         private static void Spawn(PlaybackContext context, in TurnEvent e)
         {
-            // §11.3: a refilled chip starts one cell above the top row, outside the mask, and
-            // falls in with the rest of the step's batch.
-            ChipView chip = context.Board.SpawnChipAboveBoard(e.InstanceId, e.Color, e.A);
+            // §11.3: a refilled chip starts above the top row, outside the mask, and falls in
+            // with the rest of the step's batch. The offset keeps the column's refills stacked:
+            // REFILL releases one per pass, and they would otherwise share a single point.
+            int stackOffset = context.NextSpawnStackOffset(e.A.X);
+            ChipView chip = context.Board.SpawnChipAboveBoard(e.InstanceId, e.Color, e.A, stackOffset);
             context.TrackMove(chip, e.A, ChipMoveFlags.Fall);
         }
 

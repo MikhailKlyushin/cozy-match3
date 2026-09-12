@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace Match3.Cheats
 {
@@ -13,17 +13,17 @@ namespace Match3.Cheats
     /// </summary>
     internal sealed class CheatLabelPool : IDisposable
     {
-        private readonly Text _prefab;
+        private readonly TMP_Text _prefab;
         private readonly RectTransform _parent;
-        private readonly Stack<Text> _free;
-        private readonly List<Text> _created;
+        private readonly Stack<TMP_Text> _free;
+        private readonly List<TMP_Text> _created;
 
-        public CheatLabelPool(Text prefab, RectTransform parent, int prewarm)
+        public CheatLabelPool(TMP_Text prefab, RectTransform parent, int prewarm)
         {
             _prefab = prefab != null ? prefab : throw new ArgumentNullException(nameof(prefab));
             _parent = parent;
-            _free = new Stack<Text>(prewarm);
-            _created = new List<Text>(prewarm);
+            _free = new Stack<TMP_Text>(prewarm);
+            _created = new List<TMP_Text>(prewarm);
 
             for (int i = 0; i < prewarm; i++)
             {
@@ -36,14 +36,14 @@ namespace Match3.Cheats
 
         public int FreeCount => _free.Count;
 
-        public Text Rent()
+        public TMP_Text Rent()
         {
-            Text label = _free.Count > 0 ? _free.Pop() : Create();
+            TMP_Text label = _free.Count > 0 ? _free.Pop() : Create();
             label.gameObject.SetActive(true);
             return label;
         }
 
-        public void Release(Text label)
+        public void Release(TMP_Text label)
         {
             if (label == null)
             {
@@ -73,9 +73,9 @@ namespace Match3.Cheats
         /// <c>anchoredPosition</c> converted from a screen point, which only lines up when the
         /// label's anchor and pivot sit in the middle.
         /// </summary>
-        private Text Create()
+        private TMP_Text Create()
         {
-            Text label = UnityEngine.Object.Instantiate(_prefab, _parent);
+            TMP_Text label = UnityEngine.Object.Instantiate(_prefab, _parent);
             RectTransform rect = label.rectTransform;
             rect.anchorMin = new Vector2(0.5f, 0.5f);
             rect.anchorMax = new Vector2(0.5f, 0.5f);

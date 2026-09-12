@@ -711,8 +711,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: 100
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 60b400f82a204a74db2a1a5c66f3ae36, type: 2}
+  m_sharedMaterial: {fileID: 3318262611438659896, guid: 60b400f82a204a74db2a1a5c66f3ae36, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -1035,7 +1035,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 1872612530}
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1574422122
 MonoBehaviour:
@@ -1051,7 +1051,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Match3.Bootstrap::Match3.Bootstrap.BootLoader
   _progressText: {fileID: 951163431}
   _progressFill: {fileID: 1995295582}
-  _gameSceneName: Game
+  _gameSceneIndex: 1
 --- !u!1 &1622346961
 GameObject:
   m_ObjectHideFlags: 0
@@ -1300,7 +1300,6 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1728685626}
-  - {fileID: 1574422121}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -1387,6 +1386,7 @@ RectTransform:
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
+  - {fileID: 1574422121}
   - {fileID: 1872612530}
   - {fileID: 601424099}
   - {fileID: 1093486475}

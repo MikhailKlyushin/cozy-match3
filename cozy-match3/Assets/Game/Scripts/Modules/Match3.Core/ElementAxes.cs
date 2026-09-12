@@ -41,12 +41,16 @@ namespace Match3.Core
         OverChip = 2
     }
 
-    /// <summary>Axis gravity (GDD §7.1). Every in-scope obstacle is <see cref="StaticBlocksFall"/>.</summary>
+    /// <summary>
+    /// Axis gravity (GDD §7.1). In-scope boxes are <see cref="StaticBlocksFall"/>; the
+    /// indestructible blocker is <see cref="StaticPassable"/>.
+    /// </summary>
     public enum GravityBehaviour : byte
     {
         /// <summary>Does not move and blocks falling (E10).</summary>
         StaticBlocksFall = 0,
 
+        /// <summary>Does not move and takes the cell, but a fall drops straight through (§5.3).</summary>
         StaticPassable = 1,
         Falls = 2
     }

@@ -59,7 +59,9 @@ namespace Match3.Board
                 ChipColor.None,
                 ElementDefinition.InfiniteHealth,
                 Occupancy.OccupiesCell,
-                GravityBehaviour.StaticBlocksFall,
+                // A chip cannot rest on the blocker, but the column above it still feeds the cells
+                // below: the fall drops through instead of the neighbour column sliding in (§5.3).
+                GravityBehaviour.StaticPassable,
                 SpreadBehaviour.None,
                 GoalRole.NotCountable,
                 PerTurnBehaviour.None,

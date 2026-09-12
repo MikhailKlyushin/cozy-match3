@@ -1,6 +1,6 @@
 using System.Globalization;
+using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace Match3.Hud
 {
@@ -10,7 +10,7 @@ namespace Match3.Hud
     /// </summary>
     public sealed class EndOfContentPopupView : PopupView
     {
-        [SerializeField] private Text _lastLevelLabel;
+        [SerializeField] private TMP_Text _lastLevelLabel;
 
         public override PopupKind Kind => PopupKind.EndOfContent;
 

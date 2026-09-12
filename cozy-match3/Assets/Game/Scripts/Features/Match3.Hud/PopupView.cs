@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -16,9 +17,9 @@ namespace Match3.Hud
     {
         [SerializeField] private CanvasGroup _canvasGroup;
         [SerializeField] private RectTransform _panel;
-        [SerializeField] private Text _titleLabel;
+        [SerializeField] private TMP_Text _titleLabel;
         [SerializeField] private Button _primaryButton;
-        [SerializeField] private Text _primaryButtonLabel;
+        [SerializeField] private TMP_Text _primaryButtonLabel;
 
         // §11.3 specifies no popup timing, so these two stay tunable on the prefab instead of
         // becoming literals inside the tween.
