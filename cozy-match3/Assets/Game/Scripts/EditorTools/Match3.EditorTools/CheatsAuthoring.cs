@@ -138,6 +138,9 @@ namespace Match3.EditorTools
             var windowImage = window.GetComponent<Image>();
             windowImage.color = new Color(0.10f, 0.12f, 0.17f, 0.96f);
 
+            // The drag strip goes in first, so Title and Close draw - and raycast - above it.
+            CreateHeaderDragHandle(windowRect, (RectTransform)parent);
+
             // Title and Close stay pinned: closing the panel must never depend on scroll position.
             TextMeshProUGUI title = CreateHeaderTitle(windowRect);
             Button close = CreateHeaderClose(windowRect);
@@ -205,6 +208,29 @@ namespace Match3.EditorTools
 
             window.SetActive(false);
             return view;
+        }
+
+        /// <summary>
+        /// The strip along the top of the window: transparent enough to read as a title bar, and
+        /// raycastable, so a press anywhere in the header - on the title or on the empty gap next
+        /// to it - drags the window instead of falling through to the board behind the panel.
+        /// </summary>
+        private static void CreateHeaderDragHandle(RectTransform window, RectTransform bounds)
+        {
+            var go = new GameObject("DragHandle", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+            go.transform.SetParent(window, false);
+
+            var rect = (RectTransform)go.transform;
+            rect.anchorMin = new Vector2(0f, 1f);
+            rect.anchorMax = new Vector2(1f, 1f);
+            rect.pivot = new Vector2(0.5f, 1f);
+            rect.offsetMin = new Vector2(0f, -HeaderHeight);
+            rect.offsetMax = Vector2.zero;
+            go.GetComponent<Image>().color = new Color(1f, 1f, 1f, 0.07f);
+
+            var handle = go.AddComponent<CheatPanelDragHandle>();
+            PrefabAuthoring.Wire(handle, "_window", window);
+            PrefabAuthoring.Wire(handle, "_bounds", bounds);
         }
 
         private static TextMeshProUGUI CreateHeaderTitle(RectTransform window)

@@ -92,6 +92,7 @@ namespace Match3.Bootstrap
             // One player per event family (A11): a new event kind is a new player, never an edit
             // to a central switch.
             Container.Bind<ITurnEventPlayer>().To<BarrierEventPlayer>().AsSingle();
+            Container.Bind<ITurnEventPlayer>().To<CascadeDepthEventPlayer>().AsSingle();
             Container.Bind<ITurnEventPlayer>().To<SwapEventPlayer>().AsSingle();
             Container.Bind<ITurnEventPlayer>().To<ChipLifecycleEventPlayer>().AsSingle();
             Container.Bind<ITurnEventPlayer>().To<MovementEventPlayer>().AsSingle();

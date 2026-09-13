@@ -42,6 +42,20 @@ namespace Match3.EditorTools
             }
         }
 
+        /// <summary>
+        /// The audio half of <see cref="GenerateProfiles"/> on its own, for the batch path that
+        /// runs after a clip is added and has no reason to touch the art profiles.
+        /// </summary>
+        internal static void GenerateAudioProfile()
+        {
+            SceneAuthoring.EnsureFolder(GameplayConfigFolder);
+            CreateAudioProfile(preserveAuthored: true);
+
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+            Debug.Log("[Match3] Audio profile generated in " + GameplayConfigFolder);
+        }
+
         private static void Generate(bool preserveAuthored)
         {
             SceneAuthoring.EnsureFolder(GameplayConfigFolder);
@@ -65,7 +79,7 @@ namespace Match3.EditorTools
         }
 
         /// <summary>
-        /// Volume and fade default in <see cref="AudioProfile"/> itself, so only the clip
+        /// Ambience volume and fade default in <see cref="AudioProfile"/> itself, so only the clip
         /// reference is written here - and only while empty, like every other authored field.
         /// </summary>
         private static void CreateAudioProfile(bool preserveAuthored)
@@ -80,8 +94,50 @@ namespace Match3.EditorTools
                 ambient.objectReferenceValue = AudioAuthoring.LoadAmbient();
             }
 
+            WriteSfxEntries(so, preserveAuthored);
+
             so.ApplyModifiedPropertiesWithoutUndo();
             EditorUtility.SetDirty(profile);
+        }
+
+        /// <summary>
+        /// One entry per <see cref="SfxId"/>, in enum order. The id follows from the enum and the
+        /// clip from the file name, so both are structural; the mix values are authored, and an
+        /// entry that already exists keeps the ones it has.
+        /// </summary>
+        private static void WriteSfxEntries(SerializedObject so, bool preserveAuthored)
+        {
+            SerializedProperty entries = so.FindProperty("_sfx");
+            const int first = (int)SfxId.Swap;
+            const int last = (int)SfxId.LevelLost;
+
+            int existing = entries.arraySize;
+            entries.arraySize = last - first + 1;
+
+            for (int i = 0; i < entries.arraySize; i++)
+            {
+                var id = (SfxId)(first + i);
+                SerializedProperty entry = entries.GetArrayElementAtIndex(i);
+                entry.FindPropertyRelative("_id").enumValueIndex = (int)id;
+
+                SerializedProperty clip = entry.FindPropertyRelative("_clip");
+                if (!preserveAuthored || clip.objectReferenceValue == null)
+                {
+                    clip.objectReferenceValue = AudioAuthoring.LoadSfx(id);
+                }
+
+                // A grown array copies its last element, so a new entry starts on someone else's
+                // mix: the defaults are written over it rather than left to be noticed later.
+                if (preserveAuthored && i < existing)
+                {
+                    continue;
+                }
+
+                AudioAuthoring.SfxDefault defaults = AudioAuthoring.DefaultsFor(id);
+                entry.FindPropertyRelative("_volume").floatValue = defaults.Volume;
+                entry.FindPropertyRelative("_minInterval").floatValue = defaults.MinInterval;
+                entry.FindPropertyRelative("_pitchJitter").floatValue = defaults.PitchJitter;
+            }
         }
 
         private static void CreateChipProfile(bool preserveAuthored)

@@ -34,10 +34,10 @@ namespace Match3.Bootstrap
         [SerializeField] private HudActionsView _hudActions;
         [SerializeField] private PopupView[] _popups = new PopupView[0];
 
-    [Header("Audio")]
-    [SerializeField] private AudioProfile _audioProfile;
-    [SerializeField] private AudioSource _ambientSource;
-    [SerializeField] private SoundToggleView _soundToggle;
+        [Header("Audio")]
+        [SerializeField] private AudioProfile _audioProfile;
+        [SerializeField] private AudioSource _ambientSource;
+        [SerializeField] private SoundToggleView _soundToggle;
 
 #if MATCH3_CHEATS
         [Header("Cheats (development builds only)")]
@@ -106,21 +106,33 @@ namespace Match3.Bootstrap
         }
 
         /// <summary>
-        /// Both halves are optional by design and independent of each other: a missing one is a
+        /// Every part is optional by design and independent of the others: a missing one is a
         /// content gap, not a broken invariant, and the toggle still mutes whatever else plays.
+        /// The effect player is always bound, as a no-op when there is no profile, so presentation
+        /// never has to ask whether sound exists.
         /// </summary>
         private void InstallAudio()
         {
-            if (_audioProfile != null && _ambientSource != null)
+            if (_audioProfile == null)
             {
-                Container.BindInstance(_audioProfile);
-                Container.BindInterfacesAndSelfTo<AmbientAudioService>()
-                    .AsSingle()
-                    .WithArguments(_ambientSource);
+                Debug.LogWarning("[Match3] No audio profile; the scene stays silent.");
+                Container.Bind<ISfxPlayer>().To<NullSfxPlayer>().AsSingle();
             }
             else
             {
-                Debug.LogWarning("[Match3] No audio profile or ambience source; the scene stays silent.");
+                Container.BindInstance(_audioProfile);
+                Container.BindInterfacesAndSelfTo<SfxPlayer>().AsSingle();
+
+                if (_ambientSource != null)
+                {
+                    Container.BindInterfacesAndSelfTo<AmbientAudioService>()
+                        .AsSingle()
+                        .WithArguments(_ambientSource);
+                }
+                else
+                {
+                    Debug.LogWarning("[Match3] No ambience source; the game plays without its loop.");
+                }
             }
 
             if (_soundToggle != null)

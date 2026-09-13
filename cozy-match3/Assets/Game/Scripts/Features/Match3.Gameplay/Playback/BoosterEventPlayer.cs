@@ -105,6 +105,7 @@ namespace Match3.Gameplay.Playback
                 }
             }
 
+            context.Sfx.Play(SfxId.BoosterSpawned);
             return PlayPopAsync(context, cell, booster, popDuration, ct);
         }
 
@@ -233,6 +234,7 @@ namespace Match3.Gameplay.Playback
             GridPos negativeEnd = horizontal ? new GridPos(min, origin.Y) : new GridPos(origin.X, min);
             GridPos positiveEnd = horizontal ? new GridPos(max, origin.Y) : new GridPos(origin.X, max);
 
+            context.Sfx.Play(SfxId.Rocket);
             _shake.Shake(
                 context.Timings.RocketShakeDuration,
                 context.Timings.RocketShakeAmplitude,
@@ -345,6 +347,7 @@ namespace Match3.Gameplay.Playback
                     wave.FadeOut(timings.BombShockwave);
                 }
 
+                context.Sfx.Play(SfxId.Bomb);
                 _shake.Shake(timings.BombShakeDuration, timings.BombShakeAmplitude, Vector2.one);
                 await Wait(timings.BombShockwave, ct);
             }
@@ -372,6 +375,8 @@ namespace Match3.Gameplay.Playback
             Vector2 from = layout.CellCenter(origin);
             float stagger = BeamStagger(context, count);
             GameObject prefab = BeamFxFor(booster);
+
+            context.Sfx.Play(SfxId.Rainbow);
 
             _beams.Clear();
 
@@ -404,6 +409,10 @@ namespace Match3.Gameplay.Playback
             TimingProfile timings = context.Timings;
             float thickness = context.Board.Layout.CellSize * BeamThickness;
             FxView beam = _fx.Rent(prefab);
+
+            // A full-board volley sends one of these every 0.04 s; the throttle thins them into
+            // a stream rather than a wall.
+            context.Sfx.Play(SfxId.RainbowBeam);
 
             try
             {
@@ -445,6 +454,8 @@ namespace Match3.Gameplay.Playback
             float cellSize = layout.CellSize;
 
             FxView plane = _fx.Rent(FxFor(booster));
+
+            context.Sfx.Play(SfxId.Airplane);
 
             try
             {

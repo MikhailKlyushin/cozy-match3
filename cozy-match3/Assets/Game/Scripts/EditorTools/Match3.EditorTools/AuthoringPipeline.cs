@@ -47,6 +47,29 @@ namespace Match3.EditorTools
         }
 
         /// <summary>
+        /// Audio only: the import settings and the profile that lists the clips. This is the path
+        /// to run after adding a clip to the SFX folder - the full pipeline would rebuild the art
+        /// profiles and the levels for it. Headless: unity run &lt;project&gt; -- -executeMethod
+        /// Match3.EditorTools.AuthoringPipeline.GenerateAudioBatch
+        /// </summary>
+        public static void GenerateAudioBatch()
+        {
+            try
+            {
+                AudioAuthoring.ApplyImportSettings();
+                ContentAuthoring.GenerateAudioProfile();
+            }
+            catch (Exception e)
+            {
+                Debug.LogError("[Match3] Audio authoring failed: " + e);
+                EditorApplication.Exit(1);
+                return;
+            }
+
+            EditorApplication.Exit(0);
+        }
+
+        /// <summary>
         /// Headless variant that turns an exception into a non-zero exit code, so a broken
         /// generator fails the command instead of logging quietly.
         /// </summary>

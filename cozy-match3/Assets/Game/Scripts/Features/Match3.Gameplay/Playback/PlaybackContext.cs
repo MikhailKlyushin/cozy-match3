@@ -29,10 +29,11 @@ namespace Match3.Gameplay.Playback
         /// <summary>Cached so the per-chip tweens of a cascade allocate no delegate.</summary>
         private readonly EaseFunction _fallEase;
 
-        public PlaybackContext(BoardView board, TimingProfile timings)
+        public PlaybackContext(BoardView board, TimingProfile timings, ISfxPlayer sfx)
         {
             Board = board;
             Timings = timings;
+            Sfx = sfx;
             _fallEase = EvaluateFall;
         }
 
@@ -40,15 +41,26 @@ namespace Match3.Gameplay.Playback
 
         public TimingProfile Timings { get; }
 
+        public ISfxPlayer Sfx { get; }
+
         public TurnTranscript Transcript { get; private set; }
+
+        /// <summary>
+        /// Cascade step being replayed, from 0, published by <see cref="CascadeDepthEventPlayer"/>.
+        /// Sound reads it to climb with the cascade; nothing visual depends on it.
+        /// </summary>
+        public int CascadeStep { get; private set; }
 
         public int PendingDestructionCount => _pendingDestruction.Count;
 
         public int PendingMoveCount => _pendingMoves.Count;
 
+        public void SetCascadeStep(int step) => CascadeStep = step;
+
         public void BeginTurn(TurnTranscript transcript)
         {
             Transcript = transcript;
+            CascadeStep = 0;
             _pendingDestruction.Clear();
             _pendingMoves.Clear();
             _moveByInstance.Clear();
@@ -155,6 +167,10 @@ namespace Match3.Gameplay.Playback
 
                 PlaySlideLegs(i, move, delay);
                 move.Chip.PlayLandingSquash(Timings.LandingSquashDuration, delay + duration);
+
+                // Scheduled for the moment the chip touches down, not for now: a column lands over
+                // the whole fall, and the throttle thins the stack out into a few taps.
+                Sfx.Play(SfxId.ChipLand, 1f, delay + duration, ct);
             }
 
             _pendingMoves.Clear();

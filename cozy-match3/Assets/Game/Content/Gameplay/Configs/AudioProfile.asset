@@ -15,3 +15,83 @@ MonoBehaviour:
   _ambient: {fileID: 8300000, guid: bfd6138d1762f76488e2531e501e8336, type: 3}
   _ambientVolume: 0.35
   _ambientFadeIn: 1.5
+  _sfx:
+  - _id: 1
+    _clip: {fileID: 8300000, guid: 7f71f8b93bf62f344ac1ab8b8e0d632a, type: 3}
+    _volume: 0.6
+    _minInterval: 0.02
+    _pitchJitter: 0.04
+  - _id: 2
+    _clip: {fileID: 8300000, guid: 16d879d1b5c972d47be67792597d1565, type: 3}
+    _volume: 0.7
+    _minInterval: 0.05
+    _pitchJitter: 0
+  - _id: 3
+    _clip: {fileID: 8300000, guid: 3fbfa4bf05e0ae9438b1bf41e6dee317, type: 3}
+    _volume: 0.55
+    _minInterval: 0.035
+    _pitchJitter: 0.06
+  - _id: 4
+    _clip: {fileID: 8300000, guid: f01e53d38cd7cf946ae51547676d5e41, type: 3}
+    _volume: 0.35
+    _minInterval: 0.05
+    _pitchJitter: 0.08
+  - _id: 5
+    _clip: {fileID: 8300000, guid: f508be347b134974ba0e92fcaad32b3e, type: 3}
+    _volume: 0.7
+    _minInterval: 0.05
+    _pitchJitter: 0.03
+  - _id: 6
+    _clip: {fileID: 8300000, guid: 030ea80c6266f714c82326d4141df2a2, type: 3}
+    _volume: 0.7
+    _minInterval: 0.05
+    _pitchJitter: 0.03
+  - _id: 7
+    _clip: {fileID: 8300000, guid: 14224cdd2c740234db4de27b82f790ef, type: 3}
+    _volume: 0.85
+    _minInterval: 0.05
+    _pitchJitter: 0.02
+  - _id: 8
+    _clip: {fileID: 8300000, guid: 3a3be0cf4ff81fa4e9a6d4c6f535de59, type: 3}
+    _volume: 0.8
+    _minInterval: 0.1
+    _pitchJitter: 0
+  - _id: 9
+    _clip: {fileID: 8300000, guid: d76ead1c92c461e4e85c058784fc29b8, type: 3}
+    _volume: 0.3
+    _minInterval: 0.05
+    _pitchJitter: 0.08
+  - _id: 10
+    _clip: {fileID: 8300000, guid: 3418e66bbfa0eb540b6206170e946a90, type: 3}
+    _volume: 0.7
+    _minInterval: 0.05
+    _pitchJitter: 0.03
+  - _id: 11
+    _clip: {fileID: 8300000, guid: 104a0bab03020e14da7e912cb5dfaa75, type: 3}
+    _volume: 0.5
+    _minInterval: 0.04
+    _pitchJitter: 0.06
+  - _id: 12
+    _clip: {fileID: 8300000, guid: 51b345282537bef4093d0ffaefd53035, type: 3}
+    _volume: 0.7
+    _minInterval: 0.04
+    _pitchJitter: 0.04
+  - _id: 13
+    _clip: {fileID: 8300000, guid: 8c24c05153fed06468c509f6e2c30e73, type: 3}
+    _volume: 0.5
+    _minInterval: 0.05
+    _pitchJitter: 0
+  - _id: 14
+    _clip: {fileID: 8300000, guid: bb607b1876cff8143b3105e57cfda399, type: 3}
+    _volume: 0.9
+    _minInterval: 0
+    _pitchJitter: 0
+  - _id: 15
+    _clip: {fileID: 8300000, guid: bf9b9d7f76f16e84caad528e95622db6, type: 3}
+    _volume: 0.9
+    _minInterval: 0
+    _pitchJitter: 0
+  _sfxVolume: 1
+  _sfxVoices: 16
+  _pitchLadderStep: 0.06
+  _pitchLadderCap: 1.35

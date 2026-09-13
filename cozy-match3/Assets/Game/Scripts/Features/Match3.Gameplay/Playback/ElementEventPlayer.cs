@@ -186,9 +186,11 @@ namespace Match3.Gameplay.Playback
             view.SetHealth(e.Value);
 
             // A lethal hit needs no punch of its own: the death or the reveal that follows in the
-            // same step carries the feedback, and two tweens on one transform would fight.
+            // same step carries the feedback, and two tweens on one transform would fight. The
+            // sound follows the same rule - the destruction has its own.
             if (e.Value > 0)
             {
+                context.Sfx.Play(SfxId.ElementDamaged);
                 context.TrackDestruction(PunchAsync(view, context.Timings, ct));
             }
         }
@@ -215,6 +217,7 @@ namespace Match3.Gameplay.Playback
                 return;
             }
 
+            context.Sfx.Play(SfxId.ElementDestroyed);
             context.TrackDestruction(DestroyAsync(context, view, e.A, ct));
         }
 

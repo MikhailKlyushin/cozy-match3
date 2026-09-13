@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using Match3.Content;
 using Match3.Core;
 using Match3.Diagnostics;
 using Match3.Hud;
@@ -23,6 +24,7 @@ namespace Match3.Bootstrap
         private readonly GoalsPanelPresenter _goalsPanel;
         private readonly HudActionsView _hudActions;
         private readonly MetricsReporter _metrics;
+        private readonly ISfxPlayer _sfx;
         private readonly IMatch3Logger _logger;
 
         private readonly CompositeDisposable _disposables = new CompositeDisposable();
@@ -38,6 +40,7 @@ namespace Match3.Bootstrap
             GoalsPanelPresenter goalsPanel,
             HudActionsView hudActions,
             MetricsReporter metrics,
+            ISfxPlayer sfx,
             IMatch3Logger logger)
         {
             _flow = flow ?? throw new ArgumentNullException(nameof(flow));
@@ -47,6 +50,7 @@ namespace Match3.Bootstrap
             _goalsPanel = goalsPanel ?? throw new ArgumentNullException(nameof(goalsPanel));
             _hudActions = hudActions != null ? hudActions : throw new ArgumentNullException(nameof(hudActions));
             _metrics = metrics ?? throw new ArgumentNullException(nameof(metrics));
+            _sfx = sfx ?? throw new ArgumentNullException(nameof(sfx));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -128,6 +132,10 @@ namespace Match3.Bootstrap
                 session.MovesLeft.CurrentValue,
                 session.Goals,
                 session.Seed);
+
+            // Ahead of the popup, not with it: the outcome is already decided and the goal
+            // counters are still ticking, so the sting is what tells the player it is over.
+            _sfx.Play(result == LevelResult.Won ? SfxId.LevelWon : SfxId.LevelLost);
 
             if (result == LevelResult.Won)
             {

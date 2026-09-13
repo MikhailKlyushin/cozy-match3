@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
+using Match3.Content;
 using Match3.Core;
 using Match3.Resolve;
 using UnityEngine;
@@ -52,6 +53,8 @@ namespace Match3.Gameplay.Playback
 
             Vector2 homeA = context.Board.Layout.CellCenter(e.A);
             Vector2 homeB = context.Board.Layout.CellCenter(e.B);
+
+            context.Sfx.Play(e.Kind == TurnEventKind.SwapPerformed ? SfxId.Swap : SfxId.SwapRejected);
 
             if (e.Kind == TurnEventKind.SwapPerformed)
             {

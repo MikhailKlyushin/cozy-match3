@@ -166,6 +166,10 @@ namespace Match3.Gameplay.Playback
                 return;
             }
 
+            // Every chip of a step dies in the same frame, so the throttle decides how many of
+            // them are heard; the step decides how high, which is what makes a cascade climb.
+            context.Sfx.PlayLadder(SfxId.ChipDestroyed, context.CascadeStep);
+
             context.TrackDestruction(DestroyAsync(context, chip, e.InstanceId, e.Color, ct));
         }
 

@@ -21,6 +21,7 @@ namespace Match3.Hud
         private readonly GoalsPanelView _view;
         private readonly GoalIconResolver _icons;
         private readonly TimingProfile _timings;
+        private readonly ISfxPlayer _sfx;
         private readonly IMatch3Logger _logger;
         private readonly List<UniTask> _ticks = new List<UniTask>(4);
 
@@ -33,11 +34,13 @@ namespace Match3.Hud
             GoalsPanelView view,
             GoalIconResolver icons,
             TimingProfile timings,
+            ISfxPlayer sfx,
             IMatch3Logger logger)
         {
             _view = view != null ? view : throw new ArgumentNullException(nameof(view));
             _icons = icons ?? throw new ArgumentNullException(nameof(icons));
             _timings = timings != null ? timings : throw new ArgumentNullException(nameof(timings));
+            _sfx = sfx ?? throw new ArgumentNullException(nameof(sfx));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -158,6 +161,10 @@ namespace Match3.Hud
 
                 _view.SetValue(goalIndex, schedule.ValueAt(tick));
                 _view.PlayTick(goalIndex, schedule.Step);
+
+                // Rung per tick, so a run of them reads as one counter climbing rather than the
+                // same note repeated. Goals tick in parallel, so each keeps its own climb.
+                _sfx.PlayLadder(SfxId.GoalTick, tick);
 
                 await UniTask.Delay(
                     TimeSpan.FromSeconds(schedule.Step),
