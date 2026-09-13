@@ -13,6 +13,8 @@ namespace Match3.Hud
     public sealed class GoalRowView : MonoBehaviour
     {
         [SerializeField] private Image _icon;
+        [SerializeField] private Image _iconBow;
+        [SerializeField] private Image _iconPip;
         [SerializeField] private TMP_Text _counterLabel;
         [SerializeField] private Image _closedTick;
         [SerializeField] private RectTransform _pulseTarget;
@@ -25,18 +27,29 @@ namespace Match3.Hud
 
         public bool IsClosed => _closed;
 
-        public void Show(Sprite icon, int value, int target)
+        public void Show(GoalIcon icon, int value, int target)
         {
             _target = target;
 
-            if (_icon != null)
-            {
-                _icon.sprite = icon;
-                _icon.enabled = icon != null;
-            }
+            SetLayer(_icon, icon.Base, Color.white);
+            SetLayer(_iconBow, icon.Bow, icon.Tint);
+            SetLayer(_iconPip, icon.Pip, Color.white);
 
             KillTweens();
             SetValue(value);
+        }
+
+        /// <summary>A layer with no sprite is switched off, so an icon without a bow shows none.</summary>
+        private static void SetLayer(Image image, Sprite sprite, Color tint)
+        {
+            if (image == null)
+            {
+                return;
+            }
+
+            image.sprite = sprite;
+            image.color = tint;
+            image.enabled = sprite != null;
         }
 
         public void SetValue(int value)
@@ -96,6 +109,16 @@ namespace Match3.Hud
             if (_icon != null)
             {
                 _icon.raycastTarget = false;
+            }
+
+            if (_iconBow != null)
+            {
+                _iconBow.raycastTarget = false;
+            }
+
+            if (_iconPip != null)
+            {
+                _iconPip.raycastTarget = false;
             }
 
             if (_counterLabel != null)

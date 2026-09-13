@@ -375,6 +375,27 @@ namespace Match3.EditorTools
             iconRect.sizeDelta = new Vector2(90f, 90f);
             icon.preserveAspect = true;
 
+            // Coloured boxes share the base sprite with the plain ones, so the colour has to come
+            // from the same tinted bow the board draws; the pip marks the cycling box (§7.2).
+            Image iconBow = PrefabAuthoring.CreateImageNode("IconBow", iconRect);
+            var bowRect = (RectTransform)iconBow.transform;
+            bowRect.anchorMin = Vector2.zero;
+            bowRect.anchorMax = Vector2.one;
+            bowRect.offsetMin = Vector2.zero;
+            bowRect.offsetMax = Vector2.zero;
+            iconBow.preserveAspect = true;
+            iconBow.enabled = false;
+
+            Image iconPip = PrefabAuthoring.CreateImageNode("IconPip", iconRect);
+            var pipRect = (RectTransform)iconPip.transform;
+            pipRect.anchorMin = Vector2.one;
+            pipRect.anchorMax = Vector2.one;
+            pipRect.pivot = Vector2.one;
+            pipRect.anchoredPosition = new Vector2(-4f, -4f);
+            pipRect.sizeDelta = new Vector2(27f, 27f);
+            iconPip.preserveAspect = true;
+            iconPip.enabled = false;
+
             TextMeshProUGUI counter = PrefabAuthoring.CreateText("Counter", rect, "0/0", 34);
             var counterRect = (RectTransform)counter.transform;
             counterRect.anchorMin = new Vector2(0f, 0f);
@@ -398,6 +419,8 @@ namespace Match3.EditorTools
 
             var view = go.AddComponent<GoalRowView>();
             PrefabAuthoring.Wire(view, "_icon", icon);
+            PrefabAuthoring.Wire(view, "_iconBow", iconBow);
+            PrefabAuthoring.Wire(view, "_iconPip", iconPip);
             PrefabAuthoring.Wire(view, "_counterLabel", counter);
             PrefabAuthoring.Wire(view, "_closedTick", tick);
             PrefabAuthoring.Wire(view, "_pulseTarget", rect);
