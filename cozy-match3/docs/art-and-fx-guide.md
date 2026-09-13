@@ -58,10 +58,11 @@ Game.unity
 |---|---|
 | `Apply Texture Import Settings` | Правит **только импортер** (`Sprite`, мип-мапы, `maxTextureSize`, 9-slice панели). Ни одного пикселя не пишет |
 | `Configure Art Pack Importers` | То же для UI- и VFX-паков |
+| `Generate Sprite Atlases` | Пересобирает четыре `SA_*.spriteatlas` (`art-direction.md` §3.3) и снимает сжатие с исходников, которые в них попали. Ни одного пикселя не пишет |
 | `Generate Content Profiles` | Заполняет `_sprite`, `_healthStages[i]`, `_particleColor`, `_activationFx`, `_destroyFx` **только пока поле пусто**. Заполненную ссылку не трогает |
 | `Reset Content Profiles` | Возвращает каноническую разводку: спрайт по имени из `ChipArtRegistry`, запасной цвет частиц, сгенерированный FX-префаб. Ручные назначения теряются, поэтому с подтверждением |
 | `Generate FX Prefabs` | Пересобирает 22 префаба в `Content/Gameplay/FX/` **с нуля**. Ручную правку FX-префаба потеряет |
-| `Generate All` | Шрифт, импорт-настройки, FX-префабы, профили, уровни, регистрация сцен. **Ни одного PNG, ни одной сцены, ни одного view-префаба не трогает** |
+| `Generate All` | Шрифт, импорт-настройки, атласы, FX-префабы, профили, уровни, регистрация сцен. **Ни одного PNG, ни одной сцены, ни одного view-префаба не трогает** |
 
 Что `Generate All` **больше не делает** и что поэтому нужно звать руками, понимая цену: 
 `Generate Game Scene`, `Generate Boot Scene`, `Generate View Prefabs`,

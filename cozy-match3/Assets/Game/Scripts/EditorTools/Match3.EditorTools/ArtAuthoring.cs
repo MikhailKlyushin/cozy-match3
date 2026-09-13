@@ -106,7 +106,9 @@ namespace Match3.EditorTools
             importer.filterMode = FilterMode.Bilinear;
             importer.wrapMode = TextureWrapMode.Clamp;
             importer.spritePixelsPerUnit = 100f;
-            importer.textureCompression = TextureImporterCompression.Compressed;
+            importer.textureCompression = AtlasAuthoring.IsAtlasMember(path)
+                ? TextureImporterCompression.Uncompressed
+                : TextureImporterCompression.Compressed;
 
             // A ceiling: whoever imported an asset smaller did it for the build weight, and a
             // blanket pass has no measurement with which to argue.

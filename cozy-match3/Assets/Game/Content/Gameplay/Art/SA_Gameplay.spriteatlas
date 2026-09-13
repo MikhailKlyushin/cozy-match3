@@ -1,0 +1,112 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!687078895 &4343727234628468602
+SpriteAtlas:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: SA_Gameplay
+  m_EditorData:
+    serializedVersion: 2
+    textureSettings:
+      serializedVersion: 2
+      anisoLevel: 1
+      compressionQuality: 50
+      maxTextureSize: 2048
+      textureCompression: 0
+      filterMode: 1
+      generateMipMaps: 1
+      readable: 0
+      crunchedCompression: 0
+      sRGB: 1
+    platformSettings:
+    - serializedVersion: 4
+      m_BuildTarget: DefaultTexturePlatform
+      m_MaxTextureSize: 2048
+      m_ResizeAlgorithm: 0
+      m_TextureFormat: -1
+      m_TextureCompression: 1
+      m_CompressionQuality: 50
+      m_CrunchedCompression: 0
+      m_AllowsAlphaSplitting: 0
+      m_Overridden: 0
+      m_IgnorePlatformSupport: 0
+      m_AndroidETC2FallbackOverride: 0
+      m_ForceMaximumCompressionQuality_BC6H_BC7: 0
+    packingSettings:
+      serializedVersion: 2
+      padding: 16
+      blockOffset: 1
+      allowAlphaSplitting: 0
+      enableRotation: 0
+      enableTightPacking: 0
+      enableAlphaDilation: 0
+    secondaryTextureSettings: {}
+    variantMultiplier: 1
+    packables:
+    - {fileID: 102900000, guid: 029790a1510357a4e89295c606dba390, type: 3}
+    bindAsDefault: 1
+    isAtlasV2: 0
+    cachedData: {fileID: 0}
+    packedSpriteRenderDataKeys:
+    - dcb94b501b6bb4448bf25db90958ae2e: 21300000
+    - a80819415b3554b4f8880911c4ce6fdc: 21300000
+    - 44c512e4574d3774285cda0d368231c7: 21300000
+    - 6099c185ba85b8d468fa68ddcf4cd949: 21300000
+    - 2cf50c479220f9745abde828ad14d9b6: 21300000
+    - cc709757d22a36c459c773302f661d4f: 21300000
+    - d40a75978a4432e418be2daaf77161b1: 21300000
+    - 93c935d7d77a69d4cb9b3f1f1557ce1e: 21300000
+    - 9cbcec78549ff7a498109eb5a1ce6ab6: 21300000
+    - 77b13e89048c4bb48ba85d61dbc347df: 21300000
+    - 108d2d5aa8b3c5a40a6f3da2060b864d: 21300000
+    - 82a7539a847ee004e88bd7ba6d83b4c2: 21300000
+    - 321e9b9aa60222949900c1915f6d163b: 21300000
+    - e365d61bcf79e274286ef840336cff03: 21300000
+    - 230faa3b7cd1abb4abfb883f6b1d103d: 21300000
+    - cbfe08acd45d92247b88a3105b1694d9: 21300000
+    - 9b5837ed74de0af43a6aa16ca4413807: 21300000
+    - c9e430bfaee71fa42b531f129e35f833: 21300000
+  m_MasterAtlas: {fileID: 0}
+  m_PackedSprites:
+  - {fileID: 21300000, guid: dcb94b501b6bb4448bf25db90958ae2e, type: 3}
+  - {fileID: 21300000, guid: a80819415b3554b4f8880911c4ce6fdc, type: 3}
+  - {fileID: 21300000, guid: 44c512e4574d3774285cda0d368231c7, type: 3}
+  - {fileID: 21300000, guid: 6099c185ba85b8d468fa68ddcf4cd949, type: 3}
+  - {fileID: 21300000, guid: 2cf50c479220f9745abde828ad14d9b6, type: 3}
+  - {fileID: 21300000, guid: cc709757d22a36c459c773302f661d4f, type: 3}
+  - {fileID: 21300000, guid: d40a75978a4432e418be2daaf77161b1, type: 3}
+  - {fileID: 21300000, guid: 93c935d7d77a69d4cb9b3f1f1557ce1e, type: 3}
+  - {fileID: 21300000, guid: 9cbcec78549ff7a498109eb5a1ce6ab6, type: 3}
+  - {fileID: 21300000, guid: 77b13e89048c4bb48ba85d61dbc347df, type: 3}
+  - {fileID: 21300000, guid: 108d2d5aa8b3c5a40a6f3da2060b864d, type: 3}
+  - {fileID: 21300000, guid: 82a7539a847ee004e88bd7ba6d83b4c2, type: 3}
+  - {fileID: 21300000, guid: 321e9b9aa60222949900c1915f6d163b, type: 3}
+  - {fileID: 21300000, guid: e365d61bcf79e274286ef840336cff03, type: 3}
+  - {fileID: 21300000, guid: 230faa3b7cd1abb4abfb883f6b1d103d, type: 3}
+  - {fileID: 21300000, guid: cbfe08acd45d92247b88a3105b1694d9, type: 3}
+  - {fileID: 21300000, guid: 9b5837ed74de0af43a6aa16ca4413807, type: 3}
+  - {fileID: 21300000, guid: c9e430bfaee71fa42b531f129e35f833, type: 3}
+  m_PackedSpriteNamesToIndex:
+  - T_Board_Cell_2D
+  - T_Booster_RocketV_2D
+  - T_Element_BoxBase_S0_2D
+  - T_Booster_Bomb_2D
+  - T_Element_BoxBow_2D
+  - T_Chip_Ball_2D
+  - T_Element_BoxPip_2D
+  - T_Chip_Pillow_2D
+  - T_Booster_RocketH_2D
+  - T_Element_BoxBase_S1_2D
+  - T_Element_BoxBase_S2_2D
+  - T_Chip_Paw_2D
+  - T_Chip_Mouse_2D
+  - T_Element_Blocker_2D
+  - T_Booster_Airplane_2D
+  - T_Chip_Bell_2D
+  - T_Chip_Bowl_2D
+  - T_Booster_Rainbow_2D
+  m_RenderDataMap: {}
+  m_Tag: SA_Gameplay
+  m_IsVariant: 0

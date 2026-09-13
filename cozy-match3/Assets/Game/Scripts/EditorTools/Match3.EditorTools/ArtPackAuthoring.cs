@@ -125,7 +125,9 @@ namespace Match3.EditorTools
             importer.filterMode = FilterMode.Bilinear;
             importer.wrapMode = TextureWrapMode.Clamp;
             importer.spritePixelsPerUnit = 100f;
-            importer.textureCompression = TextureImporterCompression.Compressed;
+            importer.textureCompression = AtlasAuthoring.IsAtlasMember(assetPath)
+                ? TextureImporterCompression.Uncompressed
+                : TextureImporterCompression.Compressed;
 
             // HUD sits in a screen-space overlay canvas and the glows are drawn far above their
             // texel density: neither is minified enough to need mips, and both would pay for them.
