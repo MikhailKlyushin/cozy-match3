@@ -18,14 +18,14 @@ MonoBehaviour:
     - {fileID: 21300000, guid: 44c512e4574d3774285cda0d368231c7, type: 3}
     _showBow: 0
     _showNextColorPip: 0
-    _destroyFx: {fileID: 0}
+    _destroyFx: {fileID: 4519983799922809884, guid: b024497ab43c355429e534221fb34a98, type: 3}
   - _token: b2
     _healthStages:
     - {fileID: 21300000, guid: 44c512e4574d3774285cda0d368231c7, type: 3}
     - {fileID: 21300000, guid: 77b13e89048c4bb48ba85d61dbc347df, type: 3}
     _showBow: 0
     _showNextColorPip: 0
-    _destroyFx: {fileID: 0}
+    _destroyFx: {fileID: 4519983799922809884, guid: b024497ab43c355429e534221fb34a98, type: 3}
   - _token: b3
     _healthStages:
     - {fileID: 21300000, guid: 44c512e4574d3774285cda0d368231c7, type: 3}
@@ -33,54 +33,54 @@ MonoBehaviour:
     - {fileID: 21300000, guid: 108d2d5aa8b3c5a40a6f3da2060b864d, type: 3}
     _showBow: 0
     _showNextColorPip: 0
-    _destroyFx: {fileID: 0}
+    _destroyFx: {fileID: 4519983799922809884, guid: b024497ab43c355429e534221fb34a98, type: 3}
   - _token: c1
     _healthStages:
     - {fileID: 21300000, guid: 44c512e4574d3774285cda0d368231c7, type: 3}
     _showBow: 1
     _showNextColorPip: 0
-    _destroyFx: {fileID: 0}
+    _destroyFx: {fileID: 4519983799922809884, guid: b024497ab43c355429e534221fb34a98, type: 3}
   - _token: c2
     _healthStages:
     - {fileID: 21300000, guid: 44c512e4574d3774285cda0d368231c7, type: 3}
     _showBow: 1
     _showNextColorPip: 0
-    _destroyFx: {fileID: 0}
+    _destroyFx: {fileID: 4519983799922809884, guid: b024497ab43c355429e534221fb34a98, type: 3}
   - _token: c3
     _healthStages:
     - {fileID: 21300000, guid: 44c512e4574d3774285cda0d368231c7, type: 3}
     _showBow: 1
     _showNextColorPip: 0
-    _destroyFx: {fileID: 0}
+    _destroyFx: {fileID: 4519983799922809884, guid: b024497ab43c355429e534221fb34a98, type: 3}
   - _token: c4
     _healthStages:
     - {fileID: 21300000, guid: 44c512e4574d3774285cda0d368231c7, type: 3}
     _showBow: 1
     _showNextColorPip: 0
-    _destroyFx: {fileID: 0}
+    _destroyFx: {fileID: 4519983799922809884, guid: b024497ab43c355429e534221fb34a98, type: 3}
   - _token: c5
     _healthStages:
     - {fileID: 21300000, guid: 44c512e4574d3774285cda0d368231c7, type: 3}
     _showBow: 1
     _showNextColorPip: 0
-    _destroyFx: {fileID: 0}
+    _destroyFx: {fileID: 4519983799922809884, guid: b024497ab43c355429e534221fb34a98, type: 3}
   - _token: c6
     _healthStages:
     - {fileID: 21300000, guid: 44c512e4574d3774285cda0d368231c7, type: 3}
     _showBow: 1
     _showNextColorPip: 0
-    _destroyFx: {fileID: 0}
+    _destroyFx: {fileID: 4519983799922809884, guid: b024497ab43c355429e534221fb34a98, type: 3}
   - _token: cx
     _healthStages:
     - {fileID: 21300000, guid: 44c512e4574d3774285cda0d368231c7, type: 3}
     _showBow: 1
     _showNextColorPip: 1
-    _destroyFx: {fileID: 0}
+    _destroyFx: {fileID: 4519983799922809884, guid: b024497ab43c355429e534221fb34a98, type: 3}
   - _token: '##'
     _healthStages:
     - {fileID: 21300000, guid: e365d61bcf79e274286ef840336cff03, type: 3}
     _showBow: 0
     _showNextColorPip: 0
-    _destroyFx: {fileID: 0}
+    _destroyFx: {fileID: 4519983799922809884, guid: b024497ab43c355429e534221fb34a98, type: 3}
   _bowOverlay: {fileID: 21300000, guid: 2cf50c479220f9745abde828ad14d9b6, type: 3}
   _pipOverlay: {fileID: 21300000, guid: d40a75978a4432e418be2daaf77161b1, type: 3}

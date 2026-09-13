@@ -529,19 +529,38 @@ public interface IDamageSourceRule { DamageSourceKind Kind { get; } bool IsDamag
 
 | Скоуп | Контекст | Что живёт |
 |---|---|---|
-| Project | префаб `ProjectContext` | `IMatch3Logger`, `ProgressRepository`, `LevelCatalog`, `ElementCatalog`, `TimingProfile`, `PopupService`, `MetricsReporter` |
-| Scene | `SceneContext` в `Game.unity` | `LevelFlowRule`, презентеры HUD, `CheatsInstaller` (под дефайном) |
-| **Level attempt** | префаб `LevelContext` с `GameObjectContext` (A08) | `IRandom` (seed попытки), `Board`, `GoalTracker`, все сервисы `Match3.Resolve`, `TurnRule`, `BoardView`, пулы фишек и FX |
+| Boot | `SceneContext` в `Boot.unity` (`BootInstaller`) | только `IMatch3Logger` — экрану загрузки нужно одно: куда сообщить о провале |
+| Game | `SceneContext` в `Game.unity` (`GameInstaller`) | `IMatch3Logger`, `LevelCatalog`, `ElementCatalog`, `TimingProfile` и визуальные профили, `ProgressRepository`, `LevelSessionFactory`, `LevelFlowRule`, `GameFlowController`, презентеры HUD, `PopupService`, `MetricsReporter`, аудио-сервисы, биндеры читов (под дефайном) |
+| **Level attempt** | префаб `LevelContext` с `GameObjectContext` (A08, `LevelInstaller`) | `IRandom` (seed попытки), `Board`, `GoalTracker`, все сервисы `Match3.Resolve`, `TurnRule`, `LevelSessionState`, `BoardView`, `TranscriptPlayer` и реестр `ITurnEventPlayer`, пулы фишек и FX |
 
 - Перезапуск уровня = `Destroy(levelContext)` + инстанс нового. Подписки R3, твины и пулы уходят
-  вместе с ним. Ни одного per-level объекта в project scope.
+  вместе с ним. Ни одного per-level объекта в скоупе сцены.
+- **Порядок смены попытки.** Новый `LevelContext` инициализируется синхронно (`GameObjectContext`
+  вызывает `IInitializable` сразу при инстансе, не дожидаясь `Start`), а старый уничтожается
+  `Object.Destroy` в конце кадра. То есть `Dispose` умершей попытки выполняется **после**
+  `Initialize` живой. Поэтому scene-скоуп объект, которому попытка отдаёт себя (панель читов),
+  освобождает ссылку **по идентичности** — `Unbind(binding)`, а не `Unbind()`, иначе тир-даун
+  предыдущей попытки забирает текущую.
 - Конструкторная инъекция по умолчанию; `[Inject]`-метод — только во `MonoBehaviour`-view.
 - Сервисы: `BindInterfacesAndSelfTo<T>().AsSingle()` в своём скоупе. Сервис не резолвит view.
 - `DiContainer` в геймплей-код не инжектится (сервис-локатор в маскировке).
+- **Почему нет `ProjectContext`.** Project scope нужен ровно затем, чтобы пережить `LoadScene`, а
+  переход здесь один и в одну сторону: `Boot` → `Game` (`Single`). Дальше `Game.unity` живёт всю
+  сессию — смена уровня это `Destroy(levelContext)`, а не перезагрузка сцены, — так что
+  scene-скоуп даёт то же время жизни, только с видимой границей. Три следствия, за которые
+  пришлось бы заплатить: `ProjectContext` грузится из `Resources`, и весь его граф ассетов
+  (каталог уровней, профили, префабы) уехал бы в always-included мимо зависимостей сцены — а
+  контроль веса и проверка «в release не утёк читовый ассет» (§15) держатся именно на том, что
+  содержимое билда определяется ссылками из двух сцен; префаб в `Resources` не может держать
+  ссылки на объекты сцены, а у `GameInstaller` их половина (вьюхи HUD, `AudioSource` фона,
+  родитель `LevelContext`), значит их искали бы `FindObjectOfType` — тот же сервис-локатор; и
+  скоуп, который не умирает никогда, нечем проверить на утечки между попытками. Прогресс
+  переживает даже закрытие вкладки — он в `PlayerPrefs`, а не в контейнере. Появится вторая
+  игровая сцена или возврат в мету — решение пересматривается.
 
-**Обязательный bootstrap-шаг (A09):** в `ProjectInstaller` подписать
+**Обязательный bootstrap-шаг (A09):** в `GameInstaller.InstallBindings` подписать
 `ObservableSystem.RegisterUnhandledExceptionHandler(...)` на логгер, иначе исключение в R3-цепочке
-исчезает молча.
+исчезает молча. `Boot.unity` обходится без этого: R3 там не используется.
 
 ---
 
@@ -647,8 +666,8 @@ public interface IDamageSourceRule { DamageSourceKind Kind { get; } bool IsDamag
   следующего цвета (§7.2, Q5 = включить); `##` — переноска или когтеточка, очевидно неразрушимая.
 - Бустеры: ракета — игрушка-ракета / лазерная указка, бомба — клубок-бомба, радужный шар —
   радужный клубок, самолётик — бумажный самолётик с ушами.
-- Именование ассетов (стандарты ICVR): `T_Chip_Cat01_2D`, `VFX_ChipDestroy_Cat01`,
-  `VAR_ChipView_Cat01`. Один атлас на фишки, ≤ 2048, сжатие под WebGL — милый арт легко раздувает
+- Именование ассетов (стандарты ICVR): `T_Chip_Ball_2D`, `VFX_ChipDestroy_Ball`,
+  `VAR_ChipView_Ball`. Один атлас на фишки, ≤ 2048, сжатие под WebGL — милый арт легко раздувает
   билд.
 - Ассеты одной фичи лежат вместе (§18), чтобы удаление фичи не превращалось в охоту по проекту.
 
@@ -657,8 +676,8 @@ public interface IDamageSourceRule { DamageSourceKind Kind { get; } bool IsDamag
 `ParticleSystem`, один FX-префаб обслуживает все роли эффекта).
 
 **Пошаговая инструкция по подмене арта и подключению FX-префабов — `docs/art-and-fx-guide.md`.**
-Там же зафиксирована ловушка: `Match3/Authoring/Generate All` перезаписывает спрайты-заглушки и
-обнуляет ссылки на FX в профилях.
+Там же §2 — что каждый пункт меню авторинга делает с артом и какие четыре генератора собирают
+свой ассет с нуля, поэтому вынесены из `Generate All` (см. §18).
 
 ---
 
@@ -698,14 +717,66 @@ Assets/
 рантайм-сборок запрещено (правило «рантайм → Editor»).
 
 **`Match3.Content`** (`Assets/Game/Scripts/Content/`) — типы ScriptableObject-профилей презентации:
-`TimingProfile` (§11.2), `ChipVisualProfile`, `ElementVisualProfile` (§17). Появилась потому, что
+`TimingProfile` (§11.2), `ChipVisualProfile`, `ElementVisualProfile` (§17), `AudioProfile`. Появилась потому, что
 §3.1 не даёт `Match3.Gameplay` и `Match3.Hud` **ни одной общей сборки с `UnityEngine`**, а профили
 нужны обоим: тайминги §11.3 читают и плеер транскрипта, и тик счётчика целей; спрайты фишек нужны
 и полю, и иконкам целей в HUD. Ссылка `Hud → Gameplay` запрещена, `Match3.Levels` —
 `noEngineReferences` и `ScriptableObject` держать не может. Сборка содержит **только данные**:
 ни презентеров, ни view, ни логики правил.
 
+**Звук.** `AudioProfile` держит и амбиентность (клип, громкость, фейд), и по записи на каждый
+`SfxId` — клип, громкость, минимальный интервал и разброс тона, — плюс шаг и потолок ступенчатого
+тона. `AmbientAudioService` (`Match3.Bootstrap`, `IInitializable`/`IDisposable`) запускает луп на
+`AudioSource` из сцены и гасит его при разборке.
+
+Эффекты играет `SfxPlayer` (`Match3.Bootstrap`) за интерфейсом `ISfxPlayer` из `Match3.Content` —
+там же, где профиль, потому что зовут его и `Match3.Gameplay`, и `Match3.Hud`, а общей сборки с
+`UnityEngine` у них больше нет. Он держит собственный `GameObject` с пулом `AudioSource` (создаётся
+в рантайме: у пула нет ни одной авторской настройки) и отбирает самый старый голос при
+переполнении. Прореживание вынесено в `SfxThrottle` (`Match3.Content`): время передаётся в него
+аргументом, поэтому правило «один поп на шаг каскада» проверяется edit-mode тестом без сцены.
+Разброс тона берётся из отдельного `DeterministicRandom`, а не из `IRandom` попытки: порядок
+потребления игрового RNG — часть контракта детерминизма (D12), и звук не имеет права его сдвинуть.
+
+Отложенный звук (посадка фишки) ждёт через `UniTask.Delay`, а **не** через
+`AudioSource.PlayDelayed`: на WebGL тот теряет задержку и играет немедленно (известный баг
+Unity), то есть звук касания прозвучал бы в момент начала падения. Ожидание принимает
+`CancellationToken` хода, поэтому разобранный посреди каскада уровень не дозвучивает свои
+посадки.
+
+Привязка — в плеерах событий: каждый зовёт `context.Sfx` в той же точке, где запускает свой FX
+(§11.4 GDD). Единственное исключение — глубина каскада: `StepBegin` визуала не имеет, поэтому её
+публикует отдельный `CascadeDepthEventPlayer`, а не `switch` внутри `TranscriptPlayer` (A11).
+Победу и поражение озвучивает `GameFlowController`, тик счётчика — `GoalsPanelPresenter`.
+
+Кнопку «звук вкл/выкл» (§11.2) держит `SoundToggleView` в `Match3.Hud` — только спрайт и клик, — а
+состояние живёт в `AudioMuteService` (`Match3.Bootstrap`): он глушит через `AudioListener.volume`,
+а не через источник, поэтому эффекты замолкают вместе с фоном и ни один из них не нужно подписывать
+на кнопку. Выбор хранится в `IProgressStorage` под ключом `audio.muted` и флашится сразу (§13).
+Всё опционально: без профиля `GameInstaller` биндит `NullSfxPlayer` и пишет предупреждение, без
+источника амбиентности сцена играет одни эффекты — вызывающим не приходится спрашивать, есть ли
+звук вообще.
+
 Префабы: в `Prefabs/` — только варианты (`VAR_*`) и сборные view-префабы фичи.
+
+**Генераторы не перетирают авторский труд (T30).** `Generate Content Profiles` заполняет
+`_sprite`, `_healthStages[i]`, `_particleColor`, `_activationFx` и `_destroyFx` **только пока поле
+пусто** (для цвета «пусто» — нулевая альфа); структура записей — состав, токен, число hp-стадий —
+переписывается всегда, потому что следует правилам, а не арту. Вернуть каноническую разводку можно
+только явным `Match3/Authoring/Reset Content Profiles`, с подтверждением.
+
+**Что из `Generate All` вынесено и почему.** Генератор процедурных заглушек удалён вместе с
+`Generate Placeholder Art`: весь арт §17 финальный и лежит в репозитории, а от `ProceduralArt`
+осталась таблица имён и запасных цветов — `ChipArtRegistry`. Пиксели теперь авторские, под кодом
+остались только импорт-настройки (`Apply Texture Import Settings`, `Configure Art Pack Importers`,
+`Apply Audio Import Settings`; клипы SFX — `Decompress On Load`, амбиентность —
+`Compressed In Memory`, потому что стриминга на WebGL нет).
+Сцены и view-префабы тоже стали авторскими — `Background.prefab` и `GoalRow.prefab` инстансами в
+`Boot.unity` и `Game.unity`, тинт в `VAR_BoardCell`, спрайт подсказки в `VAR_LevelContext` — а их
+генераторы собирают ассет с нуля и защитить его пропуском файла, как PNG, нельзя. Поэтому
+`Generate Boot Scene`, `Generate Game Scene`, `Generate View Prefabs` и
+`Generate Level Context Prefab` остались отдельными пунктами меню и в пайплайн не входят.
+Следствие: `Generate All` не трогает ни одного PNG, ни одной сцены и ни одного view-префаба.
 
 ---
 

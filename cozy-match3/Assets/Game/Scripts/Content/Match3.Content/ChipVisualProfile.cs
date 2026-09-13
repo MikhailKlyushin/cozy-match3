@@ -26,6 +26,16 @@ namespace Match3.Content
             return visual != null ? visual.ParticleColor : Color.white;
         }
 
+        /// <summary>
+        /// Tint of the destruction flash. White when the profile carries none, so a profile
+        /// written before the field existed plays exactly as it did - the prefab's own colour.
+        /// </summary>
+        public Color GetDestroyTint(ChipColor color)
+        {
+            ChipVisual visual = FindChip(color);
+            return visual != null && visual.DestroyTint.a > 0f ? visual.DestroyTint : Color.white;
+        }
+
         public GameObject GetDestroyFx(ChipColor color)
         {
             ChipVisual visual = FindChip(color);
@@ -45,13 +55,44 @@ namespace Match3.Content
             return null;
         }
 
+        /// <summary>Heads and flares: the effect a booster shows where it sits.</summary>
         public GameObject GetBoosterFx(BoosterType booster)
+        {
+            BoosterVisual visual = FindBooster(booster);
+            return visual != null ? visual.ActivationFx : null;
+        }
+
+        /// <summary>
+        /// Trails and rays - anything stretched into a line. Falls back to the activation effect,
+        /// so a profile filled in before the roles existed plays exactly as it did.
+        /// </summary>
+        public GameObject GetBoosterBeamFx(BoosterType booster)
+        {
+            BoosterVisual visual = FindBooster(booster);
+            return visual != null ? visual.BeamFx : null;
+        }
+
+        /// <summary>Shockwaves - anything that expands from a point.</summary>
+        public GameObject GetBoosterBurstFx(BoosterType booster)
+        {
+            BoosterVisual visual = FindBooster(booster);
+            return visual != null ? visual.BurstFx : null;
+        }
+
+        /// <summary>The hit at the far end of a flight.</summary>
+        public GameObject GetBoosterImpactFx(BoosterType booster)
+        {
+            BoosterVisual visual = FindBooster(booster);
+            return visual != null ? visual.ImpactFx : null;
+        }
+
+        private BoosterVisual FindBooster(BoosterType booster)
         {
             for (int i = 0; i < _boosters.Length; i++)
             {
                 if (_boosters[i] != null && _boosters[i].Booster == booster)
                 {
-                    return _boosters[i].ActivationFx;
+                    return _boosters[i];
                 }
             }
 
@@ -80,6 +121,19 @@ namespace Match3.Content
             // Qualified: the Color property below shadows UnityEngine.Color in this scope.
             [SerializeField] private Color _particleColor = UnityEngine.Color.white;
 
+            /// <summary>
+            /// Colour of the flash this chip dies under. Not <c>_particleColor</c> itself: the
+            /// chip colours sit at the lightness of the board they are drawn on, and a flash of
+            /// that lightness is invisible - the pink yarn clears the cell by 4 luminance steps
+            /// of 255. This is the same hue carried to a lightness that reads (§2.2).
+            /// <para>
+            /// Left fully transparent it means "unset" and the flash stays the prefab's own
+            /// colour. No white default: to this authoring an opaque value IS the authored one,
+            /// and a default would make the field unwritable.
+            /// </para>
+            /// </summary>
+            [SerializeField] private Color _destroyFxTint;
+
             [SerializeField] private GameObject _destroyFx;
 
             public ChipColor Color => _color;
@@ -87,6 +141,8 @@ namespace Match3.Content
             public Sprite Sprite => _sprite;
 
             public Color ParticleColor => _particleColor;
+
+            public Color DestroyTint => _destroyFxTint;
 
             public GameObject DestroyFx => _destroyFx;
         }
@@ -97,12 +153,25 @@ namespace Match3.Content
             [SerializeField] private BoosterType _booster = BoosterType.RocketH;
             [SerializeField] private Sprite _sprite;
             [SerializeField] private GameObject _activationFx;
+            [SerializeField] private GameObject _beamFx;
+            [SerializeField] private GameObject _burstFx;
+            [SerializeField] private GameObject _impactFx;
 
             public BoosterType Booster => _booster;
 
             public Sprite Sprite => _sprite;
 
             public GameObject ActivationFx => _activationFx;
+
+            /// <summary>
+            /// Role fields are optional: an empty one falls back to the activation effect, which
+            /// is what every booster used for every role before the roles were split (T31).
+            /// </summary>
+            public GameObject BeamFx => _beamFx != null ? _beamFx : _activationFx;
+
+            public GameObject BurstFx => _burstFx != null ? _burstFx : _activationFx;
+
+            public GameObject ImpactFx => _impactFx != null ? _impactFx : _activationFx;
         }
     }
 }

@@ -25,6 +25,7 @@ namespace Match3.Gameplay.Playback
             BoardView board,
             TimingProfile timings,
             IReadOnlyList<ITurnEventPlayer> players,
+            ISfxPlayer sfx,
             IMatch3Logger logger)
         {
             if (players == null)
@@ -32,7 +33,7 @@ namespace Match3.Gameplay.Playback
                 throw new ArgumentNullException(nameof(players));
             }
 
-            _context = new PlaybackContext(board, timings);
+            _context = new PlaybackContext(board, timings, sfx ?? throw new ArgumentNullException(nameof(sfx)));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _byKind = new ITurnEventPlayer[KindCount];
 

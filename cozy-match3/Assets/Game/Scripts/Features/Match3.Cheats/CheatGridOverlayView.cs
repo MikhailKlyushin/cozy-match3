@@ -8,7 +8,7 @@ using UnityEngine;
 namespace Match3.Cheats
 {
     /// <summary>
-    /// The "показать сетку координат" overlay of §12: an <c>(x, y)</c> label over every cell, for
+    /// The "show coordinate grid" overlay of §12: an <c>(x, y)</c> label over every cell, for
     /// checking a level against its config (D01). Positions come from
     /// <see cref="IBoardCellPicker.CellToScreen"/>, the one board contract Gameplay exposes -
     /// there is no board-overlay interface and the cheat panel must not add one to Gameplay (§3.1).

@@ -6,6 +6,7 @@ using DG.Tweening;
 using Match3.Content;
 using Match3.Core;
 using Match3.Resolve;
+using UnityEngine;
 
 namespace Match3.Gameplay.Playback
 {
@@ -16,6 +17,8 @@ namespace Match3.Gameplay.Playback
     /// </summary>
     public sealed class ChipLifecycleEventPlayer : ITurnEventPlayer
     {
+        private readonly FxRegistry _fx;
+        private readonly ChipVisualProfile _chipProfile;
         private readonly IMatch3Logger _logger;
 
         private static readonly TurnEventKind[] Handled =
@@ -28,8 +31,22 @@ namespace Match3.Gameplay.Playback
         /// <summary>Last ComboStep offset seen, so a series is paced by its increments (§6.3).</summary>
         private int _lastTransformOffsetMs;
 
-        public ChipLifecycleEventPlayer(IMatch3Logger logger)
+        /// <summary>
+        /// The destruction effect covers the whole animation, punch and fade alike. It is wider
+        /// than the cell on purpose: cells sit edge to edge and the chips fill them, so an effect
+        /// held inside one has no empty pixel to be seen against.
+        /// </summary>
+        private const float FxCells = 1.8f;
+
+        /// <summary>Size the flash expands from, so it arrives as a burst rather than a state.</summary>
+        private const float FxStartCells = 0.7f;
+
+        public ChipLifecycleEventPlayer(FxRegistry fx, ChipVisualProfile chipProfile, IMatch3Logger logger)
         {
+            _fx = fx ?? throw new ArgumentNullException(nameof(fx));
+            _chipProfile = chipProfile != null
+                ? chipProfile
+                : throw new ArgumentNullException(nameof(chipProfile));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -55,14 +72,62 @@ namespace Match3.Gameplay.Playback
             }
         }
 
-        private static async UniTask DestroyAsync(
+        private async UniTask DestroyAsync(
             PlaybackContext context,
             ChipView chip,
             int instanceId,
+            ChipColor color,
             CancellationToken ct)
         {
             TimingProfile timings = context.Timings;
+            FxView fx = RentDestroyFx(context, chip.Cell, color, timings.DestroyTotalDuration);
 
+            try
+            {
+                await AnimateDestructionAsync(context, chip, instanceId, timings, ct);
+            }
+            finally
+            {
+                _fx.Release(fx);
+            }
+        }
+
+        /// <summary>
+        /// Null when the colour has no effect assigned, which stays legal: the timing plays in
+        /// full and only the visual is missing (`art-and-fx-guide` §4.6).
+        /// </summary>
+        private FxView RentDestroyFx(PlaybackContext context, GridPos cell, ChipColor color, float duration)
+        {
+            FxView view = _fx.Rent(_chipProfile.GetDestroyFx(color));
+            if (view == null)
+            {
+                return null;
+            }
+
+            float cellSize = context.Board.Layout.CellSize;
+
+            // The flash carries the chip's own colour. On a board where six colours die in the
+            // same cascade, a white flash says something died; this one says which.
+            view.Prepare(
+                context.Board.Layout.CellCenter(cell),
+                new Vector2(cellSize * FxStartCells, cellSize * FxStartCells),
+                _chipProfile.GetDestroyTint(color),
+                duration);
+
+            // A flash that neither grows nor fades reads as a blink, and a blink is what the eye
+            // skips on a board this busy. §11.3 fixes the duration, so the size carries it.
+            view.SizeTo(new Vector2(cellSize * FxCells, cellSize * FxCells), duration, Ease.OutQuad);
+            view.FadeOut(duration);
+            return view;
+        }
+
+        private static async UniTask AnimateDestructionAsync(
+            PlaybackContext context,
+            ChipView chip,
+            int instanceId,
+            TimingProfile timings,
+            CancellationToken ct)
+        {
             chip.Rect.DOScale(timings.DestroyPunchScale, timings.DestroyPunchDuration)
                 .SetEase(Ease.OutQuad)
                 .SetLink(chip.gameObject);
@@ -101,7 +166,11 @@ namespace Match3.Gameplay.Playback
                 return;
             }
 
-            context.TrackDestruction(DestroyAsync(context, chip, e.InstanceId, ct));
+            // Every chip of a step dies in the same frame, so the throttle decides how many of
+            // them are heard; the step decides how high, which is what makes a cascade climb.
+            context.Sfx.PlayLadder(SfxId.ChipDestroyed, context.CascadeStep);
+
+            context.TrackDestruction(DestroyAsync(context, chip, e.InstanceId, e.Color, ct));
         }
 
         private static void Spawn(PlaybackContext context, in TurnEvent e)

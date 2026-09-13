@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using Match3.Content;
 using Match3.Core;
 using Match3.Diagnostics;
 using Match3.Hud;
@@ -23,10 +24,13 @@ namespace Match3.Bootstrap
         private readonly GoalsPanelPresenter _goalsPanel;
         private readonly HudActionsView _hudActions;
         private readonly MetricsReporter _metrics;
+        private readonly ISfxPlayer _sfx;
         private readonly IMatch3Logger _logger;
 
         private readonly CompositeDisposable _disposables = new CompositeDisposable();
         private readonly CancellationTokenSource _cancellation = new CancellationTokenSource();
+
+        private Action _cheatsRequested;
 
         public GameFlowController(
             LevelFlowRule flow,
@@ -36,6 +40,7 @@ namespace Match3.Bootstrap
             GoalsPanelPresenter goalsPanel,
             HudActionsView hudActions,
             MetricsReporter metrics,
+            ISfxPlayer sfx,
             IMatch3Logger logger)
         {
             _flow = flow ?? throw new ArgumentNullException(nameof(flow));
@@ -45,14 +50,29 @@ namespace Match3.Bootstrap
             _goalsPanel = goalsPanel ?? throw new ArgumentNullException(nameof(goalsPanel));
             _hudActions = hudActions != null ? hudActions : throw new ArgumentNullException(nameof(hudActions));
             _metrics = metrics ?? throw new ArgumentNullException(nameof(metrics));
+            _sfx = sfx ?? throw new ArgumentNullException(nameof(sfx));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        /// <summary>Assigned by the cheats installer when the panel is compiled in (§15).</summary>
-        public Action CheatsRequested { get; set; }
+        /// <summary>
+        /// Assigned by the cheats installer when the panel is compiled in (§15). Setting it also
+        /// reveals the HUD button, so neither side depends on which installer runs first.
+        /// </summary>
+        public Action CheatsRequested
+        {
+            get => _cheatsRequested;
+            set
+            {
+                _cheatsRequested = value;
+                _hudActions.SetCheatsAvailable(value != null);
+            }
+        }
 
         public void Initialize()
         {
+            // The button ships in the scene, so a build without the panel has to hide it here.
+            _hudActions.SetCheatsAvailable(_cheatsRequested != null);
+
             _disposables.Add(_sessions.SessionCreated.Subscribe(OnSessionCreated));
             _disposables.Add(_sessions.Finished.Subscribe(OnLevelFinished));
             _disposables.Add(_flow.Screen.Subscribe(OnScreenChanged));
@@ -113,6 +133,10 @@ namespace Match3.Bootstrap
                 session.Goals,
                 session.Seed);
 
+            // Ahead of the popup, not with it: the outcome is already decided and the goal
+            // counters are still ticking, so the sting is what tells the player it is over.
+            _sfx.Play(result == LevelResult.Won ? SfxId.LevelWon : SfxId.LevelLost);
+
             if (result == LevelResult.Won)
             {
                 await _popups.ShowWinAsync(session.Goals, ct);
@@ -143,10 +167,10 @@ namespace Match3.Bootstrap
 
         private void OnCheatsClicked()
         {
-            Action handler = CheatsRequested;
+            Action handler = _cheatsRequested;
             if (handler == null)
             {
-                // Release builds compile the panel out, so the button is simply inert (§15).
+                // The button is hidden in that case, so this only guards a stray click (§15).
                 _logger.Info("Cheat panel is not available in this build.");
                 return;
             }

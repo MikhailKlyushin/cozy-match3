@@ -31,10 +31,10 @@ namespace Match3.Gameplay.Playback
         };
 
         /// <summary>Beam and trail thickness, in cells.</summary>
-        private const float BeamThickness = 0.34f;
+        private const float BeamThickness = 0.5f;
 
         /// <summary>Size of a beam head, flare or burst before it expands, in cells.</summary>
-        private const float HeadSize = 0.8f;
+        private const float HeadSize = 1.2f;
 
         /// <summary>The airplane destroys a cell plus its four neighbours: three cells across.</summary>
         private const float ImpactCells = 3f;
@@ -105,6 +105,7 @@ namespace Match3.Gameplay.Playback
                 }
             }
 
+            context.Sfx.Play(SfxId.BoosterSpawned);
             return PlayPopAsync(context, cell, booster, popDuration, ct);
         }
 
@@ -233,6 +234,7 @@ namespace Match3.Gameplay.Playback
             GridPos negativeEnd = horizontal ? new GridPos(min, origin.Y) : new GridPos(origin.X, min);
             GridPos positiveEnd = horizontal ? new GridPos(max, origin.Y) : new GridPos(origin.X, max);
 
+            context.Sfx.Play(SfxId.Rocket);
             _shake.Shake(
                 context.Timings.RocketShakeDuration,
                 context.Timings.RocketShakeAmplitude,
@@ -257,9 +259,8 @@ namespace Match3.Gameplay.Playback
                 return;
             }
 
-            GameObject prefab = FxFor(booster);
-            FxView head = _fx.Rent(prefab);
-            FxView trail = _fx.Rent(prefab);
+            FxView head = _fx.Rent(FxFor(booster));
+            FxView trail = _fx.Rent(BeamFxFor(booster));
 
             try
             {
@@ -327,9 +328,8 @@ namespace Match3.Gameplay.Playback
                 (layout.CellCenter(new GridPos(minX, minY)) + layout.CellCenter(new GridPos(maxX, maxY))) * Half;
             var blastSize = new Vector2((maxX - minX + 1) * cellSize, (maxY - minY + 1) * cellSize);
 
-            GameObject prefab = FxFor(booster);
-            FxView flash = _fx.Rent(prefab);
-            FxView wave = _fx.Rent(prefab);
+            FxView flash = _fx.Rent(FxFor(booster));
+            FxView wave = _fx.Rent(BurstFxFor(booster));
 
             try
             {
@@ -347,6 +347,7 @@ namespace Match3.Gameplay.Playback
                     wave.FadeOut(timings.BombShockwave);
                 }
 
+                context.Sfx.Play(SfxId.Bomb);
                 _shake.Shake(timings.BombShakeDuration, timings.BombShakeAmplitude, Vector2.one);
                 await Wait(timings.BombShockwave, ct);
             }
@@ -373,7 +374,9 @@ namespace Match3.Gameplay.Playback
             BoardLayout layout = context.Board.Layout;
             Vector2 from = layout.CellCenter(origin);
             float stagger = BeamStagger(context, count);
-            GameObject prefab = FxFor(booster);
+            GameObject prefab = BeamFxFor(booster);
+
+            context.Sfx.Play(SfxId.Rainbow);
 
             _beams.Clear();
 
@@ -406,6 +409,10 @@ namespace Match3.Gameplay.Playback
             TimingProfile timings = context.Timings;
             float thickness = context.Board.Layout.CellSize * BeamThickness;
             FxView beam = _fx.Rent(prefab);
+
+            // A full-board volley sends one of these every 0.04 s; the throttle thins them into
+            // a stream rather than a wall.
+            context.Sfx.Play(SfxId.RainbowBeam);
 
             try
             {
@@ -448,6 +455,8 @@ namespace Match3.Gameplay.Playback
 
             FxView plane = _fx.Rent(FxFor(booster));
 
+            context.Sfx.Play(SfxId.Airplane);
+
             try
             {
                 if (plane != null)
@@ -474,7 +483,7 @@ namespace Match3.Gameplay.Playback
             CancellationToken ct)
         {
             float duration = context.Timings.LandingSquashDuration;
-            FxView burst = _fx.Rent(FxFor(booster));
+            FxView burst = _fx.Rent(ImpactFxFor(booster));
 
             try
             {
@@ -657,5 +666,11 @@ namespace Match3.Gameplay.Playback
                 : UniTask.Delay(TimeSpan.FromSeconds(seconds), DelayType.DeltaTime, PlayerLoopTiming.Update, ct);
 
         private GameObject FxFor(BoosterType booster) => _chipProfile.GetBoosterFx(booster);
+
+        private GameObject BeamFxFor(BoosterType booster) => _chipProfile.GetBoosterBeamFx(booster);
+
+        private GameObject BurstFxFor(BoosterType booster) => _chipProfile.GetBoosterBurstFx(booster);
+
+        private GameObject ImpactFxFor(BoosterType booster) => _chipProfile.GetBoosterImpactFx(booster);
     }
 }

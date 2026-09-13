@@ -63,6 +63,20 @@ namespace Match3.EditorTools
             so.ApplyModifiedPropertiesWithoutUndo();
         }
 
+        internal static void WireVector2(Component component, string fieldName, Vector2 value)
+        {
+            var so = new SerializedObject(component);
+            SerializedProperty property = so.FindProperty(fieldName);
+            if (property == null)
+            {
+                Debug.LogError("[Match3] " + component.GetType().Name + " has no serialized field " + fieldName);
+                return;
+            }
+
+            property.vector2Value = value;
+            so.ApplyModifiedPropertiesWithoutUndo();
+        }
+
         internal static void WireInt(Component component, string fieldName, int value)
         {
             var so = new SerializedObject(component);
@@ -112,7 +126,7 @@ namespace Match3.EditorTools
             text.text = content;
             text.fontSize = fontSize;
             text.alignment = TextAlignmentOptions.Center;
-            text.color = Color.white;
+            text.color = Match3Palette.TextPrimary;
             text.raycastTarget = false;
             text.enableAutoSizing = false;
             text.textWrappingMode = TextWrappingModes.NoWrap;
@@ -129,9 +143,11 @@ namespace Match3.EditorTools
             rect.sizeDelta = size;
 
             var image = go.GetComponent<Image>();
-            image.sprite = AssetDatabase.LoadAssetAtPath<Sprite>(
-                ArtAuthoring.HudArtFolder + "/T_Ui_Panel_2D.png");
-            image.color = new Color(0.24f, 0.28f, 0.38f, 1f);
+            // The "depth" variant carries a lip along its bottom edge, which is what makes a flat
+            // rectangle read as pressable; the border keeps that lip a constant height.
+            image.sprite = ArtPackAuthoring.LoadUiSprite("button_rectangle_depth_flat");
+            image.type = Image.Type.Sliced;
+            image.color = Match3Palette.PanelFill;
 
             TextMeshProUGUI text = CreateText("Label", rect, label, 34);
             var textRect = (RectTransform)text.transform;
@@ -170,7 +186,7 @@ namespace Match3.EditorTools
             var sprite = AssetDatabase.LoadAssetAtPath<Sprite>(path);
             if (sprite == null)
             {
-                Debug.LogError("[Match3] Missing sprite " + path + " - run Generate Placeholder Art first");
+                Debug.LogError("[Match3] Missing sprite " + path + " - the art folder is missing it");
             }
 
             return sprite;
@@ -193,7 +209,7 @@ namespace Match3.EditorTools
 
             var image = root.GetComponent<Image>();
             image.raycastTarget = false;
-            image.sprite = LoadSprite("T_Chip_Cat01_2D");
+            image.sprite = LoadSprite(ChipArtRegistry.ChipAssetNameOf(1));
             image.preserveAspect = true;
 
             var view = root.AddComponent<ChipView>();
@@ -230,8 +246,8 @@ namespace Match3.EditorTools
             pipRect.anchorMin = new Vector2(1f, 1f);
             pipRect.anchorMax = new Vector2(1f, 1f);
             pipRect.pivot = new Vector2(1f, 1f);
-            pipRect.anchoredPosition = new Vector2(-4f, -4f);
-            pipRect.sizeDelta = new Vector2(30f, 30f);
+            // Size and inset are not authored here: ElementView.ApplyLayout derives both from the
+            // cell size on every layout pass, so they cannot go out of proportion on a 9x9 board.
             pip.enabled = false;
 
             var view = root.AddComponent<ElementView>();

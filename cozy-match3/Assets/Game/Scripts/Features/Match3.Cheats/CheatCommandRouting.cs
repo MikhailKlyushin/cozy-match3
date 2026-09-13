@@ -41,7 +41,8 @@ namespace Match3.Cheats
 
         /// <summary>
         /// True for the kinds that hand the screen to something else - a WIN/LOSE sequence, its
-        /// popup, or a freshly built level. The panel closes first so it cannot cover them.
+        /// popup, or a freshly built level, which the panel must not cover. It closes once the
+        /// command has actually run, so a press the board refused leaves the panel open.
         /// </summary>
         public static bool ClosesPanel(in CheatCommand command)
         {

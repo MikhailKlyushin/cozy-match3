@@ -30,6 +30,20 @@ namespace Match3.EditorTools
         private const float BoardMargin = 30f;
         private const int GoalRowCount = 3;
 
+        /// <summary>`T_Ui_Background_2D` is drawn square; the fitter needs to know that.</summary>
+        private const float BackgroundAspect = 1f;
+
+        /// <summary>Canvas units the plate sticks out past the outermost cells.</summary>
+        private const float BoardPlatePadding = 24f;
+
+        /// <summary>The sound toggle, bottom right, clear of the mascot at every aspect.</summary>
+        private const float SoundToggleSize = 120f;
+
+        private const float SoundToggleMargin = 30f;
+
+        private const float MascotWidth = 420f;
+        private const float MascotHeight = 320f;
+
         [MenuItem("Match3/Authoring/Generate Game Scene")]
         public static void GenerateGameScene()
         {
@@ -38,17 +52,17 @@ namespace Match3.EditorTools
 
             Canvas canvas = SceneAuthoring.CreateUiCanvas("GameCanvas", sortOrder: 0);
 
-            RectTransform background = SceneAuthoring.CreateStretchedChild(canvas.transform, "Background");
-            var backgroundImage = background.gameObject.AddComponent<Image>();
-            backgroundImage.color = new Color(0.12f, 0.14f, 0.19f, 1f);
-            backgroundImage.raycastTarget = false;
+            CreateBackground(canvas.transform);
 
             RectTransform boardArea = CreateBoardArea(canvas.transform);
+            CreateMascot(boardArea);
+            CreateBoardPlate(boardArea);
             RectTransform hudTop = CreateHudZone(canvas.transform);
 
             MovesCounterView movesCounter = CreateMovesCounter(hudTop);
             GoalsPanelView goalsPanel = CreateGoalsPanel(hudTop, "GoalsPanel", new Vector2(0.5f, 1f));
             HudActionsView hudActions = CreateHudActions(hudTop);
+            SoundToggleView soundToggle = CreateSoundToggle(canvas.transform);
 
             RectTransform popupRoot = SceneAuthoring.CreateStretchedChild(canvas.transform, "PopupRoot");
             var popups = new PopupView[]
@@ -58,11 +72,39 @@ namespace Match3.EditorTools
                 CreateEndOfContentPopup(popupRoot),
             };
 
-            CreateSceneContext(boardArea, movesCounter, goalsPanel, hudActions, popups);
+            AudioSource ambientSource = CreateAmbientAudio();
+
+            CreateSceneContext(
+                boardArea, movesCounter, goalsPanel, hudActions, popups, ambientSource, soundToggle);
             SceneAuthoring.CreateEventSystemObject();
 
             EditorSceneManager.SaveScene(scene, ScenePath);
             Debug.Log("[Match3] Game scene generated: " + ScenePath);
+        }
+
+        /// <summary>
+        /// The ambience source. A root object rather than a child of the canvas: it carries no
+        /// RectTransform and nothing about it is laid out.
+        /// </summary>
+        private static AudioSource CreateAmbientAudio()
+        {
+            var go = new GameObject("AmbientAudio", typeof(AudioSource));
+
+            // This generator builds no camera, so a freshly generated scene would have no listener
+            // and stay silent. The hand-authored scene has one on its camera and keeps it.
+            if (Object.FindFirstObjectByType<AudioListener>() == null)
+            {
+                go.AddComponent<AudioListener>();
+            }
+
+            // Volume and clip are the service's to set on Initialize; what stays here is only what
+            // must be true before the first frame.
+            var source = go.GetComponent<AudioSource>();
+            source.playOnAwake = false;
+            source.loop = true;
+            source.spatialBlend = 0f;
+            source.volume = 0f;
+            return source;
         }
 
         private static RectTransform CreateBoardArea(Transform parent)
@@ -71,6 +113,146 @@ namespace Match3.EditorTools
             area.offsetMin = new Vector2(BoardMargin, BoardMargin);
             area.offsetMax = new Vector2(-BoardMargin, -HudTopHeight);
             return area;
+        }
+
+        /// <summary>
+        /// The room the art draws (`art-direction.md` §2.2). The drawing is square and the frame is
+        /// 9:16, so it is enveloped rather than stretched: stretching would pull the floor boards to
+        /// almost twice their height and the perspective with them.
+        /// </summary>
+        private static void CreateBackground(Transform parent)
+        {
+            var go = new GameObject("Background", typeof(RectTransform), typeof(CanvasRenderer),
+                typeof(Image), typeof(AspectRatioFitter));
+            go.transform.SetParent(parent, false);
+
+            var rect = (RectTransform)go.transform;
+            rect.anchorMin = new Vector2(0.5f, 0.5f);
+            rect.anchorMax = new Vector2(0.5f, 0.5f);
+            rect.pivot = new Vector2(0.5f, 0.5f);
+
+            var image = go.GetComponent<Image>();
+            image.sprite = LoadHudSprite("T_Ui_Background_2D");
+            image.color = Color.white;
+            image.raycastTarget = false;
+
+            var fitter = go.GetComponent<AspectRatioFitter>();
+            fitter.aspectMode = AspectRatioFitter.AspectMode.EnvelopeParent;
+            fitter.aspectRatio = BackgroundAspect;
+        }
+
+        /// <summary>
+        /// The plate under the grid. A fitter keeps it square and as large as the area allows,
+        /// which is exactly the bounding square of a square board (`BoardLayout.CellSize` is
+        /// min(area / width, area / height)), so it follows the board through every resize without
+        /// a component of its own.
+        /// </summary>
+        private static void CreateBoardPlate(Transform parent)
+        {
+            var go = new GameObject("BoardPlate", typeof(RectTransform), typeof(AspectRatioFitter));
+            go.transform.SetParent(parent, false);
+
+            var rect = (RectTransform)go.transform;
+            rect.anchorMin = new Vector2(0.5f, 0.5f);
+            rect.anchorMax = new Vector2(0.5f, 0.5f);
+            rect.pivot = new Vector2(0.5f, 0.5f);
+
+            var fitter = go.GetComponent<AspectRatioFitter>();
+            fitter.aspectMode = AspectRatioFitter.AspectMode.FitInParent;
+            fitter.aspectRatio = 1f;
+
+            // The padding lives on a stretched child: the fitter drives the parent's size exactly,
+            // and a plate flush with the outermost cells reads as a cropped board.
+            RectTransform plate = LevelContextAuthoring.CreateStretched("Plate", rect);
+            plate.offsetMin = new Vector2(-BoardPlatePadding, -BoardPlatePadding);
+            plate.offsetMax = new Vector2(BoardPlatePadding, BoardPlatePadding);
+
+            var image = plate.gameObject.AddComponent<Image>();
+            image.sprite = ArtPackAuthoring.LoadUiSprite("button_square_flat");
+            image.type = Image.Type.Sliced;
+            image.color = Match3Palette.BoardPanel;
+            image.raycastTarget = false;
+        }
+
+        /// <summary>
+        /// The sleeping cat of §11.1. It sits behind the plate, so even in an aspect where the
+        /// board square grows past it, it is occluded rather than covering the grid.
+        /// </summary>
+        private static void CreateMascot(Transform parent)
+        {
+            Image mascot = PrefabAuthoring.CreateImageNode("Mascot", parent);
+            mascot.sprite = LoadHudSprite("T_Ui_Cat_2D");
+            mascot.color = Color.white;
+            mascot.preserveAspect = true;
+            mascot.raycastTarget = false;
+
+            var rect = (RectTransform)mascot.transform;
+            rect.anchorMin = new Vector2(0.5f, 0f);
+            rect.anchorMax = new Vector2(0.5f, 0f);
+            rect.pivot = new Vector2(0.5f, 0f);
+            rect.anchoredPosition = Vector2.zero;
+            rect.sizeDelta = new Vector2(MascotWidth, MascotHeight);
+        }
+
+        /// <summary>
+        /// A nine-sliced backing plate stretched behind its siblings. First child, so whatever the
+        /// caller adds next draws on top of it.
+        /// </summary>
+        private static Image CreatePlate(string name, Transform parent, Color color)
+        {
+            RectTransform rect = LevelContextAuthoring.CreateStretched(name, parent);
+            var image = rect.gameObject.AddComponent<Image>();
+            image.sprite = ArtPackAuthoring.LoadUiSprite("button_square_flat");
+            image.type = Image.Type.Sliced;
+            image.color = color;
+            image.raycastTarget = false;
+            return image;
+        }
+
+        private static Sprite LoadHudSprite(string assetName)
+        {
+            string path = ArtAuthoring.HudArtFolder + "/" + assetName + ".png";
+            var sprite = AssetDatabase.LoadAssetAtPath<Sprite>(path);
+            if (sprite == null)
+            {
+                Debug.LogError("[Match3] Missing HUD sprite " + path);
+            }
+
+            return sprite;
+        }
+
+        /// <summary>
+        /// Sound on/off (§11.2). The icon is the whole button - no plate behind it - so the sprite
+        /// itself is the raycast target and the view swaps it on every toggle.
+        /// </summary>
+        private static SoundToggleView CreateSoundToggle(Transform parent)
+        {
+            var go = new GameObject(
+                "SoundToggle", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button));
+            go.transform.SetParent(parent, false);
+
+            var rect = (RectTransform)go.transform;
+            rect.anchorMin = new Vector2(1f, 0f);
+            rect.anchorMax = new Vector2(1f, 0f);
+            rect.pivot = new Vector2(1f, 0f);
+            rect.anchoredPosition = new Vector2(-SoundToggleMargin, SoundToggleMargin);
+            rect.sizeDelta = new Vector2(SoundToggleSize, SoundToggleSize);
+
+            Sprite soundOn = LoadHudSprite("T_UI_Sound_Enabled_2D");
+            Sprite soundOff = LoadHudSprite("T_UI_Sound_Disabled_2D");
+
+            var image = go.GetComponent<Image>();
+            image.sprite = soundOn;
+            image.color = Color.white;
+            image.preserveAspect = true;
+            image.raycastTarget = true;
+
+            var view = go.AddComponent<SoundToggleView>();
+            PrefabAuthoring.Wire(view, "_button", go.GetComponent<Button>());
+            PrefabAuthoring.Wire(view, "_icon", image);
+            PrefabAuthoring.Wire(view, "_enabledSprite", soundOn);
+            PrefabAuthoring.Wire(view, "_disabledSprite", soundOff);
+            return view;
         }
 
         private static RectTransform CreateHudZone(Transform parent)
@@ -97,6 +279,8 @@ namespace Match3.EditorTools
             rect.anchoredPosition = new Vector2(30f, -20f);
             rect.sizeDelta = new Vector2(200f, 200f);
 
+            CreatePlate("Plate", rect, Match3Palette.PanelFill);
+
             TextMeshProUGUI value = PrefabAuthoring.CreateText("Value", rect, "0", 96);
             var valueRect = (RectTransform)value.transform;
             valueRect.anchorMin = new Vector2(0f, 0.35f);
@@ -104,13 +288,13 @@ namespace Match3.EditorTools
             valueRect.offsetMin = Vector2.zero;
             valueRect.offsetMax = Vector2.zero;
 
-            TextMeshProUGUI caption = PrefabAuthoring.CreateText("Caption", rect, "ходов", 32);
+            TextMeshProUGUI caption = PrefabAuthoring.CreateText("Caption", rect, "Moves", 32);
             var captionRect = (RectTransform)caption.transform;
             captionRect.anchorMin = new Vector2(0f, 0f);
             captionRect.anchorMax = new Vector2(1f, 0.35f);
             captionRect.offsetMin = Vector2.zero;
             captionRect.offsetMax = Vector2.zero;
-            caption.color = new Color(0.75f, 0.78f, 0.85f, 1f);
+            caption.color = Match3Palette.TextSecondary;
 
             var view = go.AddComponent<MovesCounterView>();
             PrefabAuthoring.Wire(view, "_valueLabel", value);
@@ -161,6 +345,8 @@ namespace Match3.EditorTools
             element.preferredWidth = 150f;
             element.preferredHeight = 140f;
 
+            CreatePlate("Slot", rect, Match3Palette.PanelFill);
+
             Image icon = PrefabAuthoring.CreateImageNode("Icon", rect);
             var iconRect = (RectTransform)icon.transform;
             iconRect.anchorMin = new Vector2(0.5f, 1f);
@@ -184,8 +370,11 @@ namespace Match3.EditorTools
             tickRect.anchorMax = new Vector2(1f, 1f);
             tickRect.pivot = new Vector2(1f, 1f);
             tickRect.sizeDelta = new Vector2(40f, 40f);
-            tick.sprite = PrefabAuthoring.LoadSprite("T_Fx_Glow_2D");
-            tick.color = new Color(0.45f, 0.9f, 0.5f, 1f);
+            // A checkmark glyph, not a green blob: the glow sprite carried no shape, so a closed
+            // goal read as a smear of colour.
+            tick.sprite = ArtPackAuthoring.LoadUiSprite("icon_checkmark");
+            tick.preserveAspect = true;
+            tick.color = Match3Palette.Success;
             tick.enabled = false;
 
             var view = go.AddComponent<GoalRowView>();
@@ -208,14 +397,14 @@ namespace Match3.EditorTools
             rect.anchoredPosition = new Vector2(-30f, -20f);
             rect.sizeDelta = new Vector2(220f, 200f);
 
-            Button restart = PrefabAuthoring.CreateButton("RestartButton", rect, "Заново", new Vector2(200f, 80f));
+            Button restart = PrefabAuthoring.CreateButton("RestartButton", rect, "Restart", new Vector2(200f, 80f));
             var restartRect = (RectTransform)restart.transform;
             restartRect.anchorMin = new Vector2(1f, 1f);
             restartRect.anchorMax = new Vector2(1f, 1f);
             restartRect.pivot = new Vector2(1f, 1f);
             restartRect.anchoredPosition = Vector2.zero;
 
-            Button cheats = PrefabAuthoring.CreateButton("CheatsButton", rect, "Читы", new Vector2(200f, 80f));
+            Button cheats = PrefabAuthoring.CreateButton("CheatsButton", rect, "Cheats", new Vector2(200f, 80f));
             var cheatsRect = (RectTransform)cheats.transform;
             cheatsRect.anchorMin = new Vector2(1f, 1f);
             cheatsRect.anchorMax = new Vector2(1f, 1f);
@@ -292,9 +481,11 @@ namespace Match3.EditorTools
             panel.sizeDelta = new Vector2(760f, 700f);
 
             var panelImage = panelGo.GetComponent<Image>();
-            panelImage.sprite = AssetDatabase.LoadAssetAtPath<Sprite>(
-                ArtAuthoring.HudArtFolder + "/T_Ui_Panel_2D.png");
-            panelImage.color = new Color(0.16f, 0.19f, 0.26f, 1f);
+            panelImage.sprite = LoadHudSprite("T_Ui_Panel_2D");
+            // Sliced, and the sprite now carries a border: the corners used to stretch with the
+            // panel and the rounding turned into an oval.
+            panelImage.type = Image.Type.Sliced;
+            panelImage.color = Match3Palette.PanelFill;
 
             titleLabel = PrefabAuthoring.CreateText("Title", panel, title, 56);
             var titleRect = (RectTransform)titleLabel.transform;
@@ -335,7 +526,9 @@ namespace Match3.EditorTools
             MovesCounterView movesCounter,
             GoalsPanelView goalsPanel,
             HudActionsView hudActions,
-            PopupView[] popups)
+            PopupView[] popups,
+            AudioSource ambientSource,
+            SoundToggleView soundToggle)
         {
             var go = new GameObject("SceneContext", typeof(SceneContext));
             var installer = go.AddComponent<GameInstaller>();
@@ -356,6 +549,11 @@ namespace Match3.EditorTools
             PrefabAuthoring.Wire(installer, "_hudActions", hudActions);
             PrefabAuthoring.WireArray(installer, "_popups", popups);
 
+            PrefabAuthoring.Wire(installer, "_audioProfile",
+                AssetDatabase.LoadAssetAtPath<AudioProfile>(ConfigFolder + "/AudioProfile.asset"));
+            PrefabAuthoring.Wire(installer, "_ambientSource", ambientSource);
+            PrefabAuthoring.Wire(installer, "_soundToggle", soundToggle);
+
 #if MATCH3_CHEATS
             // §15: the field only exists with the define, so a release build cannot reference it.
             PrefabAuthoring.Wire(
@@ -374,12 +572,12 @@ namespace Match3.EditorTools
         /// </summary>
         private static class HudStringsSafe
         {
-            internal const string WinTitle = "Уровень пройден";
-            internal const string Next = "Далее";
-            internal const string LoseTitle = "Ходы закончились";
-            internal const string Retry = "Заново";
-            internal const string EndTitle = "Все уровни пройдены";
-            internal const string PlayAgain = "Играть заново с 1-го уровня";
+            internal const string WinTitle = "Level complete";
+            internal const string Next = "Next";
+            internal const string LoseTitle = "Out of moves";
+            internal const string Retry = "Retry";
+            internal const string EndTitle = "All levels complete";
+            internal const string PlayAgain = "Play again from level 1";
         }
     }
 }

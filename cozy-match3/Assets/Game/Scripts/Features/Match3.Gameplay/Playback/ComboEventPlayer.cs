@@ -22,7 +22,7 @@ namespace Match3.Gameplay.Playback
         private static readonly TurnEventKind[] _kinds = { TurnEventKind.ComboActivated };
 
         /// <summary>Flare size before and after the burst, in cells.</summary>
-        private const float FlareSize = 0.8f;
+        private const float FlareSize = 1.2f;
         private const float BurstCells = 3f;
 
         public ComboEventPlayer(FxRegistry fx, ChipVisualProfile chipProfile)
@@ -60,8 +60,10 @@ namespace Match3.Gameplay.Playback
             float cellSize = layout.CellSize;
             Vector2 flareSize = CellSquare(cellSize, FlareSize);
 
+            // The pull is a travelling flare, the flare at the epicentre expands: same split as
+            // the rocket head versus its trail (T31).
             FxView pull = _fx.Rent(FxFor(boosterB));
-            FxView burst = _fx.Rent(FxFor(boosterA));
+            FxView burst = _fx.Rent(_chipProfile.GetBoosterBurstFx(boosterA));
 
             try
             {

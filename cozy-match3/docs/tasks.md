@@ -9,7 +9,8 @@
 | Изменения 1.1 | Волна W5 «Финальный арт»: T27–T33 по `docs/art-direction.md` §10. Зафиксировано целевое разрешение (GDD §13): леттербокс 9:16, потолок буфера 1080 × 1920 |
 
 Этот файл — источник истины по плану реализации (`.plans/` не используется).
-Прогресс отмечается чекбоксами в §2.
+Прогресс отмечается чекбоксами в §2: `[x]` — закрыта целиком, `[~]` — закрыта частично, остаток
+назван в карточке задачи.
 
 ---
 
@@ -125,15 +126,15 @@ W5 к критическому пути не относится: игра про
 | [x] T22 | Панель читов | `Match3.Cheats` | T12, T16, T21 | W3 |
 | [x] T23 | Bootstrap, DI, сцены, метрики | `Match3.Bootstrap`, `Match3.Diagnostics` | T12, T16, T20, T21 | W3 |
 | [x] T24 | Харнесс детерминизма и реплея | `Match3.Tests.EditMode` | T12 | W4 |
-| [ ] T25 | WebGL-билд, перф, размер, исключение читов | — | T23, T22 | W4 |
+| [~] T25 | WebGL-билд, перф, размер, исключение читов — **настройки готовы, билд не собирался** | — | T23, T22 | W4 |
 | [x] T26 | Прогон 12 уровней ботом, сверка winrate | `Match3.Tests.EditMode` | T12, T14 | W4 |
-| [ ] T27 | `FxFlipbook` и подключение `_destroyFx` | `Match3.Gameplay`, `Match3.Content` | T18 | W5 |
-| [ ] T28 | Развести совмещённые ассеты подсказки и целей | `Match3.EditorTools` | T19, T20 | W5 |
-| [ ] T29 | Скин сцены: фон, подложка поля, панели, кнопки, маскот | `Match3.EditorTools` | T23 | W5 |
-| [ ] T30 | Защита арта от `Generate All` | `Match3.EditorTools` | T15 | W5 |
-| [ ] T31 | Роли FX: beam / burst / impact | `Match3.Content`, `Match3.Gameplay` | T18, T27 | W5 |
-| [ ] T32 | Sprite Atlas 2048², мип-мапы, сжатие под WebGL, замер билда | контент | T25, T29 | W5 |
-| [ ] T33 | WebGL-шаблон: леттербокс 9:16, потолок буфера 1080×1920 | шаблон, `ProjectSettings` | T23 | W5 |
+| [x] T27 | `FxFlipbook` и подключение `_destroyFx` | `Match3.Gameplay`, `Match3.Content` | T18 | W5 |
+| [x] T28 | Развести совмещённые ассеты подсказки и целей | `Match3.EditorTools` | T19, T20 | W5 |
+| [x] T29 | Скин сцены: фон, подложка поля, панели, кнопки, маскот | `Match3.EditorTools` | T23 | W5 |
+| [x] T30 | Защита арта от `Generate All` | `Match3.EditorTools` | T15 | W5 |
+| [x] T31 | Роли FX: beam / burst / impact | `Match3.Content`, `Match3.Gameplay` | T18, T27 | W5 |
+| [~] T32 | Sprite Atlas 2048², мип-мапы, сжатие под WebGL, замер билда — **импорт готов, атласа и замера нет** | контент | T25, T29 | W5 |
+| [x] T33 | WebGL-шаблон: леттербокс 9:16, потолок буфера 1080×1920 | шаблон, `ProjectSettings` | T23 | W5 |
 
 ---
 
@@ -995,14 +996,17 @@ W5 к критическому пути не относится: игра про
 
 **Объём:**
 
-- `ProjectInstaller` (project scope): `IMatch3Logger` (`UnityMatch3Logger`), `ProgressRepository`,
-  `LevelCatalog`, `ElementCatalog`, `TimingProfile`, `PopupService`, `MetricsReporter`;
-  `ObservableSystem.RegisterUnhandledExceptionHandler` → логгер (`A09`).
-- `SceneInstaller` (`Game.unity`): `LevelFlowRule`, презентеры HUD, `CheatsInstaller` под
-  `#if MATCH3_CHEATS`.
+- `BootInstaller` (`SceneContext` в `Boot.unity`): `IMatch3Logger` (`UnityMatch3Logger`) — больше
+  экрану загрузки ничего не нужно.
+- `GameInstaller` (`SceneContext` в `Game.unity`): `IMatch3Logger`, `LevelCatalog`,
+  `ElementCatalog`, `TimingProfile` и визуальные профили, `ProgressRepository`,
+  `LevelSessionFactory`, `LevelFlowRule`, `GameFlowController`, презентеры HUD, `PopupService`,
+  `MetricsReporter`, аудио-сервисы, биндеры читов под `#if MATCH3_CHEATS`;
+  `ObservableSystem.RegisterUnhandledExceptionHandler` → логгер (`A09`). `ProjectContext` не
+  используется — почему, в архитектуре §12.
 - `LevelInstaller` на префабе `LevelContext` с `GameObjectContext` (`A08`): `IRandom` (seed
-  попытки), `Board`, `GoalTracker`, все сервисы `Match3.Resolve`, `TurnRule`, `BoardView`, пулы,
-  реестр `ITurnEventPlayer`.
+  попытки), `Board`, `GoalTracker`, все сервисы `Match3.Resolve`, `TurnRule`, `LevelSessionState`,
+  `BoardView`, пулы, реестр `ITurnEventPlayer`.
 - `Boot.unity` → загрузка `Game.unity` (экран загрузки §11.1).
 - `MetricsReporter` (§14): `level_start`, `level_end`, `booster_fired`, `shuffle_triggered`,
   `cascade_depth`, `wave_cap_hit`, `hint_shown`, `hint_followed` — поля точно по §14;
@@ -1077,6 +1081,17 @@ W5 к критическому пути не относится: игра про
 - Проверка аспектов 9:16 … 16:9 в браузере, изменение размера окна на живой игре. **Кадр страницы
   задаёт T33** (леттербокс 9:16, потолок буфера 1080 × 1920); здесь проверяется, что движок держит
   диапазон при принудительном изменении формы канваса, а не что страница его показывает.
+
+**Сделано без сборки (частично).** Профиль релиза и разработки живёт в
+`WebGlBuildPipeline.ApplyPlayerProfile` и применяется как на билде, так и отдельным пунктом
+`Match3/Build/Apply WebGL Release Settings`: Brotli + `decompressionFallback`, `dataCaching`,
+`exceptionSupport = None`, `stripEngineCode`, `ManagedStrippingLevel.High`, IL2CPP `Master`,
+`debugSymbolMode = Off`; в Development всё это ослаблено, и туда же добавляется `MATCH3_CHEATS`.
+Дефайн намеренно **не** входит в профиль: `Build` возвращает его в `finally`, а прогон «только
+настройки» не должен молча гасить чит-панель в редакторе.
+
+**Осталось (требует запуска билда):** сам билд, профилирование FPS, замер размера, Build Report
+с проверкой отсутствия чит-ассетов, проверка в браузере.
 
 **Готово, когда:**
 
@@ -1359,6 +1374,17 @@ W5 к критическому пути не относится: игра про
 - Замер: Build Report по текстурам до и после, таблица в PR. Ожидаемый вклад атласа — ≈ 5.3 МБ
   в памяти (2048² DXT5 с мипами) против ≈ 1.3 МБ у варианта 128².
 
+**Сделано без атласа и без замера (частично).** Настройки импорта перестали быть ручными:
+`Match3/Authoring/Apply Texture Import Settings` (`ArtAuthoring.ApplyImportSettings`, входит в
+`Generate All`) приводит обе папки арта к §3.2 — спрайты геймплея с **мип-мапами**, HUD без них,
+`Compressed`, `Bilinear`, `Clamp`, `alphaIsTransparency`. `maxTextureSize` задан как **потолок, а
+не цель**: ассет, уже импортированный меньше, свой размер сохраняет — спрайты геймплея остаются на
+128 (откат §3.2, применён ранее), фон и маскот — как были. Паки `UI_Pack`/`VFX_Pack` настраивает
+`ArtPackAuthoring` (спрайты, без мипов, 9-slice-бордеры).
+
+**Осталось:** сам `SA_Gameplay.spriteatlas`, замер Build Report и решение по бюджету ≤ 6 МБ —
+всё это требует сборки билда (T25).
+
 **Готово, когда:**
 
 - [ ] Один атлас 2048², все спрайты геймплея в нём, `Padding = 16`, `Tight Packing` выключен.
@@ -1416,11 +1442,51 @@ W5 к критическому пути не относится: игра про
 
 ---
 
+### T34 — Слой звуковых эффектов
+
+| | |
+|---|---|
+| Сборки | `Match3.Content`, `Match3.Bootstrap`, `Match3.Gameplay`, `Match3.Hud`, `Match3.EditorTools` |
+| Зависимости | T17, T18, T20, T23 |
+| GDD | §11.4 (привязка звуков), §11.3 (тайминги, к которым она привязана) |
+
+До задачи звучала только фоновая амбиентность, не привязанная ни к одному моменту хода. Задача
+добавляет слой эффектов: 15 клипов на моменты §11.3, без музыки и озвучки.
+
+**Объём:**
+
+- `Match3.Content`: `SfxId` (имя = имя файла `SFX_<id>.ogg`), `ISfxPlayer`, `NullSfxPlayer`,
+  записи эффектов в `AudioProfile` — клип, громкость, минимальный интервал, разброс тона.
+- `Match3.Bootstrap`: `SfxPlayer` — пул `AudioSource`, прореживание по интервалу, ступенчатый тон;
+  бинд в `GameInstaller`, `NullSfxPlayer` при отсутствии профиля.
+- Привязка в плеерах через `PlaybackContext.Sfx`; глубину каскада публикует
+  `CascadeDepthEventPlayer` (`StepBegin` визуала не имеет). Победа/поражение — в
+  `GameFlowController`, тик цели — в `GoalsPanelPresenter`.
+- `Match3.EditorTools`: `Apply Audio Import Settings` разводит клипы по роли (`Decompress On Load`
+  эффектам, `Compressed In Memory` амбиентности), `Generate Audio Batch` заполняет профиль из папки.
+
+**Тесты:**
+
+- Edit-mode: запись без клипа считается отсутствующей; ступень тона растёт и упирается в потолок.
+
+**Готово, когда:**
+
+- [x] Все 487 edit-mode тестов зелёные.
+- [ ] Каскад глубины 3+ отсмотрен на слух: один поп на шаг, тон поднимается.
+- [ ] Все пять бустеров и матрица §6.3 отсмотрены читом — ни одного слипшегося залпа.
+- [ ] Кнопка звука гасит эффекты вместе с фоном, выбор переживает перезагрузку.
+
+**Не входит:** музыка, звуки комбо, перемешивания, морфа `cx`, подсказки и кнопок UI.
+
+---
+
 ## 3. Что осознанно вне плана
 
 Соответствует §16 GDD: монетизация, мета-слой, предматчевые бустеры, собираемые падающие элементы,
 распространяющиеся препятствия и `UnderChip`/`OverChip` (оси объявлены, механики не спроектированы),
-редактор уровней, горячие клавиши читов, звук, локализация, серверная аналитика.
+редактор уровней, горячие клавиши читов, музыка и озвучка, локализация, серверная аналитика.
+Фоновая амбиентность, кнопка выключения звука и слой звуковых эффектов (T34, §11.4 GDD) добавлены
+вне плана, по отдельному запросу.
 
 Если задача упирается в один из этих пунктов — это сигнал, что она вышла за скоуп: остановиться и
 спросить, а не расширять реализацию.

@@ -12,7 +12,7 @@ namespace Match3.Cheats
     /// <summary>
     /// Drives the §12 cheat panel. Every board-changing element goes through the attempt's turn
     /// runner, which executes it with <c>TurnRule.ExecuteCheat</c> and replays the transcript like
-    /// an ordinary turn (A10); «Перейти» and the seed buttons rebuild the attempt through
+    /// an ordinary turn (A10); "Go" and the seed buttons rebuild the attempt through
     /// <c>LevelFlowRule</c> instead, because they do not mutate a board - they replace it (§15).
     /// Everything here is driven by on-screen widgets: there is not one hot key.
     /// </summary>
@@ -27,7 +27,6 @@ namespace Match3.Cheats
 
         private readonly ReactiveProperty<bool> _isOpen = new ReactiveProperty<bool>(false);
 
-        private CompositeDisposable _subscriptions;
         private CheatLevelBinding _binding;
         private BoosterType _armedBooster = BoosterType.None;
         private bool _freeMoves;
@@ -35,7 +34,7 @@ namespace Match3.Cheats
         private bool _showCoordinates;
         private bool _disposed;
 
-        /// <summary>§12: the button reads «+5 ходов», so the amount is not a tuning knob.</summary>
+        /// <summary>§12: the button reads "+5 moves", so the amount is not a tuning knob.</summary>
         public const int AddMovesAmount = 5;
 
         public CheatPanelPresenter(
@@ -139,11 +138,9 @@ namespace Match3.Cheats
                 throw new ArgumentNullException(nameof(binding));
             }
 
-            Unbind();
+            UnbindCurrent();
 
             _binding = binding;
-            _subscriptions = new CompositeDisposable();
-            _subscriptions.Add(binding.Session.InputBlocked.Subscribe(OnInputBlockedChanged));
 
             ApplyFreeMovesToAttempt();
             ApplyHintSuspension();
@@ -153,58 +150,63 @@ namespace Match3.Cheats
             RefreshInteractable();
         }
 
-        public void Unbind()
+        /// <summary>Releases whatever attempt is bound. The panel's own teardown path.</summary>
+        public void Unbind() => UnbindCurrent();
+
+        /// <summary>
+        /// Releases one particular attempt, and only that one. Zenject initialises a dynamically
+        /// created GameObjectContext immediately, while Unity destroys the previous one at the end
+        /// of the frame, so the dying attempt disposes after its successor has already bound
+        /// itself. An unconditional unbind there left the panel holding no attempt at all for the
+        /// rest of the session, which is what greyed out every board cheat after the first
+        /// restart, replay or level change. An attempt that never bound (null) releases nothing.
+        /// </summary>
+        public void Unbind(CheatLevelBinding binding)
         {
-            if (_subscriptions != null)
+            if (!ReferenceEquals(_binding, binding))
             {
-                _subscriptions.Dispose();
-                _subscriptions = null;
+                return;
             }
 
-            _binding = null;
-
-            DisarmBooster();
-
-            if (_overlay != null)
-            {
-                _overlay.Hide();
-            }
-
-            RefreshSeedDisplay();
-            RefreshInteractable();
+            UnbindCurrent();
         }
 
         /// <summary>
         /// Sends one command to its executor (§15). Board commands reach the attempt's turn runner,
         /// the two that rebuild the attempt reach the level flow, and nothing else is executed.
+        /// Returns whether the command actually ran: a refused command must not close the panel,
+        /// now that the controls stay pressable whatever the board is doing.
         /// </summary>
-        public void Execute(CheatCommand command)
+        public bool Execute(CheatCommand command)
         {
             if (_disposed)
             {
-                return;
+                return false;
             }
 
-            if (CheatCommandRouting.ClosesPanel(command))
+            bool executed;
+            switch (CheatCommandRouting.Route(command))
+            {
+                case CheatRoute.Board:
+                    executed = ExecuteBoardCommand(command);
+                    break;
+
+                case CheatRoute.LevelFlow:
+                    executed = ExecuteFlowCommand(command);
+                    break;
+
+                default:
+                    _logger.Warn("Cheat command " + command.Kind.ToString() + " has no executor.");
+                    return false;
+            }
+
+            if (executed && CheatCommandRouting.ClosesPanel(command))
             {
                 // A WIN/LOSE sequence, its popup or a fresh level owns the screen next.
                 Close();
             }
 
-            switch (CheatCommandRouting.Route(command))
-            {
-                case CheatRoute.Board:
-                    ExecuteBoardCommand(command);
-                    return;
-
-                case CheatRoute.LevelFlow:
-                    ExecuteFlowCommand(command);
-                    return;
-
-                default:
-                    _logger.Warn("Cheat command " + command.Kind.ToString() + " has no executor.");
-                    return;
-            }
+            return executed;
         }
 
         public void Dispose()
@@ -228,22 +230,33 @@ namespace Match3.Cheats
             _isOpen.Dispose();
         }
 
-        /// <summary>A cheat needs an attempt that is idle and still accepting input (§5.1).</summary>
-        private bool CanRunBoardCheat
-            => _binding != null && _binding.Runner.CanRun && _binding.TurnRule.CanAcceptInput;
-
-        private void ExecuteBoardCommand(in CheatCommand command)
+        /// <summary>
+        /// A board cheat still needs an attempt that is idle and unfinished: TurnRule would
+        /// otherwise write a second outcome into a level that has already ended (§5.1). The panel
+        /// no longer greys its controls out for that - it says in the log why nothing happened,
+        /// because a control that disables itself mid-cascade reads as a broken cheat panel.
+        /// </summary>
+        private bool ExecuteBoardCommand(in CheatCommand command)
         {
-            if (!CanRunBoardCheat)
+            if (_binding == null)
             {
-                return;
+                _logger.Warn("Cheat " + command.Kind.ToString() + " needs a live level attempt.");
+                return false;
+            }
+
+            if (!_binding.Runner.CanRun || !_binding.TurnRule.CanAcceptInput)
+            {
+                _logger.Warn("Cheat " + command.Kind.ToString()
+                             + " ignored: a turn is still playing or the level has ended.");
+                return false;
             }
 
             _binding.Runner.ExecuteCheat(command);
             RefreshInteractable();
+            return true;
         }
 
-        private void ExecuteFlowCommand(in CheatCommand command)
+        private bool ExecuteFlowCommand(in CheatCommand command)
         {
             switch (command.Kind)
             {
@@ -252,24 +265,21 @@ namespace Match3.Cheats
                     {
                         _logger.Warn("Cheat: level " + command.IntValue.ToString(CultureInfo.InvariantCulture)
                                      + " is not in the catalog.");
-                        return;
+                        return false;
                     }
 
                     _flow.GoToLevel(command.IntValue);
-                    return;
+                    return true;
 
                 case CheatCommandKind.SetSeed:
                     // Same level, explicit seed: the attempt replays bit for bit (D12).
                     _flow.ReplayWithSeed(command.IntValue);
-                    return;
+                    return true;
 
                 default:
-                    return;
+                    return false;
             }
         }
-
-        /// <summary>A turn starting or ending changes what the panel may offer.</summary>
-        private void OnInputBlockedChanged(bool blocked) => RefreshInteractable();
 
         private void OnCloseClicked() => Close();
 
@@ -327,7 +337,7 @@ namespace Match3.Cheats
             Execute(CheatCommand.SetSeed(seed));
         }
 
-        /// <summary>«Заново»: the seed of the live attempt, so the same game runs again (D12).</summary>
+        /// <summary>"Restart": the seed of the live attempt, so the same game runs again (D12).</summary>
         private void OnRestartAttemptClicked()
         {
             if (_binding == null)
@@ -340,8 +350,14 @@ namespace Match3.Cheats
 
         private void OnFreeMovesChanged(bool value)
         {
+            if (!Execute(CheatCommand.FreeMoves(value)))
+            {
+                // The board refused the command, so the switch must not claim the flag is set.
+                _view.SetFreeMoves(_freeMoves);
+                return;
+            }
+
             _freeMoves = value;
-            Execute(CheatCommand.FreeMoves(value));
         }
 
         private void OnCoordinateGridChanged(bool value)
@@ -376,6 +392,21 @@ namespace Match3.Cheats
             }
 
             _logger.Info(CheatTranscriptDump.Format(transcript));
+        }
+
+        private void UnbindCurrent()
+        {
+            _binding = null;
+
+            DisarmBooster();
+
+            if (_overlay != null)
+            {
+                _overlay.Hide();
+            }
+
+            RefreshSeedDisplay();
+            RefreshInteractable();
         }
 
         private void DisarmBooster()
@@ -460,6 +491,11 @@ namespace Match3.Cheats
             _view.SetSeedText(seed.ToString(CultureInfo.InvariantCulture));
         }
 
+        /// <summary>
+        /// Interactability follows one question: is there an attempt to cheat on. It deliberately
+        /// does not follow the turn state - the execution guard already refuses what the board
+        /// cannot take, and it explains itself in the log while a grey button does not.
+        /// </summary>
         private void RefreshInteractable()
         {
             if (_disposed || _view == null)
@@ -467,17 +503,17 @@ namespace Match3.Cheats
                 return;
             }
 
-            bool idle = _binding != null && _binding.Runner.CanRun;
+            bool bound = _binding != null;
 
-            _view.SetBoardCheatsInteractable(idle && _binding.TurnRule.CanAcceptInput);
-            _view.SetSeedActionsInteractable(idle && CheatLevelInput.TryParseSeed(_view.SeedText, out _), idle);
-            _view.SetCoordinateGridInteractable(_binding != null);
-            _view.SetDumpInteractable(_binding != null && _binding.Runner.LastTranscript != null);
+            _view.SetBoardCheatsInteractable(bound);
+            _view.SetSeedActionsInteractable(bound && CheatLevelInput.TryParseSeed(_view.SeedText, out _), bound);
+            _view.SetCoordinateGridInteractable(bound);
+            _view.SetDumpInteractable(bound);
             RefreshLevelStatus(_view.LevelText);
         }
 
         /// <summary>
-        /// «Перейти» is disabled for a number the catalog does not hold. The catalog is asked, not
+        /// "Go" is disabled for a number the catalog does not hold. The catalog is asked, not
         /// a hardcoded range: level ids are data and need not be contiguous (§8.3).
         /// </summary>
         private void RefreshLevelStatus(string text)

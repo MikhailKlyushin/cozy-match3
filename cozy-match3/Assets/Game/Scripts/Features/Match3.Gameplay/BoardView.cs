@@ -414,8 +414,7 @@ namespace Match3.Gameplay
 
                     if (_elementViews[index] != null)
                     {
-                        _elementViews[index].Rect.sizeDelta = new Vector2(size, size);
-                        _elementViews[index].Rect.anchoredPosition = centre;
+                        _elementViews[index].ApplyLayout(centre, size);
                     }
                 }
             }
