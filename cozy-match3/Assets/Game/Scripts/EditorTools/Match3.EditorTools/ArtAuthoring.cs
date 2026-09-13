@@ -15,6 +15,17 @@ namespace Match3.EditorTools
         internal const string GameplayArtFolder = "Assets/Game/Content/Gameplay/Art";
         internal const string HudArtFolder = "Assets/Game/Content/Hud/Art";
 
+        /// <summary>
+        /// Ceiling, not a target: an asset already imported smaller keeps its size. Authored
+        /// masters are 256 and the build ships them at 128 - the fallback of `art-direction.md`
+        /// §3.2, applied. Raising anything back is a decision that needs a weight measurement from
+        /// a real build (T25/T32), not a guess.
+        /// </summary>
+        private const int GameplayMaxTextureSize = 128;
+
+        /// <summary>The room background is drawn full-screen and is never atlased.</summary>
+        private const int HudMaxTextureSize = 2048;
+
         [MenuItem("Match3/Authoring/Generate Placeholder Art")]
         public static void GenerateArt()
         {
@@ -74,7 +85,7 @@ namespace Match3.EditorTools
             Save(ProceduralArt.CreateGlow(), GameplayArtFolder, overwrite, ref written, ref skipped);
             Save(ProceduralArt.CreatePanel(), HudArtFolder, overwrite, ref written, ref skipped);
 
-            ApplyPanelBorder();
+            ApplyImportSettings();
 
             AssetDatabase.Refresh();
             Debug.Log("[Match3] Placeholder art: " + written.ToString() + " written, "
@@ -98,6 +109,39 @@ namespace Match3.EditorTools
             AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceUpdate);
             ConfigureSpriteImporter(path);
             written++;
+        }
+
+        /// <summary>
+        /// Brings every sprite in the two art folders to the settings §3.2 asks for, whether the
+        /// generator wrote it or an artist did. Pixels belong to the author, import settings follow
+        /// from how the sprite is drawn, so these are code-owned and idempotent.
+        /// </summary>
+        [MenuItem("Match3/Authoring/Apply Texture Import Settings")]
+        public static void ApplyImportSettings()
+        {
+            int gameplay = ApplyFolder(GameplayArtFolder, mipmaps: true, GameplayMaxTextureSize);
+            int hud = ApplyFolder(HudArtFolder, mipmaps: false, HudMaxTextureSize);
+            ApplyPanelBorder();
+
+            Debug.Log("[Match3] Texture import settings applied: " + gameplay.ToString()
+                + " gameplay, " + hud.ToString() + " HUD");
+        }
+
+        private static int ApplyFolder(string folder, bool mipmaps, int maxTextureSize)
+        {
+            if (!Directory.Exists(folder))
+            {
+                return 0;
+            }
+
+            int count = 0;
+            foreach (string path in Directory.EnumerateFiles(folder, "*.png", SearchOption.TopDirectoryOnly))
+            {
+                Configure(path.Replace('\\', '/'), mipmaps, maxTextureSize);
+                count++;
+            }
+
+            return count;
         }
 
         /// <summary>
@@ -130,6 +174,15 @@ namespace Match3.EditorTools
         }
 
         private static void ConfigureSpriteImporter(string path)
+            => Configure(path, mipmaps: true, GameplayMaxTextureSize);
+
+        /// <summary>
+        /// Mip-maps are on for board sprites and off for HUD sprites, and that is not symmetry for
+        /// its own sake: a 9x9 board on a laptop window minifies a cell to roughly a third of its
+        /// texels, and without mips the high-frequency detail boils on every fall and cascade
+        /// (§3.2). The HUD is drawn at its own size and would only pay the 33 % memory for nothing.
+        /// </summary>
+        private static void Configure(string path, bool mipmaps, int maxTextureSize)
         {
             var importer = AssetImporter.GetAtPath(path) as TextureImporter;
             if (importer == null)
@@ -141,12 +194,19 @@ namespace Match3.EditorTools
             importer.textureType = TextureImporterType.Sprite;
             importer.spriteImportMode = SpriteImportMode.Single;
             importer.alphaIsTransparency = true;
-            importer.mipmapEnabled = false;
+            importer.mipmapEnabled = mipmaps;
             importer.filterMode = FilterMode.Bilinear;
             importer.wrapMode = TextureWrapMode.Clamp;
             importer.spritePixelsPerUnit = 100f;
-            importer.maxTextureSize = 256;
             importer.textureCompression = TextureImporterCompression.Compressed;
+
+            // A ceiling: whoever imported an asset smaller did it for the build weight, and a
+            // blanket pass has no measurement with which to argue.
+            if (importer.maxTextureSize > maxTextureSize)
+            {
+                importer.maxTextureSize = maxTextureSize;
+            }
+
             importer.SaveAndReimport();
         }
     }
