@@ -996,14 +996,17 @@ W5 к критическому пути не относится: игра про
 
 **Объём:**
 
-- `ProjectInstaller` (project scope): `IMatch3Logger` (`UnityMatch3Logger`), `ProgressRepository`,
-  `LevelCatalog`, `ElementCatalog`, `TimingProfile`, `PopupService`, `MetricsReporter`;
-  `ObservableSystem.RegisterUnhandledExceptionHandler` → логгер (`A09`).
-- `SceneInstaller` (`Game.unity`): `LevelFlowRule`, презентеры HUD, `CheatsInstaller` под
-  `#if MATCH3_CHEATS`.
+- `BootInstaller` (`SceneContext` в `Boot.unity`): `IMatch3Logger` (`UnityMatch3Logger`) — больше
+  экрану загрузки ничего не нужно.
+- `GameInstaller` (`SceneContext` в `Game.unity`): `IMatch3Logger`, `LevelCatalog`,
+  `ElementCatalog`, `TimingProfile` и визуальные профили, `ProgressRepository`,
+  `LevelSessionFactory`, `LevelFlowRule`, `GameFlowController`, презентеры HUD, `PopupService`,
+  `MetricsReporter`, аудио-сервисы, биндеры читов под `#if MATCH3_CHEATS`;
+  `ObservableSystem.RegisterUnhandledExceptionHandler` → логгер (`A09`). `ProjectContext` не
+  используется — почему, в архитектуре §12.
 - `LevelInstaller` на префабе `LevelContext` с `GameObjectContext` (`A08`): `IRandom` (seed
-  попытки), `Board`, `GoalTracker`, все сервисы `Match3.Resolve`, `TurnRule`, `BoardView`, пулы,
-  реестр `ITurnEventPlayer`.
+  попытки), `Board`, `GoalTracker`, все сервисы `Match3.Resolve`, `TurnRule`, `LevelSessionState`,
+  `BoardView`, пулы, реестр `ITurnEventPlayer`.
 - `Boot.unity` → загрузка `Game.unity` (экран загрузки §11.1).
 - `MetricsReporter` (§14): `level_start`, `level_end`, `booster_fired`, `shuffle_triggered`,
   `cascade_depth`, `wave_cap_hit`, `hint_shown`, `hint_followed` — поля точно по §14;

@@ -529,12 +529,12 @@ public interface IDamageSourceRule { DamageSourceKind Kind { get; } bool IsDamag
 
 | Скоуп | Контекст | Что живёт |
 |---|---|---|
-| Project | префаб `ProjectContext` | `IMatch3Logger`, `ProgressRepository`, `LevelCatalog`, `ElementCatalog`, `TimingProfile`, `PopupService`, `MetricsReporter` |
-| Scene | `SceneContext` в `Game.unity` | `LevelFlowRule`, презентеры HUD, `CheatsInstaller` (под дефайном) |
-| **Level attempt** | префаб `LevelContext` с `GameObjectContext` (A08) | `IRandom` (seed попытки), `Board`, `GoalTracker`, все сервисы `Match3.Resolve`, `TurnRule`, `BoardView`, пулы фишек и FX |
+| Boot | `SceneContext` в `Boot.unity` (`BootInstaller`) | только `IMatch3Logger` — экрану загрузки нужно одно: куда сообщить о провале |
+| Game | `SceneContext` в `Game.unity` (`GameInstaller`) | `IMatch3Logger`, `LevelCatalog`, `ElementCatalog`, `TimingProfile` и визуальные профили, `ProgressRepository`, `LevelSessionFactory`, `LevelFlowRule`, `GameFlowController`, презентеры HUD, `PopupService`, `MetricsReporter`, аудио-сервисы, биндеры читов (под дефайном) |
+| **Level attempt** | префаб `LevelContext` с `GameObjectContext` (A08, `LevelInstaller`) | `IRandom` (seed попытки), `Board`, `GoalTracker`, все сервисы `Match3.Resolve`, `TurnRule`, `LevelSessionState`, `BoardView`, `TranscriptPlayer` и реестр `ITurnEventPlayer`, пулы фишек и FX |
 
 - Перезапуск уровня = `Destroy(levelContext)` + инстанс нового. Подписки R3, твины и пулы уходят
-  вместе с ним. Ни одного per-level объекта в project scope.
+  вместе с ним. Ни одного per-level объекта в скоупе сцены.
 - **Порядок смены попытки.** Новый `LevelContext` инициализируется синхронно (`GameObjectContext`
   вызывает `IInitializable` сразу при инстансе, не дожидаясь `Start`), а старый уничтожается
   `Object.Destroy` в конце кадра. То есть `Dispose` умершей попытки выполняется **после**
@@ -544,10 +544,23 @@ public interface IDamageSourceRule { DamageSourceKind Kind { get; } bool IsDamag
 - Конструкторная инъекция по умолчанию; `[Inject]`-метод — только во `MonoBehaviour`-view.
 - Сервисы: `BindInterfacesAndSelfTo<T>().AsSingle()` в своём скоупе. Сервис не резолвит view.
 - `DiContainer` в геймплей-код не инжектится (сервис-локатор в маскировке).
+- **Почему нет `ProjectContext`.** Project scope нужен ровно затем, чтобы пережить `LoadScene`, а
+  переход здесь один и в одну сторону: `Boot` → `Game` (`Single`). Дальше `Game.unity` живёт всю
+  сессию — смена уровня это `Destroy(levelContext)`, а не перезагрузка сцены, — так что
+  scene-скоуп даёт то же время жизни, только с видимой границей. Три следствия, за которые
+  пришлось бы заплатить: `ProjectContext` грузится из `Resources`, и весь его граф ассетов
+  (каталог уровней, профили, префабы) уехал бы в always-included мимо зависимостей сцены — а
+  контроль веса и проверка «в release не утёк читовый ассет» (§15) держатся именно на том, что
+  содержимое билда определяется ссылками из двух сцен; префаб в `Resources` не может держать
+  ссылки на объекты сцены, а у `GameInstaller` их половина (вьюхи HUD, `AudioSource` фона,
+  родитель `LevelContext`), значит их искали бы `FindObjectOfType` — тот же сервис-локатор; и
+  скоуп, который не умирает никогда, нечем проверить на утечки между попытками. Прогресс
+  переживает даже закрытие вкладки — он в `PlayerPrefs`, а не в контейнере. Появится вторая
+  игровая сцена или возврат в мету — решение пересматривается.
 
-**Обязательный bootstrap-шаг (A09):** в `ProjectInstaller` подписать
+**Обязательный bootstrap-шаг (A09):** в `GameInstaller.InstallBindings` подписать
 `ObservableSystem.RegisterUnhandledExceptionHandler(...)` на логгер, иначе исключение в R3-цепочке
-исчезает молча.
+исчезает молча. `Boot.unity` обходится без этого: R3 там не используется.
 
 ---
 
