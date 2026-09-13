@@ -74,6 +74,8 @@ namespace Match3.EditorTools
             Save(ProceduralArt.CreateGlow(), GameplayArtFolder, overwrite, ref written, ref skipped);
             Save(ProceduralArt.CreatePanel(), HudArtFolder, overwrite, ref written, ref skipped);
 
+            ApplyPanelBorder();
+
             AssetDatabase.Refresh();
             Debug.Log("[Match3] Placeholder art: " + written.ToString() + " written, "
                 + skipped.ToString() + " kept");
@@ -96,6 +98,35 @@ namespace Match3.EditorTools
             AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceUpdate);
             ConfigureSpriteImporter(path);
             written++;
+        }
+
+        /// <summary>
+        /// The popup panel is the one sprite here that gets stretched far past its authored size,
+        /// so it needs a nine-slice border or its rounded corners turn into an oval. 24 px on the
+        /// 128 px panel covers its 18 px corner radius plus the transparent margin around it.
+        /// Applied whether or not the file was rewritten: the border follows from how the sprite
+        /// is drawn, not from its pixels.
+        /// </summary>
+        private static void ApplyPanelBorder()
+        {
+            const float border = 24f;
+            string path = HudArtFolder + "/T_Ui_Panel_2D.png";
+
+            var importer = AssetImporter.GetAtPath(path) as TextureImporter;
+            if (importer == null)
+            {
+                Debug.LogError("[Match3] No TextureImporter for " + path);
+                return;
+            }
+
+            var wanted = new Vector4(border, border, border, border);
+            if (importer.spriteBorder == wanted)
+            {
+                return;
+            }
+
+            importer.spriteBorder = wanted;
+            importer.SaveAndReimport();
         }
 
         private static void ConfigureSpriteImporter(string path)

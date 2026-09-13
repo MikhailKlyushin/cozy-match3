@@ -129,7 +129,7 @@ W5 к критическому пути не относится: игра про
 | [x] T26 | Прогон 12 уровней ботом, сверка winrate | `Match3.Tests.EditMode` | T12, T14 | W4 |
 | [ ] T27 | `FxFlipbook` и подключение `_destroyFx` | `Match3.Gameplay`, `Match3.Content` | T18 | W5 |
 | [x] T28 | Развести совмещённые ассеты подсказки и целей | `Match3.EditorTools` | T19, T20 | W5 |
-| [ ] T29 | Скин сцены: фон, подложка поля, панели, кнопки, маскот | `Match3.EditorTools` | T23 | W5 |
+| [x] T29 | Скин сцены: фон, подложка поля, панели, кнопки, маскот | `Match3.EditorTools` | T23 | W5 |
 | [x] T30 | Защита арта от `Generate All` | `Match3.EditorTools` | T15 | W5 |
 | [ ] T31 | Роли FX: beam / burst / impact | `Match3.Content`, `Match3.Gameplay` | T18, T27 | W5 |
 | [ ] T32 | Sprite Atlas 2048², мип-мапы, сжатие под WebGL, замер билда | контент | T25, T29 | W5 |

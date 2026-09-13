@@ -112,7 +112,7 @@ namespace Match3.EditorTools
             text.text = content;
             text.fontSize = fontSize;
             text.alignment = TextAlignmentOptions.Center;
-            text.color = Color.white;
+            text.color = Match3Palette.TextPrimary;
             text.raycastTarget = false;
             text.enableAutoSizing = false;
             text.textWrappingMode = TextWrappingModes.NoWrap;
@@ -129,9 +129,11 @@ namespace Match3.EditorTools
             rect.sizeDelta = size;
 
             var image = go.GetComponent<Image>();
-            image.sprite = AssetDatabase.LoadAssetAtPath<Sprite>(
-                ArtAuthoring.HudArtFolder + "/T_Ui_Panel_2D.png");
-            image.color = new Color(0.24f, 0.28f, 0.38f, 1f);
+            // The "depth" variant carries a lip along its bottom edge, which is what makes a flat
+            // rectangle read as pressable; the border keeps that lip a constant height.
+            image.sprite = ArtPackAuthoring.LoadUiSprite("button_rectangle_depth_flat");
+            image.type = Image.Type.Sliced;
+            image.color = Match3Palette.PanelFill;
 
             TextMeshProUGUI text = CreateText("Label", rect, label, 34);
             var textRect = (RectTransform)text.transform;
