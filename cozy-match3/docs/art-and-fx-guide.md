@@ -233,13 +233,18 @@ Game.unity
 - `Animator`. Твины `FxView` синхронны с транскриптом, аниматор — нет.
 - Незалинкованные DOTween-твины. Если добавляете свои — только с `SetLink(gameObject)`.
 
-### 4.6 Про `_destroyFx`
+### 4.6 `_destroyFx` — подключено (T27)
 
-У `ChipVisual` и `ElementVisual` есть поле `Destroy Fx`, и у `ChipVisualProfile` есть геттер
-`GetDestroyFx`. **Сейчас его не вызывает ни один плеер транскрипта** — уничтожение фишки играется
-как scale + fade самой `ChipView`. Назначение этого поля ничего не изменит, пока в
-`ChipLifecycleEventPlayer` не появится аренда FX по аналогии с `BoosterEventPlayer`. Это работа
-по коду, а не по контенту; поле оставлено как готовая точка расширения.
+Поле `Destroy Fx` у `ChipVisual` и `ElementVisual` работает: `ChipLifecycleEventPlayer` и
+`ElementEventPlayer` арендуют его из `FxRegistry` на время `TimingProfile.DestroyTotalDuration`
+(0.20 с) и отпускают в `finally` — как `BoosterEventPlayer` арендует `_activationFx`.
+
+- Размер эффекта — клетка, позиция — центр клетки, тинт — **белый**: цвет живёт в спрайте (§3.2).
+- Пустое поле остаётся легальным: `FxRegistry.Rent` вернёт `null`, тайминг проигрывается целиком,
+  опадание всё равно ждёт барьера ANIMATE. Ни исключения, ни предупреждения в цикле.
+- Если на префабе висит `FxFlipbook`, `FxView.Prepare` запускает его на ту же длительность.
+  Собственных часов у компонента нет — ни `Update`, ни корутин, ни `Animator` (§4.5): покадровка
+  идёт твином DOTween с `SetLink`, поэтому она не может пережить барьер.
 
 ---
 

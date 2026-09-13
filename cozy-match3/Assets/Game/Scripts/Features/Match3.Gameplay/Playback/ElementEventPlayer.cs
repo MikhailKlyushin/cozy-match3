@@ -7,6 +7,7 @@ using Match3.Board;
 using Match3.Content;
 using Match3.Core;
 using Match3.Resolve;
+using UnityEngine;
 
 namespace Match3.Gameplay.Playback
 {
@@ -19,6 +20,8 @@ namespace Match3.Gameplay.Playback
     {
         private readonly ElementCatalog _catalog;
         private readonly LevelRules _rules;
+        private readonly FxRegistry _fx;
+        private readonly ElementVisualProfile _elementProfile;
 
         private static readonly TurnEventKind[] Handled =
         {
@@ -28,10 +31,21 @@ namespace Match3.Gameplay.Playback
             TurnEventKind.ElementColorCycled
         };
 
-        public ElementEventPlayer(ElementCatalog catalog, LevelRules rules)
+        /// <summary>The destruction effect covers the whole animation, punch and fade alike.</summary>
+        private const float FxCells = 1f;
+
+        public ElementEventPlayer(
+            ElementCatalog catalog,
+            LevelRules rules,
+            FxRegistry fx,
+            ElementVisualProfile elementProfile)
         {
             _catalog = catalog ?? throw new ArgumentNullException(nameof(catalog));
             _rules = rules ?? throw new ArgumentNullException(nameof(rules));
+            _fx = fx ?? throw new ArgumentNullException(nameof(fx));
+            _elementProfile = elementProfile != null
+                ? elementProfile
+                : throw new ArgumentNullException(nameof(elementProfile));
         }
 
         public IReadOnlyList<TurnEventKind> Kinds => Handled;
@@ -75,14 +89,58 @@ namespace Match3.Gameplay.Playback
                 ct);
         }
 
-        private static async UniTask DestroyAsync(
+        private async UniTask DestroyAsync(
             PlaybackContext context,
             ElementView view,
             GridPos cell,
             CancellationToken ct)
         {
             TimingProfile timings = context.Timings;
+            FxView fx = RentDestroyFx(context, view, cell, timings.DestroyTotalDuration);
 
+            try
+            {
+                await AnimateDestructionAsync(context, view, cell, timings, ct);
+            }
+            finally
+            {
+                _fx.Release(fx);
+            }
+        }
+
+        /// <summary>
+        /// Null when the token has no effect assigned, which stays legal: the timing plays in
+        /// full and only the visual is missing (`art-and-fx-guide` §4.6).
+        /// </summary>
+        private FxView RentDestroyFx(PlaybackContext context, ElementView view, GridPos cell, float duration)
+        {
+            if (!_elementProfile.TryGet(view.Token, out ElementVisualProfile.ElementVisual visual))
+            {
+                return null;
+            }
+
+            FxView fx = _fx.Rent(visual.DestroyFx);
+            if (fx == null)
+            {
+                return null;
+            }
+
+            float cellSize = context.Board.Layout.CellSize;
+            fx.Prepare(
+                context.Board.Layout.CellCenter(cell),
+                new Vector2(cellSize * FxCells, cellSize * FxCells),
+                Color.white,
+                duration);
+            return fx;
+        }
+
+        private static async UniTask AnimateDestructionAsync(
+            PlaybackContext context,
+            ElementView view,
+            GridPos cell,
+            TimingProfile timings,
+            CancellationToken ct)
+        {
             view.Rect.DOScale(timings.DestroyPunchScale, timings.DestroyPunchDuration)
                 .SetEase(Ease.OutQuad)
                 .SetLink(view.gameObject);
@@ -132,7 +190,7 @@ namespace Match3.Gameplay.Playback
         /// reveal recycles the view - so the outer element only plays its own death when nothing
         /// takes its place.
         /// </summary>
-        private static void StartDestruction(
+        private void StartDestruction(
             PlaybackContext context,
             int eventIndex,
             in TurnEvent e,

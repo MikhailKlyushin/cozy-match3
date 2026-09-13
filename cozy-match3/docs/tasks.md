@@ -127,7 +127,7 @@ W5 к критическому пути не относится: игра про
 | [x] T24 | Харнесс детерминизма и реплея | `Match3.Tests.EditMode` | T12 | W4 |
 | [ ] T25 | WebGL-билд, перф, размер, исключение читов | — | T23, T22 | W4 |
 | [x] T26 | Прогон 12 уровней ботом, сверка winrate | `Match3.Tests.EditMode` | T12, T14 | W4 |
-| [ ] T27 | `FxFlipbook` и подключение `_destroyFx` | `Match3.Gameplay`, `Match3.Content` | T18 | W5 |
+| [x] T27 | `FxFlipbook` и подключение `_destroyFx` | `Match3.Gameplay`, `Match3.Content` | T18 | W5 |
 | [x] T28 | Развести совмещённые ассеты подсказки и целей | `Match3.EditorTools` | T19, T20 | W5 |
 | [x] T29 | Скин сцены: фон, подложка поля, панели, кнопки, маскот | `Match3.EditorTools` | T23 | W5 |
 | [x] T30 | Защита арта от `Generate All` | `Match3.EditorTools` | T15 | W5 |

@@ -14,13 +14,25 @@ namespace Match3.Gameplay
         [SerializeField] private RectTransform _rect;
         [SerializeField] private Image _image;
         [SerializeField] private ParticleSystem _particles;
+        [SerializeField] private FxFlipbook _flipbook;
 
         private const float Half = 0.5f;
 
         public RectTransform Rect => _rect;
 
-        /// <summary>Places, resizes and restarts the effect. Every rent goes through here.</summary>
+        /// <summary>
+        /// Places, resizes and restarts the effect, without a sheet duration - a caller that has
+        /// no timing to give leaves a flipbook on its first frame rather than guessing one.
+        /// </summary>
         public void Prepare(Vector2 anchoredPosition, Vector2 size, Color tint)
+            => Prepare(anchoredPosition, size, tint, 0f);
+
+        /// <summary>
+        /// Places, resizes and restarts the effect. Every rent goes through here.
+        /// <paramref name="duration"/> is how long a <see cref="FxFlipbook"/> on the prefab runs
+        /// its sheet; it comes from the caller's <c>TimingProfile</c>, never from the prefab.
+        /// </summary>
+        public void Prepare(Vector2 anchoredPosition, Vector2 size, Color tint, float duration)
         {
             if (_rect == null)
             {
@@ -44,6 +56,11 @@ namespace Match3.Gameplay
             {
                 _particles.Clear(true);
                 _particles.Play(true);
+            }
+
+            if (_flipbook != null)
+            {
+                _flipbook.Play(duration);
             }
         }
 
@@ -131,6 +148,11 @@ namespace Match3.Gameplay
             if (_particles != null)
             {
                 _particles.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+            }
+
+            if (_flipbook != null)
+            {
+                _flipbook.Stop();
             }
 
             if (_rect != null)

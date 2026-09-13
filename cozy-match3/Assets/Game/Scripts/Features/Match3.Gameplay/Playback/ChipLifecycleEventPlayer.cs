@@ -6,6 +6,7 @@ using DG.Tweening;
 using Match3.Content;
 using Match3.Core;
 using Match3.Resolve;
+using UnityEngine;
 
 namespace Match3.Gameplay.Playback
 {
@@ -16,6 +17,8 @@ namespace Match3.Gameplay.Playback
     /// </summary>
     public sealed class ChipLifecycleEventPlayer : ITurnEventPlayer
     {
+        private readonly FxRegistry _fx;
+        private readonly ChipVisualProfile _chipProfile;
         private readonly IMatch3Logger _logger;
 
         private static readonly TurnEventKind[] Handled =
@@ -28,8 +31,15 @@ namespace Match3.Gameplay.Playback
         /// <summary>Last ComboStep offset seen, so a series is paced by its increments (§6.3).</summary>
         private int _lastTransformOffsetMs;
 
-        public ChipLifecycleEventPlayer(IMatch3Logger logger)
+        /// <summary>The destruction effect covers the whole animation, punch and fade alike.</summary>
+        private const float FxCells = 1f;
+
+        public ChipLifecycleEventPlayer(FxRegistry fx, ChipVisualProfile chipProfile, IMatch3Logger logger)
         {
+            _fx = fx ?? throw new ArgumentNullException(nameof(fx));
+            _chipProfile = chipProfile != null
+                ? chipProfile
+                : throw new ArgumentNullException(nameof(chipProfile));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -55,14 +65,55 @@ namespace Match3.Gameplay.Playback
             }
         }
 
-        private static async UniTask DestroyAsync(
+        private async UniTask DestroyAsync(
             PlaybackContext context,
             ChipView chip,
             int instanceId,
+            ChipColor color,
             CancellationToken ct)
         {
             TimingProfile timings = context.Timings;
+            FxView fx = RentDestroyFx(context, chip.Cell, color, timings.DestroyTotalDuration);
 
+            try
+            {
+                await AnimateDestructionAsync(context, chip, instanceId, timings, ct);
+            }
+            finally
+            {
+                _fx.Release(fx);
+            }
+        }
+
+        /// <summary>
+        /// Null when the colour has no effect assigned, which stays legal: the timing plays in
+        /// full and only the visual is missing (`art-and-fx-guide` §4.6).
+        /// </summary>
+        private FxView RentDestroyFx(PlaybackContext context, GridPos cell, ChipColor color, float duration)
+        {
+            FxView view = _fx.Rent(_chipProfile.GetDestroyFx(color));
+            if (view == null)
+            {
+                return null;
+            }
+
+            float cellSize = context.Board.Layout.CellSize;
+            // White: the colour lives in the sprite, as it does for every other chip visual (§3.2).
+            view.Prepare(
+                context.Board.Layout.CellCenter(cell),
+                new Vector2(cellSize * FxCells, cellSize * FxCells),
+                Color.white,
+                duration);
+            return view;
+        }
+
+        private static async UniTask AnimateDestructionAsync(
+            PlaybackContext context,
+            ChipView chip,
+            int instanceId,
+            TimingProfile timings,
+            CancellationToken ct)
+        {
             chip.Rect.DOScale(timings.DestroyPunchScale, timings.DestroyPunchDuration)
                 .SetEase(Ease.OutQuad)
                 .SetLink(chip.gameObject);
@@ -101,7 +152,7 @@ namespace Match3.Gameplay.Playback
                 return;
             }
 
-            context.TrackDestruction(DestroyAsync(context, chip, e.InstanceId, ct));
+            context.TrackDestruction(DestroyAsync(context, chip, e.InstanceId, e.Color, ct));
         }
 
         private static void Spawn(PlaybackContext context, in TurnEvent e)
