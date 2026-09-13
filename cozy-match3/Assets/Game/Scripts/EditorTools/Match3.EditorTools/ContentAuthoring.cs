@@ -86,7 +86,10 @@ namespace Match3.EditorTools
                     entry.FindPropertyRelative("_particleColor"),
                     ProceduralArt.ChipColorOf(colorIndex),
                     preserveAuthored);
-                ClearReference(entry.FindPropertyRelative("_destroyFx"), preserveAuthored);
+                WriteFx(
+                    entry.FindPropertyRelative("_destroyFx"),
+                    FxAuthoring.ChipDestroyPrefab,
+                    preserveAuthored);
             }
 
             var boosters = new[]
@@ -106,7 +109,7 @@ namespace Match3.EditorTools
                 entry.FindPropertyRelative("_booster").enumValueIndex = (int)boosters[i].Type;
 
                 WriteSprite(entry.FindPropertyRelative("_sprite"), boosters[i].Sprite, preserveAuthored);
-                ClearReference(entry.FindPropertyRelative("_activationFx"), preserveAuthored);
+                WriteBoosterFx(entry, boosters[i].Type, preserveAuthored);
             }
 
             so.ApplyModifiedPropertiesWithoutUndo();
@@ -156,7 +159,10 @@ namespace Match3.EditorTools
             blocker.FindPropertyRelative("_token").stringValue = ElementTokens.Blocker;
             blocker.FindPropertyRelative("_showBow").boolValue = false;
             blocker.FindPropertyRelative("_showNextColorPip").boolValue = false;
-            ClearReference(blocker.FindPropertyRelative("_destroyFx"), preserveAuthored);
+            WriteFx(
+                blocker.FindPropertyRelative("_destroyFx"),
+                FxAuthoring.ElementDestroyPrefab,
+                preserveAuthored);
             SerializedProperty blockerStages = blocker.FindPropertyRelative("_healthStages");
             blockerStages.arraySize = 1;
             WriteSprite(blockerStages.GetArrayElementAtIndex(0), "T_Element_Blocker_2D", preserveAuthored);
@@ -176,7 +182,10 @@ namespace Match3.EditorTools
             entry.FindPropertyRelative("_token").stringValue = token;
             entry.FindPropertyRelative("_showBow").boolValue = showBow;
             entry.FindPropertyRelative("_showNextColorPip").boolValue = showPip;
-            ClearReference(entry.FindPropertyRelative("_destroyFx"), preserveAuthored);
+            WriteFx(
+                entry.FindPropertyRelative("_destroyFx"),
+                FxAuthoring.ElementDestroyPrefab,
+                preserveAuthored);
 
             SerializedProperty stages = entry.FindPropertyRelative("_healthStages");
             stages.arraySize = healthStages;
@@ -218,14 +227,39 @@ namespace Match3.EditorTools
             property.colorValue = generated;
         }
 
-        private static void ClearReference(SerializedProperty property, bool preserveAuthored)
+        /// <summary>
+        /// One FX role of one booster. The three role fields are optional by design (T31): a
+        /// profile that leaves them empty falls back to the activation effect, so they are filled
+        /// only because the generated prefabs exist for all four.
+        /// </summary>
+        private static void WriteBoosterFx(SerializedProperty entry, BoosterType booster, bool preserveAuthored)
         {
-            if (preserveAuthored)
+            WriteFx(
+                entry.FindPropertyRelative("_activationFx"),
+                FxAuthoring.NameOf(booster, FxAuthoring.FxRole.Activation),
+                preserveAuthored);
+            WriteFx(
+                entry.FindPropertyRelative("_beamFx"),
+                FxAuthoring.NameOf(booster, FxAuthoring.FxRole.Beam),
+                preserveAuthored);
+            WriteFx(
+                entry.FindPropertyRelative("_burstFx"),
+                FxAuthoring.NameOf(booster, FxAuthoring.FxRole.Burst),
+                preserveAuthored);
+            WriteFx(
+                entry.FindPropertyRelative("_impactFx"),
+                FxAuthoring.NameOf(booster, FxAuthoring.FxRole.Impact),
+                preserveAuthored);
+        }
+
+        private static void WriteFx(SerializedProperty property, string prefabName, bool preserveAuthored)
+        {
+            if (preserveAuthored && property.objectReferenceValue != null)
             {
                 return;
             }
 
-            property.objectReferenceValue = null;
+            property.objectReferenceValue = FxAuthoring.Load(prefabName);
         }
 
         private static T CreateOrReplace<T>(string assetPath) where T : ScriptableObject

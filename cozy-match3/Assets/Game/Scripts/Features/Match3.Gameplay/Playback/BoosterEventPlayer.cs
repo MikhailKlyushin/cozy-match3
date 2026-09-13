@@ -257,9 +257,8 @@ namespace Match3.Gameplay.Playback
                 return;
             }
 
-            GameObject prefab = FxFor(booster);
-            FxView head = _fx.Rent(prefab);
-            FxView trail = _fx.Rent(prefab);
+            FxView head = _fx.Rent(FxFor(booster));
+            FxView trail = _fx.Rent(BeamFxFor(booster));
 
             try
             {
@@ -327,9 +326,8 @@ namespace Match3.Gameplay.Playback
                 (layout.CellCenter(new GridPos(minX, minY)) + layout.CellCenter(new GridPos(maxX, maxY))) * Half;
             var blastSize = new Vector2((maxX - minX + 1) * cellSize, (maxY - minY + 1) * cellSize);
 
-            GameObject prefab = FxFor(booster);
-            FxView flash = _fx.Rent(prefab);
-            FxView wave = _fx.Rent(prefab);
+            FxView flash = _fx.Rent(FxFor(booster));
+            FxView wave = _fx.Rent(BurstFxFor(booster));
 
             try
             {
@@ -373,7 +371,7 @@ namespace Match3.Gameplay.Playback
             BoardLayout layout = context.Board.Layout;
             Vector2 from = layout.CellCenter(origin);
             float stagger = BeamStagger(context, count);
-            GameObject prefab = FxFor(booster);
+            GameObject prefab = BeamFxFor(booster);
 
             _beams.Clear();
 
@@ -474,7 +472,7 @@ namespace Match3.Gameplay.Playback
             CancellationToken ct)
         {
             float duration = context.Timings.LandingSquashDuration;
-            FxView burst = _fx.Rent(FxFor(booster));
+            FxView burst = _fx.Rent(ImpactFxFor(booster));
 
             try
             {
@@ -657,5 +655,11 @@ namespace Match3.Gameplay.Playback
                 : UniTask.Delay(TimeSpan.FromSeconds(seconds), DelayType.DeltaTime, PlayerLoopTiming.Update, ct);
 
         private GameObject FxFor(BoosterType booster) => _chipProfile.GetBoosterFx(booster);
+
+        private GameObject BeamFxFor(BoosterType booster) => _chipProfile.GetBoosterBeamFx(booster);
+
+        private GameObject BurstFxFor(BoosterType booster) => _chipProfile.GetBoosterBurstFx(booster);
+
+        private GameObject ImpactFxFor(BoosterType booster) => _chipProfile.GetBoosterImpactFx(booster);
     }
 }

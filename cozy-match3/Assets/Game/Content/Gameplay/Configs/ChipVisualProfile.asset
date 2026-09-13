@@ -16,40 +16,55 @@ MonoBehaviour:
   - _color: 1
     _sprite: {fileID: 21300000, guid: cc709757d22a36c459c773302f661d4f, type: 3}
     _particleColor: {r: 0.9960785, g: 0.7607844, b: 0.80392164, a: 1}
-    _destroyFx: {fileID: 0}
+    _destroyFx: {fileID: 6803775967923023857, guid: 2b3a9eeb679fc2e4d84bf8713525d2ae, type: 3}
   - _color: 2
     _sprite: {fileID: 21300000, guid: cbfe08acd45d92247b88a3105b1694d9, type: 3}
     _particleColor: {r: 0.5058824, g: 0.3529412, b: 0.6392157, a: 1}
-    _destroyFx: {fileID: 0}
+    _destroyFx: {fileID: 6803775967923023857, guid: 2b3a9eeb679fc2e4d84bf8713525d2ae, type: 3}
   - _color: 3
     _sprite: {fileID: 21300000, guid: 9b5837ed74de0af43a6aa16ca4413807, type: 3}
     _particleColor: {r: 0.98823535, g: 0.8705883, b: 0.6039216, a: 1}
-    _destroyFx: {fileID: 0}
+    _destroyFx: {fileID: 6803775967923023857, guid: 2b3a9eeb679fc2e4d84bf8713525d2ae, type: 3}
   - _color: 4
     _sprite: {fileID: 21300000, guid: 321e9b9aa60222949900c1915f6d163b, type: 3}
     _particleColor: {r: 0.48235297, g: 0.627451, b: 0.7607844, a: 1}
-    _destroyFx: {fileID: 0}
+    _destroyFx: {fileID: 6803775967923023857, guid: 2b3a9eeb679fc2e4d84bf8713525d2ae, type: 3}
   - _color: 5
     _sprite: {fileID: 21300000, guid: 82a7539a847ee004e88bd7ba6d83b4c2, type: 3}
     _particleColor: {r: 0.92156863, g: 0.5803922, b: 0.40784314, a: 1}
-    _destroyFx: {fileID: 0}
+    _destroyFx: {fileID: 6803775967923023857, guid: 2b3a9eeb679fc2e4d84bf8713525d2ae, type: 3}
   - _color: 6
     _sprite: {fileID: 21300000, guid: 93c935d7d77a69d4cb9b3f1f1557ce1e, type: 3}
     _particleColor: {r: 0.6666667, g: 0.7607844, b: 0.6156863, a: 1}
-    _destroyFx: {fileID: 0}
+    _destroyFx: {fileID: 6803775967923023857, guid: 2b3a9eeb679fc2e4d84bf8713525d2ae, type: 3}
   _boosters:
   - _booster: 1
     _sprite: {fileID: 21300000, guid: 9cbcec78549ff7a498109eb5a1ce6ab6, type: 3}
-    _activationFx: {fileID: 0}
+    _activationFx: {fileID: 7062817026475541207, guid: 425feadd14994b84eb8e7cee936ceb0c, type: 3}
+    _beamFx: {fileID: 249686874832831796, guid: 6f5232d0dc64e634293c128b14342c74, type: 3}
+    _burstFx: {fileID: 2424336021060270874, guid: f38e08c0d10371847b22ed84d4974551, type: 3}
+    _impactFx: {fileID: 6096734650827611302, guid: c9cdfd954e04176478da8295a0f78f1c, type: 3}
   - _booster: 2
     _sprite: {fileID: 21300000, guid: a80819415b3554b4f8880911c4ce6fdc, type: 3}
-    _activationFx: {fileID: 0}
+    _activationFx: {fileID: 1705450205145380485, guid: 2853154841b83bd4fa77c883f1b7bb8b, type: 3}
+    _beamFx: {fileID: 1101593086624339581, guid: a0b5756be7cce9e43872023a55f046b0, type: 3}
+    _burstFx: {fileID: 8125802236520424575, guid: 18555730b5f533242a5a0a5c944bcc67, type: 3}
+    _impactFx: {fileID: 5953574434980766956, guid: c5fa9133cf0975c40926dd868bec0beb, type: 3}
   - _booster: 3
     _sprite: {fileID: 21300000, guid: 6099c185ba85b8d468fa68ddcf4cd949, type: 3}
-    _activationFx: {fileID: 0}
+    _activationFx: {fileID: 6406041751584199361, guid: 30da846d7f85e214c98e743ecde14b67, type: 3}
+    _beamFx: {fileID: 8818056722158675898, guid: d7bc5c1294320764b929c98363c1210c, type: 3}
+    _burstFx: {fileID: 3624582470309403374, guid: 9c38ca5e74735be4ba80e347a1af0e15, type: 3}
+    _impactFx: {fileID: 2744972125798858765, guid: a8b7c4cf356cadb449810133409c36d2, type: 3}
   - _booster: 4
     _sprite: {fileID: 21300000, guid: c9e430bfaee71fa42b531f129e35f833, type: 3}
-    _activationFx: {fileID: 0}
+    _activationFx: {fileID: 8661545552199063628, guid: d9d704f53b741ae4ebda37c5e78cff2d, type: 3}
+    _beamFx: {fileID: 3567362625685492410, guid: 5158eb6c4d3d1d147ad84166a4548b93, type: 3}
+    _burstFx: {fileID: 1587868394053688369, guid: 859b897c37c5c1e49865332a6bab91c9, type: 3}
+    _impactFx: {fileID: 1674494111335481882, guid: 59e188b71d3c2494381543f79ebc88bc, type: 3}
   - _booster: 5
     _sprite: {fileID: 21300000, guid: 230faa3b7cd1abb4abfb883f6b1d103d, type: 3}
-    _activationFx: {fileID: 0}
+    _activationFx: {fileID: 5306024964570579691, guid: b29b89b28ccabac4b9400ef2f9a89039, type: 3}
+    _beamFx: {fileID: 4905475398316419515, guid: 49d1f4699ef012b4cac46ceae159ae48, type: 3}
+    _burstFx: {fileID: 1474621971604794988, guid: a2cb8a03f29c1d547bc5dfdad7375fd1, type: 3}
+    _impactFx: {fileID: 7786855800517098796, guid: 40a655b4c691dfe49a2dd8267b560fa6, type: 3}

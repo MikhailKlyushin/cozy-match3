@@ -19,6 +19,7 @@ namespace Match3.EditorTools
             // reference all of it.
             FontAuthoring.GenerateFontAsset();
             ArtAuthoring.GenerateArt();
+            FxAuthoring.GenerateFx();
             ContentAuthoring.GenerateProfiles();
             LevelAuthoring.GenerateLevels();
             PrefabAuthoring.GeneratePrefabs();

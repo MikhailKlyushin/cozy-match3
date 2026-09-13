@@ -45,13 +45,44 @@ namespace Match3.Content
             return null;
         }
 
+        /// <summary>Heads and flares: the effect a booster shows where it sits.</summary>
         public GameObject GetBoosterFx(BoosterType booster)
+        {
+            BoosterVisual visual = FindBooster(booster);
+            return visual != null ? visual.ActivationFx : null;
+        }
+
+        /// <summary>
+        /// Trails and rays - anything stretched into a line. Falls back to the activation effect,
+        /// so a profile filled in before the roles existed plays exactly as it did.
+        /// </summary>
+        public GameObject GetBoosterBeamFx(BoosterType booster)
+        {
+            BoosterVisual visual = FindBooster(booster);
+            return visual != null ? visual.BeamFx : null;
+        }
+
+        /// <summary>Shockwaves - anything that expands from a point.</summary>
+        public GameObject GetBoosterBurstFx(BoosterType booster)
+        {
+            BoosterVisual visual = FindBooster(booster);
+            return visual != null ? visual.BurstFx : null;
+        }
+
+        /// <summary>The hit at the far end of a flight.</summary>
+        public GameObject GetBoosterImpactFx(BoosterType booster)
+        {
+            BoosterVisual visual = FindBooster(booster);
+            return visual != null ? visual.ImpactFx : null;
+        }
+
+        private BoosterVisual FindBooster(BoosterType booster)
         {
             for (int i = 0; i < _boosters.Length; i++)
             {
                 if (_boosters[i] != null && _boosters[i].Booster == booster)
                 {
-                    return _boosters[i].ActivationFx;
+                    return _boosters[i];
                 }
             }
 
@@ -97,12 +128,25 @@ namespace Match3.Content
             [SerializeField] private BoosterType _booster = BoosterType.RocketH;
             [SerializeField] private Sprite _sprite;
             [SerializeField] private GameObject _activationFx;
+            [SerializeField] private GameObject _beamFx;
+            [SerializeField] private GameObject _burstFx;
+            [SerializeField] private GameObject _impactFx;
 
             public BoosterType Booster => _booster;
 
             public Sprite Sprite => _sprite;
 
             public GameObject ActivationFx => _activationFx;
+
+            /// <summary>
+            /// Role fields are optional: an empty one falls back to the activation effect, which
+            /// is what every booster used for every role before the roles were split (T31).
+            /// </summary>
+            public GameObject BeamFx => _beamFx != null ? _beamFx : _activationFx;
+
+            public GameObject BurstFx => _burstFx != null ? _burstFx : _activationFx;
+
+            public GameObject ImpactFx => _impactFx != null ? _impactFx : _activationFx;
         }
     }
 }

@@ -16,9 +16,25 @@ namespace Match3.Gameplay
         [SerializeField] private ParticleSystem _particles;
         [SerializeField] private FxFlipbook _flipbook;
 
+        /// <summary>
+        /// Colour the prefab was authored with. Every caller rents with <c>Color.white</c> because
+        /// §5.1 puts the colour in the effect, not in the call - and with greyscale source
+        /// textures that colour has to live somewhere. It lives here, and the rented tint
+        /// multiplies it, so a white prefab behaves exactly as it did before.
+        /// </summary>
+        private Color _authoredTint = Color.white;
+
         private const float Half = 0.5f;
 
         public RectTransform Rect => _rect;
+
+        private void Awake()
+        {
+            if (_image != null)
+            {
+                _authoredTint = _image.color;
+            }
+        }
 
         /// <summary>
         /// Places, resizes and restarts the effect, without a sheet duration - a caller that has
@@ -48,7 +64,7 @@ namespace Match3.Gameplay
 
             if (_image != null)
             {
-                _image.color = tint;
+                _image.color = tint * _authoredTint;
                 _image.raycastTarget = false;
             }
 
