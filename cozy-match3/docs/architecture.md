@@ -535,6 +535,12 @@ public interface IDamageSourceRule { DamageSourceKind Kind { get; } bool IsDamag
 
 - Перезапуск уровня = `Destroy(levelContext)` + инстанс нового. Подписки R3, твины и пулы уходят
   вместе с ним. Ни одного per-level объекта в project scope.
+- **Порядок смены попытки.** Новый `LevelContext` инициализируется синхронно (`GameObjectContext`
+  вызывает `IInitializable` сразу при инстансе, не дожидаясь `Start`), а старый уничтожается
+  `Object.Destroy` в конце кадра. То есть `Dispose` умершей попытки выполняется **после**
+  `Initialize` живой. Поэтому scene-скоуп объект, которому попытка отдаёт себя (панель читов),
+  освобождает ссылку **по идентичности** — `Unbind(binding)`, а не `Unbind()`, иначе тир-даун
+  предыдущей попытки забирает текущую.
 - Конструкторная инъекция по умолчанию; `[Inject]`-метод — только во `MonoBehaviour`-view.
 - Сервисы: `BindInterfacesAndSelfTo<T>().AsSingle()` в своём скоупе. Сервис не резолвит view.
 - `DiContainer` в геймплей-код не инжектится (сервис-локатор в маскировке).

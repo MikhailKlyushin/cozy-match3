@@ -55,6 +55,8 @@ namespace Match3.Bootstrap
         private readonly LevelTurnController _turns;
         private readonly HintPresenter _hints;
 
+        private CheatLevelBinding _binding;
+
         public CheatAttemptBinder(
             CheatPanelPresenter presenter,
             LevelSessionState session,
@@ -73,15 +75,22 @@ namespace Match3.Bootstrap
 
         public void Initialize()
         {
-            _presenter.Bind(new CheatLevelBinding(
+            _binding = new CheatLevelBinding(
                 _session,
                 _turnRule,
                 _picker,
                 new CheatTurnRunner(_turns),
-                new CheatHintControl(_hints)));
+                new CheatHintControl(_hints));
+
+            _presenter.Bind(_binding);
         }
 
-        public void Dispose() => _presenter.Unbind();
+        /// <summary>
+        /// Hands back this attempt's binding rather than clearing whatever the panel holds: the
+        /// next attempt is built before Unity destroys this one, so an unconditional unbind would
+        /// take the live attempt away from the panel.
+        /// </summary>
+        public void Dispose() => _presenter.Unbind(_binding);
     }
 
     /// <summary>Points the HUD's bug button at the panel; without the define the button is inert.</summary>

@@ -17,9 +17,25 @@ namespace Match3.EditorTools
         private const string PrefabFolder = "Assets/Game/Content/Cheats/Prefabs";
         private const string PrefabPath = PrefabFolder + "/VAR_CheatsRoot.prefab";
 
-        private const float RowHeight = 62f;
+        private const float RowHeight = 54f;
         private const float RowGap = 6f;
-        private const float PanelWidth = 460f;
+        private const float PanelWidth = 420f;
+
+        /// <summary>
+        /// The window is deliberately far shorter than its content. Twenty-odd rows do not fit a
+        /// 9:16 screen at any font size worth reading, and a window taller than the viewport puts
+        /// its own controls out of reach, so everything below the header scrolls.
+        /// </summary>
+        private const float PanelHeight = 700f;
+
+        private const float HeaderHeight = 64f;
+        private const float ScrollbarWidth = 12f;
+        private const float WindowPadding = 12f;
+        private const float ContentPadding = 8f;
+        private const int ButtonFontSize = 26;
+
+        /// <summary>The window is dark, so labels cannot take the light-background text colour.</summary>
+        private static readonly Color LabelColor = new Color(0.92f, 0.94f, 0.98f, 1f);
 
         private static float _cursor;
 
@@ -114,44 +130,48 @@ namespace Match3.EditorTools
             windowRect.anchorMax = new Vector2(1f, 0.5f);
             windowRect.pivot = new Vector2(1f, 0.5f);
             windowRect.anchoredPosition = new Vector2(-20f, 0f);
-            windowRect.sizeDelta = new Vector2(PanelWidth, 1400f);
+            windowRect.sizeDelta = new Vector2(PanelWidth, PanelHeight);
 
             var windowImage = window.GetComponent<Image>();
             windowImage.color = new Color(0.10f, 0.12f, 0.17f, 0.96f);
 
-            _cursor = -20f;
+            // Title and Close stay pinned: closing the panel must never depend on scroll position.
+            TextMeshProUGUI title = CreateHeaderTitle(windowRect);
+            Button close = CreateHeaderClose(windowRect);
+            RectTransform content = CreateScrollView(windowRect);
 
-            TextMeshProUGUI title = AddLabel(windowRect, "Title", "Читы", 40);
-            Button close = AddButton(windowRect, "CloseButton", "Закрыть");
+            _cursor = -ContentPadding;
 
-            TMP_InputField levelInput = AddInput(windowRect, "LevelInput", "Номер уровня");
-            Button goTo = AddButton(windowRect, "GoToLevelButton", "Перейти");
-            TextMeshProUGUI levelStatus = AddLabel(windowRect, "LevelStatus", string.Empty, 26);
+            TMP_InputField levelInput = AddInput(content, "LevelInput", "Номер уровня");
+            Button goTo = AddButton(content, "GoToLevelButton", "Перейти");
+            TextMeshProUGUI levelStatus = AddLabel(content, "LevelStatus", string.Empty, 24);
 
-            Button win = AddButton(windowRect, "WinLevelButton", "Выиграть уровень");
-            Button lose = AddButton(windowRect, "LoseLevelButton", "Проиграть уровень");
-            Button addMoves = AddButton(windowRect, "AddMovesButton", "+5 ходов");
+            Button win = AddButton(content, "WinLevelButton", "Выиграть уровень");
+            Button lose = AddButton(content, "LoseLevelButton", "Проиграть уровень");
+            Button addMoves = AddButton(content, "AddMovesButton", "+5 ходов");
 
-            Button rocket = AddButton(windowRect, "RocketBoosterButton", "Ракета");
-            Button bomb = AddButton(windowRect, "BombBoosterButton", "Бомба");
-            Button rainbow = AddButton(windowRect, "RainbowBoosterButton", "Радужный шар");
-            Button airplane = AddButton(windowRect, "AirplaneBoosterButton", "Самолётик");
-            Button disarm = AddButton(windowRect, "DisarmBoosterButton", "Убрать выбор");
-            TextMeshProUGUI armedLabel = AddLabel(windowRect, "ArmedBoosterLabel", string.Empty, 26);
-            Image armedIcon = AddIcon(windowRect, "ArmedBoosterIcon");
+            Button rocket = AddButton(content, "RocketBoosterButton", "Ракета");
+            Button bomb = AddButton(content, "BombBoosterButton", "Бомба");
+            Button rainbow = AddButton(content, "RainbowBoosterButton", "Радужный шар");
+            Button airplane = AddButton(content, "AirplaneBoosterButton", "Самолётик");
+            Button disarm = AddButton(content, "DisarmBoosterButton", "Убрать выбор");
+            TextMeshProUGUI armedLabel = AddLabel(content, "ArmedBoosterLabel", string.Empty, 24);
+            Image armedIcon = AddIcon(content, "ArmedBoosterIcon");
 
-            TextMeshProUGUI seedLabel = AddLabel(windowRect, "SeedLabel", "Seed:", 26);
-            TMP_InputField seedInput = AddInput(windowRect, "SeedInput", "Seed");
-            Button applySeed = AddButton(windowRect, "ApplySeedButton", "Применить");
-            Button restart = AddButton(windowRect, "RestartAttemptButton", "Заново");
+            TextMeshProUGUI seedLabel = AddLabel(content, "SeedLabel", "Seed:", 24);
+            TMP_InputField seedInput = AddInput(content, "SeedInput", "Seed");
+            Button applySeed = AddButton(content, "ApplySeedButton", "Применить");
+            Button restart = AddButton(content, "RestartAttemptButton", "Заново");
 
-            Toggle freeMoves = AddToggle(windowRect, "FreeMovesToggle", "Ходы бесплатно");
-            Toggle grid = AddToggle(windowRect, "CoordinateGridToggle", "Показать сетку координат");
-            Toggle hints = AddToggle(windowRect, "DisableHintsToggle", "Отключить подсказки");
-            Button hintNow = AddButton(windowRect, "HintNowButton", "Подсказка сейчас");
-            Button dump = AddButton(windowRect, "DumpTranscriptButton", "Дамп транскрипта в лог");
+            Toggle freeMoves = AddToggle(content, "FreeMovesToggle", "Ходы бесплатно");
+            Toggle grid = AddToggle(content, "CoordinateGridToggle", "Показать сетку координат");
+            Toggle hints = AddToggle(content, "DisableHintsToggle", "Отключить подсказки");
+            Button hintNow = AddButton(content, "HintNowButton", "Подсказка сейчас");
+            Button dump = AddButton(content, "DumpTranscriptButton", "Дамп транскрипта в лог");
 
-            windowRect.sizeDelta = new Vector2(PanelWidth, Mathf.Abs(_cursor) + 30f);
+            // What the ScrollRect scrolls: the rows are laid out by hand, so the height is known
+            // exactly and no layout group has to run for the panel to be usable.
+            content.sizeDelta = new Vector2(0f, Mathf.Abs(_cursor) + ContentPadding);
 
             var view = panelGo.AddComponent<CheatPanelView>();
             PrefabAuthoring.Wire(view, "_window", window);
@@ -184,6 +204,141 @@ namespace Match3.EditorTools
             return view;
         }
 
+        private static TextMeshProUGUI CreateHeaderTitle(RectTransform window)
+        {
+            var go = new GameObject("Title", typeof(RectTransform));
+            go.transform.SetParent(window, false);
+
+            var rect = (RectTransform)go.transform;
+            rect.anchorMin = new Vector2(0f, 1f);
+            rect.anchorMax = new Vector2(1f, 1f);
+            rect.pivot = new Vector2(0.5f, 1f);
+            rect.offsetMin = new Vector2(WindowPadding + 4f, -HeaderHeight + 10f);
+            rect.offsetMax = new Vector2(-136f, -10f);
+
+            TextMeshProUGUI text = PrefabAuthoring.CreateText("Text", rect, "Читы", 30);
+            Stretch((RectTransform)text.transform);
+            text.alignment = TextAlignmentOptions.Left;
+            text.color = LabelColor;
+            return text;
+        }
+
+        private static Button CreateHeaderClose(RectTransform window)
+        {
+            var go = new GameObject("CloseButton", typeof(RectTransform));
+            go.transform.SetParent(window, false);
+
+            var rect = (RectTransform)go.transform;
+            rect.anchorMin = new Vector2(1f, 1f);
+            rect.anchorMax = new Vector2(1f, 1f);
+            rect.pivot = new Vector2(1f, 1f);
+            rect.anchoredPosition = new Vector2(-WindowPadding - 4f, -10f);
+            rect.sizeDelta = new Vector2(112f, 44f);
+
+            Button button = PrefabAuthoring.CreateButton("Button", rect, "Закрыть", rect.sizeDelta);
+            Stretch((RectTransform)button.transform);
+            SetFontSize(button, ButtonFontSize);
+            return button;
+        }
+
+        /// <summary>
+        /// Viewport plus content plus a slim scrollbar, wired by hand. The rows below are parented
+        /// to the content, so adding one costs nothing: the height is recomputed from the cursor.
+        /// </summary>
+        private static RectTransform CreateScrollView(RectTransform window)
+        {
+            var scrollGo = new GameObject("Scroll", typeof(RectTransform), typeof(ScrollRect));
+            scrollGo.transform.SetParent(window, false);
+
+            var scrollRect = (RectTransform)scrollGo.transform;
+            scrollRect.anchorMin = Vector2.zero;
+            scrollRect.anchorMax = Vector2.one;
+            scrollRect.offsetMin = new Vector2(WindowPadding, WindowPadding);
+            scrollRect.offsetMax = new Vector2(-WindowPadding, -HeaderHeight);
+
+            var viewportGo = new GameObject(
+                "Viewport",
+                typeof(RectTransform),
+                typeof(CanvasRenderer),
+                typeof(Image),
+                typeof(RectMask2D));
+            viewportGo.transform.SetParent(scrollGo.transform, false);
+
+            var viewport = (RectTransform)viewportGo.transform;
+            viewport.anchorMin = Vector2.zero;
+            viewport.anchorMax = Vector2.one;
+            viewport.pivot = new Vector2(0f, 1f);
+            viewport.offsetMin = Vector2.zero;
+            viewport.offsetMax = new Vector2(-ScrollbarWidth - 4f, 0f);
+
+            // Transparent but raycastable, so a drag that starts on empty space still scrolls.
+            Image viewportImage = viewportGo.GetComponent<Image>();
+            viewportImage.color = new Color(0f, 0f, 0f, 0f);
+
+            var contentGo = new GameObject("Content", typeof(RectTransform));
+            contentGo.transform.SetParent(viewportGo.transform, false);
+
+            var content = (RectTransform)contentGo.transform;
+            content.anchorMin = new Vector2(0f, 1f);
+            content.anchorMax = new Vector2(1f, 1f);
+            content.pivot = new Vector2(0.5f, 1f);
+            content.anchoredPosition = Vector2.zero;
+            content.sizeDelta = Vector2.zero;
+
+            Scrollbar scrollbar = CreateScrollbar(scrollRect);
+
+            var scroll = scrollGo.GetComponent<ScrollRect>();
+            scroll.content = content;
+            scroll.viewport = viewport;
+            scroll.horizontal = false;
+            scroll.vertical = true;
+
+            // Clamped, not elastic: the panel is a tool, and a list that bounces back is harder to
+            // land a press on than one that simply stops.
+            scroll.movementType = ScrollRect.MovementType.Clamped;
+            scroll.scrollSensitivity = 40f;
+            scroll.verticalScrollbar = scrollbar;
+            scroll.verticalScrollbarVisibility = ScrollRect.ScrollbarVisibility.AutoHide;
+            return content;
+        }
+
+        private static Scrollbar CreateScrollbar(RectTransform parent)
+        {
+            var barGo = new GameObject(
+                "Scrollbar",
+                typeof(RectTransform),
+                typeof(CanvasRenderer),
+                typeof(Image),
+                typeof(Scrollbar));
+            barGo.transform.SetParent(parent, false);
+
+            var barRect = (RectTransform)barGo.transform;
+            barRect.anchorMin = new Vector2(1f, 0f);
+            barRect.anchorMax = new Vector2(1f, 1f);
+            barRect.pivot = new Vector2(1f, 1f);
+            barRect.offsetMin = new Vector2(-ScrollbarWidth, 0f);
+            barRect.offsetMax = Vector2.zero;
+            barGo.GetComponent<Image>().color = new Color(1f, 1f, 1f, 0.08f);
+
+            var slidingGo = new GameObject("SlidingArea", typeof(RectTransform));
+            slidingGo.transform.SetParent(barGo.transform, false);
+            Stretch((RectTransform)slidingGo.transform);
+
+            var handleGo = new GameObject("Handle", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+            handleGo.transform.SetParent(slidingGo.transform, false);
+            var handle = (RectTransform)handleGo.transform;
+            Stretch(handle);
+
+            var handleImage = handleGo.GetComponent<Image>();
+            handleImage.color = new Color(1f, 1f, 1f, 0.35f);
+
+            var scrollbar = barGo.GetComponent<Scrollbar>();
+            scrollbar.direction = Scrollbar.Direction.BottomToTop;
+            scrollbar.handleRect = handle;
+            scrollbar.targetGraphic = handleImage;
+            return scrollbar;
+        }
+
         private static RectTransform NextRow(RectTransform parent, string name, float height)
         {
             var go = new GameObject(name, typeof(RectTransform));
@@ -193,10 +348,8 @@ namespace Match3.EditorTools
             rect.anchorMin = new Vector2(0f, 1f);
             rect.anchorMax = new Vector2(1f, 1f);
             rect.pivot = new Vector2(0.5f, 1f);
-            rect.offsetMin = new Vector2(16f, 0f);
-            rect.offsetMax = new Vector2(-16f, 0f);
             rect.anchoredPosition = new Vector2(0f, _cursor);
-            rect.sizeDelta = new Vector2(-32f, height);
+            rect.sizeDelta = new Vector2(-8f, height);
 
             _cursor -= height + RowGap;
             return rect;
@@ -204,23 +357,24 @@ namespace Match3.EditorTools
 
         private static TextMeshProUGUI AddLabel(RectTransform parent, string name, string content, int size)
         {
-            RectTransform row = NextRow(parent, name, size + 14f);
+            RectTransform row = NextRow(parent, name, size + 12f);
             TextMeshProUGUI text = PrefabAuthoring.CreateText("Text", row, content, size);
             Stretch((RectTransform)text.transform);
             text.alignment = TextAlignmentOptions.Left;
+            text.color = LabelColor;
             return text;
         }
 
         private static Image AddIcon(RectTransform parent, string name)
         {
-            RectTransform row = NextRow(parent, name, 56f);
+            RectTransform row = NextRow(parent, name, 48f);
             Image icon = PrefabAuthoring.CreateImageNode("Icon", row);
             var rect = (RectTransform)icon.transform;
             rect.anchorMin = new Vector2(0f, 0.5f);
             rect.anchorMax = new Vector2(0f, 0.5f);
             rect.pivot = new Vector2(0f, 0.5f);
             rect.anchoredPosition = Vector2.zero;
-            rect.sizeDelta = new Vector2(52f, 52f);
+            rect.sizeDelta = new Vector2(44f, 44f);
             icon.preserveAspect = true;
             icon.enabled = false;
             return icon;
@@ -231,6 +385,7 @@ namespace Match3.EditorTools
             RectTransform row = NextRow(parent, name, RowHeight);
             Button button = PrefabAuthoring.CreateButton("Button", row, label, new Vector2(0f, RowHeight));
             Stretch((RectTransform)button.transform);
+            SetFontSize(button, ButtonFontSize);
             return button;
         }
 
@@ -252,12 +407,13 @@ namespace Match3.EditorTools
             viewport.offsetMin = new Vector2(10f, 0f);
             viewport.offsetMax = new Vector2(-10f, 0f);
 
-            TextMeshProUGUI text = PrefabAuthoring.CreateText("Text", viewport, string.Empty, 30);
+            TextMeshProUGUI text = PrefabAuthoring.CreateText("Text", viewport, string.Empty, 28);
             Stretch((RectTransform)text.transform);
             text.alignment = TextAlignmentOptions.Left;
+            text.color = LabelColor;
             text.richText = false;
 
-            TextMeshProUGUI hint = PrefabAuthoring.CreateText("Placeholder", viewport, placeholder, 28);
+            TextMeshProUGUI hint = PrefabAuthoring.CreateText("Placeholder", viewport, placeholder, 26);
             Stretch((RectTransform)hint.transform);
             hint.alignment = TextAlignmentOptions.Left;
             hint.color = new Color(1f, 1f, 1f, 0.4f);
@@ -280,26 +436,40 @@ namespace Match3.EditorTools
             boxRect.anchorMin = new Vector2(0f, 0.5f);
             boxRect.anchorMax = new Vector2(0f, 0.5f);
             boxRect.pivot = new Vector2(0f, 0.5f);
-            boxRect.sizeDelta = new Vector2(40f, 40f);
+            boxRect.sizeDelta = new Vector2(36f, 36f);
             boxGo.GetComponent<Image>().color = new Color(1f, 1f, 1f, 0.2f);
 
             Image check = PrefabAuthoring.CreateImageNode("Check", boxRect);
             Stretch((RectTransform)check.transform);
             check.color = new Color(0.5f, 0.9f, 0.6f, 1f);
 
-            TextMeshProUGUI text = PrefabAuthoring.CreateText("Label", row, label, 28);
+            TextMeshProUGUI text = PrefabAuthoring.CreateText("Label", row, label, 26);
             var textRect = (RectTransform)text.transform;
             textRect.anchorMin = new Vector2(0f, 0f);
             textRect.anchorMax = new Vector2(1f, 1f);
-            textRect.offsetMin = new Vector2(52f, 0f);
+            textRect.offsetMin = new Vector2(46f, 0f);
             textRect.offsetMax = Vector2.zero;
             text.alignment = TextAlignmentOptions.Left;
+            text.color = LabelColor;
 
             var toggle = row.gameObject.AddComponent<Toggle>();
             toggle.targetGraphic = boxGo.GetComponent<Image>();
             toggle.graphic = check;
             toggle.isOn = false;
             return toggle;
+        }
+
+        /// <summary>
+        /// The shared button helper sizes its caption for the HUD, which is twice as wide as this
+        /// panel; the longest caption here would otherwise run past the window edge.
+        /// </summary>
+        private static void SetFontSize(Component target, float size)
+        {
+            TMP_Text label = target.GetComponentInChildren<TMP_Text>(true);
+            if (label != null)
+            {
+                label.fontSize = size;
+            }
         }
 
         private static void Stretch(RectTransform rect)
