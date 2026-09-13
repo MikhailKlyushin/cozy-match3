@@ -704,12 +704,22 @@ Assets/
 рантайм-сборок запрещено (правило «рантайм → Editor»).
 
 **`Match3.Content`** (`Assets/Game/Scripts/Content/`) — типы ScriptableObject-профилей презентации:
-`TimingProfile` (§11.2), `ChipVisualProfile`, `ElementVisualProfile` (§17). Появилась потому, что
+`TimingProfile` (§11.2), `ChipVisualProfile`, `ElementVisualProfile` (§17), `AudioProfile`. Появилась потому, что
 §3.1 не даёт `Match3.Gameplay` и `Match3.Hud` **ни одной общей сборки с `UnityEngine`**, а профили
 нужны обоим: тайминги §11.3 читают и плеер транскрипта, и тик счётчика целей; спрайты фишек нужны
 и полю, и иконкам целей в HUD. Ссылка `Hud → Gameplay` запрещена, `Match3.Levels` —
 `noEngineReferences` и `ScriptableObject` держать не может. Сборка содержит **только данные**:
 ни презентеров, ни view, ни логики правил.
+
+**Звук.** `AudioProfile` держит клип фоновой амбиентности, громкость и время фейда;
+`AmbientAudioService` (`Match3.Bootstrap`, `IInitializable`/`IDisposable`) запускает луп на
+`AudioSource` из сцены и гасит его при разборке. Кнопку «звук вкл/выкл» (§11.2) держит
+`SoundToggleView` в `Match3.Hud` — только спрайт и клик, — а состояние живёт в `AudioMuteService`
+(`Match3.Bootstrap`): он глушит через `AudioListener.volume`, а не через источник, поэтому будущие
+SFX замолкают вместе с фоном и ни один из них не нужно подписывать на кнопку. Выбор хранится в
+`IProgressStorage` под ключом `audio.muted` и флашится сразу (§13). Ни один звук не привязан к §11.3 — привязки не
+существует, потому что GDD звук не проектировал (§16). Сервис опционален: без профиля или источника
+`GameInstaller` пишет предупреждение и сцена играется молча.
 
 Префабы: в `Prefabs/` — только варианты (`VAR_*`) и сборные view-префабы фичи.
 
@@ -722,7 +732,8 @@ Assets/
 **Что из `Generate All` вынесено и почему.** Генератор процедурных заглушек удалён вместе с
 `Generate Placeholder Art`: весь арт §17 финальный и лежит в репозитории, а от `ProceduralArt`
 осталась таблица имён и запасных цветов — `ChipArtRegistry`. Пиксели теперь авторские, под кодом
-остались только импорт-настройки (`Apply Texture Import Settings`, `Configure Art Pack Importers`).
+остались только импорт-настройки (`Apply Texture Import Settings`, `Configure Art Pack Importers`,
+`Apply Audio Import Settings`).
 Сцены и view-префабы тоже стали авторскими — `Background.prefab` и `GoalRow.prefab` инстансами в
 `Boot.unity` и `Game.unity`, тинт в `VAR_BoardCell`, спрайт подсказки в `VAR_LevelContext` — а их
 генераторы собирают ассет с нуля и защитить его пропуском файла, как PNG, нельзя. Поэтому

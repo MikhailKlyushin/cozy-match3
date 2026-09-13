@@ -15,11 +15,12 @@ namespace Match3.EditorTools
         [MenuItem("Match3/Authoring/Generate All")]
         public static void GenerateAll()
         {
-            // Order is a dependency chain: the font and the sprite import settings, then the FX
-            // prefabs and the profiles that reference them, then the levels.
+            // Order is a dependency chain: the font and the sprite and audio import settings,
+            // then the FX prefabs and the profiles that reference them, then the levels.
             FontAuthoring.GenerateFontAsset();
             ArtAuthoring.ApplyImportSettings();
             ArtPackAuthoring.ConfigurePacks();
+            AudioAuthoring.ApplyImportSettings();
             FxAuthoring.GenerateFx();
             ContentAuthoring.GenerateProfiles();
             LevelAuthoring.GenerateLevels();

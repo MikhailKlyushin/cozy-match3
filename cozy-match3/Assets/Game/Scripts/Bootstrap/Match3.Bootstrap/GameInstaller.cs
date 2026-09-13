@@ -34,6 +34,11 @@ namespace Match3.Bootstrap
         [SerializeField] private HudActionsView _hudActions;
         [SerializeField] private PopupView[] _popups = new PopupView[0];
 
+    [Header("Audio")]
+    [SerializeField] private AudioProfile _audioProfile;
+    [SerializeField] private AudioSource _ambientSource;
+    [SerializeField] private SoundToggleView _soundToggle;
+
 #if MATCH3_CHEATS
         [Header("Cheats (development builds only)")]
         [SerializeField] private Match3.Cheats.CheatsRootView _cheatsPrefab;
@@ -51,6 +56,7 @@ namespace Match3.Bootstrap
             InstallContent();
             InstallProgression();
             InstallHud();
+            InstallAudio();
 
             Container.BindInterfacesAndSelfTo<GameFlowController>().AsSingle();
             InstallCheats();
@@ -97,6 +103,36 @@ namespace Match3.Bootstrap
 
             IReadOnlyList<PopupView> popups = _popups;
             Container.Bind<PopupService>().AsSingle().WithArguments(popups);
+        }
+
+        /// <summary>
+        /// Both halves are optional by design and independent of each other: a missing one is a
+        /// content gap, not a broken invariant, and the toggle still mutes whatever else plays.
+        /// </summary>
+        private void InstallAudio()
+        {
+            if (_audioProfile != null && _ambientSource != null)
+            {
+                Container.BindInstance(_audioProfile);
+                Container.BindInterfacesAndSelfTo<AmbientAudioService>()
+                    .AsSingle()
+                    .WithArguments(_ambientSource);
+            }
+            else
+            {
+                Debug.LogWarning("[Match3] No audio profile or ambience source; the scene stays silent.");
+            }
+
+            if (_soundToggle != null)
+            {
+                Container.BindInterfacesAndSelfTo<AudioMuteService>()
+                    .AsSingle()
+                    .WithArguments(_soundToggle);
+            }
+            else
+            {
+                Debug.LogWarning("[Match3] No sound toggle; the player cannot mute the game.");
+            }
         }
 
         private void InstallCheats()

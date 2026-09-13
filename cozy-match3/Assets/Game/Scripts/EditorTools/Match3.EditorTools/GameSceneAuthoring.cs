@@ -36,6 +36,11 @@ namespace Match3.EditorTools
         /// <summary>Canvas units the plate sticks out past the outermost cells.</summary>
         private const float BoardPlatePadding = 24f;
 
+        /// <summary>The sound toggle, bottom right, clear of the mascot at every aspect.</summary>
+        private const float SoundToggleSize = 120f;
+
+        private const float SoundToggleMargin = 30f;
+
         private const float MascotWidth = 420f;
         private const float MascotHeight = 320f;
 
@@ -57,6 +62,7 @@ namespace Match3.EditorTools
             MovesCounterView movesCounter = CreateMovesCounter(hudTop);
             GoalsPanelView goalsPanel = CreateGoalsPanel(hudTop, "GoalsPanel", new Vector2(0.5f, 1f));
             HudActionsView hudActions = CreateHudActions(hudTop);
+            SoundToggleView soundToggle = CreateSoundToggle(canvas.transform);
 
             RectTransform popupRoot = SceneAuthoring.CreateStretchedChild(canvas.transform, "PopupRoot");
             var popups = new PopupView[]
@@ -66,11 +72,39 @@ namespace Match3.EditorTools
                 CreateEndOfContentPopup(popupRoot),
             };
 
-            CreateSceneContext(boardArea, movesCounter, goalsPanel, hudActions, popups);
+            AudioSource ambientSource = CreateAmbientAudio();
+
+            CreateSceneContext(
+                boardArea, movesCounter, goalsPanel, hudActions, popups, ambientSource, soundToggle);
             SceneAuthoring.CreateEventSystemObject();
 
             EditorSceneManager.SaveScene(scene, ScenePath);
             Debug.Log("[Match3] Game scene generated: " + ScenePath);
+        }
+
+        /// <summary>
+        /// The ambience source. A root object rather than a child of the canvas: it carries no
+        /// RectTransform and nothing about it is laid out.
+        /// </summary>
+        private static AudioSource CreateAmbientAudio()
+        {
+            var go = new GameObject("AmbientAudio", typeof(AudioSource));
+
+            // This generator builds no camera, so a freshly generated scene would have no listener
+            // and stay silent. The hand-authored scene has one on its camera and keeps it.
+            if (Object.FindFirstObjectByType<AudioListener>() == null)
+            {
+                go.AddComponent<AudioListener>();
+            }
+
+            // Volume and clip are the service's to set on Initialize; what stays here is only what
+            // must be true before the first frame.
+            var source = go.GetComponent<AudioSource>();
+            source.playOnAwake = false;
+            source.loop = true;
+            source.spatialBlend = 0f;
+            source.volume = 0f;
+            return source;
         }
 
         private static RectTransform CreateBoardArea(Transform parent)
@@ -185,6 +219,40 @@ namespace Match3.EditorTools
             }
 
             return sprite;
+        }
+
+        /// <summary>
+        /// Sound on/off (§11.2). The icon is the whole button - no plate behind it - so the sprite
+        /// itself is the raycast target and the view swaps it on every toggle.
+        /// </summary>
+        private static SoundToggleView CreateSoundToggle(Transform parent)
+        {
+            var go = new GameObject(
+                "SoundToggle", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button));
+            go.transform.SetParent(parent, false);
+
+            var rect = (RectTransform)go.transform;
+            rect.anchorMin = new Vector2(1f, 0f);
+            rect.anchorMax = new Vector2(1f, 0f);
+            rect.pivot = new Vector2(1f, 0f);
+            rect.anchoredPosition = new Vector2(-SoundToggleMargin, SoundToggleMargin);
+            rect.sizeDelta = new Vector2(SoundToggleSize, SoundToggleSize);
+
+            Sprite soundOn = LoadHudSprite("T_UI_Sound_Enabled_2D");
+            Sprite soundOff = LoadHudSprite("T_UI_Sound_Disabled_2D");
+
+            var image = go.GetComponent<Image>();
+            image.sprite = soundOn;
+            image.color = Color.white;
+            image.preserveAspect = true;
+            image.raycastTarget = true;
+
+            var view = go.AddComponent<SoundToggleView>();
+            PrefabAuthoring.Wire(view, "_button", go.GetComponent<Button>());
+            PrefabAuthoring.Wire(view, "_icon", image);
+            PrefabAuthoring.Wire(view, "_enabledSprite", soundOn);
+            PrefabAuthoring.Wire(view, "_disabledSprite", soundOff);
+            return view;
         }
 
         private static RectTransform CreateHudZone(Transform parent)
@@ -458,7 +526,9 @@ namespace Match3.EditorTools
             MovesCounterView movesCounter,
             GoalsPanelView goalsPanel,
             HudActionsView hudActions,
-            PopupView[] popups)
+            PopupView[] popups,
+            AudioSource ambientSource,
+            SoundToggleView soundToggle)
         {
             var go = new GameObject("SceneContext", typeof(SceneContext));
             var installer = go.AddComponent<GameInstaller>();
@@ -478,6 +548,11 @@ namespace Match3.EditorTools
             PrefabAuthoring.Wire(installer, "_goalsPanel", goalsPanel);
             PrefabAuthoring.Wire(installer, "_hudActions", hudActions);
             PrefabAuthoring.WireArray(installer, "_popups", popups);
+
+            PrefabAuthoring.Wire(installer, "_audioProfile",
+                AssetDatabase.LoadAssetAtPath<AudioProfile>(ConfigFolder + "/AudioProfile.asset"));
+            PrefabAuthoring.Wire(installer, "_ambientSource", ambientSource);
+            PrefabAuthoring.Wire(installer, "_soundToggle", soundToggle);
 
 #if MATCH3_CHEATS
             // §15: the field only exists with the define, so a release build cannot reference it.

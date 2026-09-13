@@ -49,6 +49,7 @@ namespace Match3.EditorTools
             CreateTimingProfile();
             CreateChipProfile(preserveAuthored);
             CreateElementProfile(preserveAuthored);
+            CreateAudioProfile(preserveAuthored);
 
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
@@ -61,6 +62,26 @@ namespace Match3.EditorTools
             // Defaults in TimingProfile already carry every §11.3 value, so the asset only has
             // to exist for the installer to bind.
             CreateOrReplace<TimingProfile>(GameplayConfigFolder + "/TimingProfile.asset");
+        }
+
+        /// <summary>
+        /// Volume and fade default in <see cref="AudioProfile"/> itself, so only the clip
+        /// reference is written here - and only while empty, like every other authored field.
+        /// </summary>
+        private static void CreateAudioProfile(bool preserveAuthored)
+        {
+            AudioProfile profile =
+                CreateOrReplace<AudioProfile>(GameplayConfigFolder + "/AudioProfile.asset");
+
+            var so = new SerializedObject(profile);
+            SerializedProperty ambient = so.FindProperty("_ambient");
+            if (!preserveAuthored || ambient.objectReferenceValue == null)
+            {
+                ambient.objectReferenceValue = AudioAuthoring.LoadAmbient();
+            }
+
+            so.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(profile);
         }
 
         private static void CreateChipProfile(bool preserveAuthored)
