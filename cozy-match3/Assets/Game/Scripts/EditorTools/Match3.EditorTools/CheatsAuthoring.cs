@@ -84,14 +84,15 @@ namespace Match3.EditorTools
             RectTransform rect = LevelContextAuthoring.CreateStretched("TapCatcher", parent);
             var image = rect.gameObject.AddComponent<Image>();
 
-            // Fully transparent but raycastable: it only exists to catch the placement tap, and
-            // the presenter enables it just while a booster is armed.
+            // Fully transparent, and raycastable only while a booster is armed: the presenter
+            // arms the Graphic itself, so the object stays active - a disabled GameObject is not
+            // in the GraphicRegistry and would never deliver the placement tap at all.
             image.color = new Color(0f, 0f, 0f, 0f);
-            image.raycastTarget = true;
+            image.raycastTarget = false;
+            image.enabled = false;
 
             var catcher = rect.gameObject.AddComponent<CheatBoardTapCatcher>();
             PrefabAuthoring.Wire(catcher, "_raycastArea", image);
-            rect.gameObject.SetActive(false);
             return catcher;
         }
 
@@ -113,7 +114,9 @@ namespace Match3.EditorTools
             PrefabAuthoring.Wire(overlay, "_labelRoot", labelRoot);
             PrefabAuthoring.Wire(overlay, "_labelPrefab", template);
             PrefabAuthoring.WireInt(overlay, "_labelPrewarm", 64);
-            rect.gameObject.SetActive(false);
+
+            // Stays active: the overlay builds and repositions its labels from LateUpdate, which
+            // a disabled GameObject never reaches. With no labels rented it draws nothing.
             return overlay;
         }
 

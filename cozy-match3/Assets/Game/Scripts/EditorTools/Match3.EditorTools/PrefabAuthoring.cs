@@ -172,7 +172,7 @@ namespace Match3.EditorTools
             var sprite = AssetDatabase.LoadAssetAtPath<Sprite>(path);
             if (sprite == null)
             {
-                Debug.LogError("[Match3] Missing sprite " + path + " - run Generate Placeholder Art first");
+                Debug.LogError("[Match3] Missing sprite " + path + " - the art folder is missing it");
             }
 
             return sprite;
@@ -195,7 +195,7 @@ namespace Match3.EditorTools
 
             var image = root.GetComponent<Image>();
             image.raycastTarget = false;
-            image.sprite = LoadSprite(ProceduralArt.ChipAssetNameOf(1));
+            image.sprite = LoadSprite(ChipArtRegistry.ChipAssetNameOf(1));
             image.preserveAspect = true;
 
             var view = root.AddComponent<ChipView>();

@@ -7,8 +7,7 @@ using UnityEngine;
 namespace Match3.EditorTools
 {
     /// <summary>
-    /// Creates the presentation profile assets and wires them to the generated sprites. Run after
-    /// <see cref="ArtAuthoring.GenerateArt"/>.
+    /// Creates the presentation profile assets and wires them to the sprites in the art folder.
     /// <para>
     /// Structure — entry count, token, hit-point stage count — is always rewritten, because it
     /// follows the rules and not the art. References that an author fills in (sprites, FX prefabs,
@@ -80,11 +79,11 @@ namespace Match3.EditorTools
 
                 WriteSprite(
                     entry.FindPropertyRelative("_sprite"),
-                    ProceduralArt.ChipAssetNameOf(colorIndex),
+                    ChipArtRegistry.ChipAssetNameOf(colorIndex),
                     preserveAuthored);
                 WriteParticleColor(
                     entry.FindPropertyRelative("_particleColor"),
-                    ProceduralArt.ChipColorOf(colorIndex),
+                    ChipArtRegistry.ChipColorOf(colorIndex),
                     preserveAuthored);
                 WriteFx(
                     entry.FindPropertyRelative("_destroyFx"),
@@ -281,7 +280,7 @@ namespace Match3.EditorTools
             var sprite = AssetDatabase.LoadAssetAtPath<Sprite>(path);
             if (sprite == null)
             {
-                Debug.LogError("[Match3] Missing sprite: " + path + " - run Generate Placeholder Art first");
+                Debug.LogError("[Match3] Missing sprite: " + path + " - the art folder is missing it");
             }
 
             return sprite;

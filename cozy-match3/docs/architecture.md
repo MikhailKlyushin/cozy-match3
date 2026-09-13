@@ -663,8 +663,8 @@ public interface IDamageSourceRule { DamageSourceKind Kind { get; } bool IsDamag
 `ParticleSystem`, один FX-префаб обслуживает все роли эффекта).
 
 **Пошаговая инструкция по подмене арта и подключению FX-префабов — `docs/art-and-fx-guide.md`.**
-Там же зафиксирована ловушка: `Match3/Authoring/Generate All` перезаписывает спрайты-заглушки и
-обнуляет ссылки на FX в профилях.
+Там же §2 — что каждый пункт меню авторинга делает с артом и какие четыре генератора собирают
+свой ассет с нуля, поэтому вынесены из `Generate All` (см. §18).
 
 ---
 
@@ -713,14 +713,22 @@ Assets/
 
 Префабы: в `Prefabs/` — только варианты (`VAR_*`) и сборные view-префабы фичи.
 
-**Генераторы не перетирают авторский труд (T30).** `Match3/Authoring/Generate Placeholder Art`
-пропускает `T_*_2D.png`, который уже лежит на диске, и пишет только недостающие; перезапись — в
-отдельном пункте `Generate Placeholder Art (Force Overwrite)` с подтверждением.
-`Generate Content Profiles` заполняет `_sprite`, `_healthStages[i]`, `_particleColor`,
-`_activationFx` и `_destroyFx` **только пока поле пусто** (для цвета «пусто» — нулевая альфа);
-структура записей — состав, токен, число hp-стадий — переписывается всегда, потому что следует
-правилам, а не арту. Вернуть заглушки можно только явным `Match3/Authoring/Reset Content Profiles`,
-тоже с подтверждением. Следствие: `Generate All` безопасен на проекте с финальным артом.
+**Генераторы не перетирают авторский труд (T30).** `Generate Content Profiles` заполняет
+`_sprite`, `_healthStages[i]`, `_particleColor`, `_activationFx` и `_destroyFx` **только пока поле
+пусто** (для цвета «пусто» — нулевая альфа); структура записей — состав, токен, число hp-стадий —
+переписывается всегда, потому что следует правилам, а не арту. Вернуть каноническую разводку можно
+только явным `Match3/Authoring/Reset Content Profiles`, с подтверждением.
+
+**Что из `Generate All` вынесено и почему.** Генератор процедурных заглушек удалён вместе с
+`Generate Placeholder Art`: весь арт §17 финальный и лежит в репозитории, а от `ProceduralArt`
+осталась таблица имён и запасных цветов — `ChipArtRegistry`. Пиксели теперь авторские, под кодом
+остались только импорт-настройки (`Apply Texture Import Settings`, `Configure Art Pack Importers`).
+Сцены и view-префабы тоже стали авторскими — `Background.prefab` и `GoalRow.prefab` инстансами в
+`Boot.unity` и `Game.unity`, тинт в `VAR_BoardCell`, спрайт подсказки в `VAR_LevelContext` — а их
+генераторы собирают ассет с нуля и защитить его пропуском файла, как PNG, нельзя. Поэтому
+`Generate Boot Scene`, `Generate Game Scene`, `Generate View Prefabs` и
+`Generate Level Context Prefab` остались отдельными пунктами меню и в пайплайн не входят.
+Следствие: `Generate All` не трогает ни одного PNG, ни одной сцены и ни одного view-префаба.
 
 ---
 

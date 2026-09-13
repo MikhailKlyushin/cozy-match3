@@ -5,10 +5,9 @@ using UnityEngine;
 namespace Match3.EditorTools
 {
     /// <summary>
-    /// Writes the placeholder sprite set to disk and configures its importers. Art is generated,
-    /// not authored, so a clean checkout has readable chips without binary assets in the diff.
-    /// A file that already exists is left alone: once final art lands under the same name, a
-    /// routine regeneration of levels or scenes must not repaint it.
+    /// Keeps the import settings of the two art folders under code control. Pixels belong to the
+    /// author, but import settings follow from how a sprite is drawn, so they are applied from
+    /// here rather than left in hand-edited .meta files where a reimport can quietly lose them.
     /// </summary>
     internal static class ArtAuthoring
     {
@@ -26,95 +25,9 @@ namespace Match3.EditorTools
         /// <summary>The room background is drawn full-screen and is never atlased.</summary>
         private const int HudMaxTextureSize = 2048;
 
-        [MenuItem("Match3/Authoring/Generate Placeholder Art")]
-        public static void GenerateArt()
-        {
-            Generate(overwrite: false);
-        }
-
-        [MenuItem("Match3/Authoring/Generate Placeholder Art (Force Overwrite)")]
-        public static void GenerateArtForced()
-        {
-            bool confirmed = EditorUtility.DisplayDialog(
-                "Overwrite art with placeholders?",
-                "Every T_*_2D.png the generator owns will be replaced by a placeholder. Final art "
-                + "under those names is lost and only git can bring it back.",
-                "Overwrite",
-                "Cancel");
-
-            if (confirmed)
-            {
-                Generate(overwrite: true);
-            }
-        }
-
-        private static void Generate(bool overwrite)
-        {
-            SceneAuthoring.EnsureFolder(GameplayArtFolder);
-            SceneAuthoring.EnsureFolder(HudArtFolder);
-
-            int written = 0;
-            int skipped = 0;
-
-            for (int colorIndex = 1; colorIndex <= 6; colorIndex++)
-            {
-                Save(ProceduralArt.CreateChip(colorIndex), GameplayArtFolder, overwrite, ref written, ref skipped);
-            }
-
-            Save(ProceduralArt.CreateRocket(horizontal: true), GameplayArtFolder, overwrite, ref written, ref skipped);
-            Save(ProceduralArt.CreateRocket(horizontal: false), GameplayArtFolder, overwrite, ref written, ref skipped);
-            Save(ProceduralArt.CreateBomb(), GameplayArtFolder, overwrite, ref written, ref skipped);
-            Save(ProceduralArt.CreateRainbow(), GameplayArtFolder, overwrite, ref written, ref skipped);
-            Save(ProceduralArt.CreateAirplane(), GameplayArtFolder, overwrite, ref written, ref skipped);
-
-            // One base per damage stage: §7.1 requires the visual to change on every hit point lost.
-            for (int stage = 0; stage < 3; stage++)
-            {
-                Save(
-                    ProceduralArt.CreateBox(stage, "T_Element_BoxBase_S" + stage.ToString() + "_2D"),
-                    GameplayArtFolder,
-                    overwrite,
-                    ref written,
-                    ref skipped);
-            }
-
-            Save(ProceduralArt.CreateBoxBow(), GameplayArtFolder, overwrite, ref written, ref skipped);
-            Save(ProceduralArt.CreateBoxPip(), GameplayArtFolder, overwrite, ref written, ref skipped);
-            Save(ProceduralArt.CreateBlocker(), GameplayArtFolder, overwrite, ref written, ref skipped);
-            Save(ProceduralArt.CreateCellTile(), GameplayArtFolder, overwrite, ref written, ref skipped);
-            Save(ProceduralArt.CreateGlow(), GameplayArtFolder, overwrite, ref written, ref skipped);
-            Save(ProceduralArt.CreatePanel(), HudArtFolder, overwrite, ref written, ref skipped);
-
-            ApplyImportSettings();
-
-            AssetDatabase.Refresh();
-            Debug.Log("[Match3] Placeholder art: " + written.ToString() + " written, "
-                + skipped.ToString() + " kept");
-        }
-
-        private static void Save(Texture2D texture, string folder, bool overwrite, ref int written, ref int skipped)
-        {
-            string path = folder + "/" + texture.name + ".png";
-
-            if (!overwrite && File.Exists(path))
-            {
-                Object.DestroyImmediate(texture);
-                skipped++;
-                return;
-            }
-
-            File.WriteAllBytes(path, texture.EncodeToPNG());
-            Object.DestroyImmediate(texture);
-
-            AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceUpdate);
-            ConfigureSpriteImporter(path);
-            written++;
-        }
-
         /// <summary>
-        /// Brings every sprite in the two art folders to the settings §3.2 asks for, whether the
-        /// generator wrote it or an artist did. Pixels belong to the author, import settings follow
-        /// from how the sprite is drawn, so these are code-owned and idempotent.
+        /// Brings every sprite in the two art folders to the settings §3.2 asks for. Idempotent,
+        /// and it never touches a single pixel.
         /// </summary>
         [MenuItem("Match3/Authoring/Apply Texture Import Settings")]
         public static void ApplyImportSettings()
@@ -148,8 +61,6 @@ namespace Match3.EditorTools
         /// The popup panel is the one sprite here that gets stretched far past its authored size,
         /// so it needs a nine-slice border or its rounded corners turn into an oval. 24 px on the
         /// 128 px panel covers its 18 px corner radius plus the transparent margin around it.
-        /// Applied whether or not the file was rewritten: the border follows from how the sprite
-        /// is drawn, not from its pixels.
         /// </summary>
         private static void ApplyPanelBorder()
         {
@@ -172,9 +83,6 @@ namespace Match3.EditorTools
             importer.spriteBorder = wanted;
             importer.SaveAndReimport();
         }
-
-        private static void ConfigureSpriteImporter(string path)
-            => Configure(path, mipmaps: true, GameplayMaxTextureSize);
 
         /// <summary>
         /// Mip-maps are on for board sprites and off for HUD sprites, and that is not symmetry for
