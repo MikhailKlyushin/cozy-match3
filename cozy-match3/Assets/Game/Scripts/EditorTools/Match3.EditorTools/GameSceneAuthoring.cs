@@ -220,7 +220,7 @@ namespace Match3.EditorTools
             valueRect.offsetMin = Vector2.zero;
             valueRect.offsetMax = Vector2.zero;
 
-            TextMeshProUGUI caption = PrefabAuthoring.CreateText("Caption", rect, "ходов", 32);
+            TextMeshProUGUI caption = PrefabAuthoring.CreateText("Caption", rect, "Moves", 32);
             var captionRect = (RectTransform)caption.transform;
             captionRect.anchorMin = new Vector2(0f, 0f);
             captionRect.anchorMax = new Vector2(1f, 0.35f);
@@ -329,14 +329,14 @@ namespace Match3.EditorTools
             rect.anchoredPosition = new Vector2(-30f, -20f);
             rect.sizeDelta = new Vector2(220f, 200f);
 
-            Button restart = PrefabAuthoring.CreateButton("RestartButton", rect, "Заново", new Vector2(200f, 80f));
+            Button restart = PrefabAuthoring.CreateButton("RestartButton", rect, "Restart", new Vector2(200f, 80f));
             var restartRect = (RectTransform)restart.transform;
             restartRect.anchorMin = new Vector2(1f, 1f);
             restartRect.anchorMax = new Vector2(1f, 1f);
             restartRect.pivot = new Vector2(1f, 1f);
             restartRect.anchoredPosition = Vector2.zero;
 
-            Button cheats = PrefabAuthoring.CreateButton("CheatsButton", rect, "Читы", new Vector2(200f, 80f));
+            Button cheats = PrefabAuthoring.CreateButton("CheatsButton", rect, "Cheats", new Vector2(200f, 80f));
             var cheatsRect = (RectTransform)cheats.transform;
             cheatsRect.anchorMin = new Vector2(1f, 1f);
             cheatsRect.anchorMax = new Vector2(1f, 1f);
@@ -497,12 +497,12 @@ namespace Match3.EditorTools
         /// </summary>
         private static class HudStringsSafe
         {
-            internal const string WinTitle = "Уровень пройден";
-            internal const string Next = "Далее";
-            internal const string LoseTitle = "Ходы закончились";
-            internal const string Retry = "Заново";
-            internal const string EndTitle = "Все уровни пройдены";
-            internal const string PlayAgain = "Играть заново с 1-го уровня";
+            internal const string WinTitle = "Level complete";
+            internal const string Next = "Next";
+            internal const string LoseTitle = "Out of moves";
+            internal const string Retry = "Retry";
+            internal const string EndTitle = "All levels complete";
+            internal const string PlayAgain = "Play again from level 1";
         }
     }
 }

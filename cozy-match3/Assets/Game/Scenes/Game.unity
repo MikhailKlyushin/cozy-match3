@@ -311,8 +311,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\u0418\u0433\u0440\u0430\u0442\u044C \u0437\u0430\u043D\u043E\u0432\u043E
-    \u0441 1-\u0433\u043E \u0443\u0440\u043E\u0432\u043D\u044F"
+  m_text: Play again from level 1
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 60b400f82a204a74db2a1a5c66f3ae36, type: 2}
   m_sharedMaterial: {fileID: 3318262611438659896, guid: 60b400f82a204a74db2a1a5c66f3ae36, type: 2}
@@ -2741,7 +2740,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\u0425\u043E\u0434\u044B \u0437\u0430\u043A\u043E\u043D\u0447\u0438\u043B\u0438\u0441\u044C"
+  m_text: Out of moves
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 60b400f82a204a74db2a1a5c66f3ae36, type: 2}
   m_sharedMaterial: {fileID: 3318262611438659896, guid: 60b400f82a204a74db2a1a5c66f3ae36, type: 2}
@@ -2878,7 +2877,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\u0417\u0430\u043D\u043E\u0432\u043E"
+  m_text: Retry
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 60b400f82a204a74db2a1a5c66f3ae36, type: 2}
   m_sharedMaterial: {fileID: 3318262611438659896, guid: 60b400f82a204a74db2a1a5c66f3ae36, type: 2}
@@ -3149,7 +3148,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\u0412\u0441\u0435 \u0443\u0440\u043E\u0432\u043D\u0438 \u043F\u0440\u043E\u0439\u0434\u0435\u043D\u044B"
+  m_text: All levels complete
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 60b400f82a204a74db2a1a5c66f3ae36, type: 2}
   m_sharedMaterial: {fileID: 3318262611438659896, guid: 60b400f82a204a74db2a1a5c66f3ae36, type: 2}
@@ -5965,7 +5964,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\u0423\u0440\u043E\u0432\u0435\u043D\u044C \u043F\u0440\u043E\u0439\u0434\u0435\u043D"
+  m_text: Level complete
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 60b400f82a204a74db2a1a5c66f3ae36, type: 2}
   m_sharedMaterial: {fileID: 3318262611438659896, guid: 60b400f82a204a74db2a1a5c66f3ae36, type: 2}
@@ -6569,7 +6568,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\u0414\u0430\u043B\u0435\u0435"
+  m_text: Next
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 60b400f82a204a74db2a1a5c66f3ae36, type: 2}
   m_sharedMaterial: {fileID: 3318262611438659896, guid: 60b400f82a204a74db2a1a5c66f3ae36, type: 2}

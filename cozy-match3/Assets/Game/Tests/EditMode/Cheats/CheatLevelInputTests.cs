@@ -5,7 +5,7 @@ using NUnit.Framework;
 namespace Match3.Tests.EditMode.Cheats
 {
     /// <summary>
-    /// «Перейти» is disabled unless the typed text is a number the catalog holds. Parsing answers
+    /// "Go" is disabled unless the typed text is a number the catalog holds. Parsing answers
     /// only the first half: existence is <c>LevelFlowRule.CanGoToLevel</c>'s call, because ids are
     /// data and need not be contiguous (§8.3).
     /// </summary>

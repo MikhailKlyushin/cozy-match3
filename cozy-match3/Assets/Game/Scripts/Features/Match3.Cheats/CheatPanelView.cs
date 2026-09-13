@@ -107,7 +107,7 @@ namespace Match3.Cheats
             }
         }
 
-        /// <summary>Fills the seed field without firing the change event, so "Заново" is one press.</summary>
+        /// <summary>Fills the seed field without firing the change event, so "Restart" is one press.</summary>
         public void SetSeedText(string text)
         {
             if (_seedInput != null)

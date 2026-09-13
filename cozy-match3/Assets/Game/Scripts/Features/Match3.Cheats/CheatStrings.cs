@@ -3,44 +3,44 @@ using Match3.Core;
 namespace Match3.Cheats
 {
     /// <summary>
-    /// On-screen text of the cheat panel (GDD §12). The player is Russian-speaking, so the labels
-    /// are Russian while the code and the log stay English; there is no localisation layer.
+    /// On-screen text of the cheat panel (GDD §12). The build ships a single language — English —
+    /// for both the labels and the log; there is no localisation layer.
     /// </summary>
     internal static class CheatStrings
     {
-        public const string Title = "Читы";
+        public const string Title = "Cheats";
 
-        public const string Close = "Закрыть";
+        public const string Close = "Close";
 
-        public const string LevelPlaceholder = "№ уровня";
+        public const string LevelPlaceholder = "Level #";
 
-        public const string GoToLevel = "Перейти";
+        public const string GoToLevel = "Go";
 
-        public const string LevelEmpty = "Введите номер уровня";
+        public const string LevelEmpty = "Enter a level number";
 
-        public const string LevelMissingFormat = "Уровня {0} нет в каталоге";
+        public const string LevelMissingFormat = "Level {0} is not in the catalog";
 
-        public const string LevelReadyFormat = "Уровень {0}";
+        public const string LevelReadyFormat = "Level {0}";
 
-        public const string WinLevel = "Выиграть уровень";
+        public const string WinLevel = "Win level";
 
-        public const string LoseLevel = "Проиграть уровень";
+        public const string LoseLevel = "Lose level";
 
-        public const string AddMoves = "+5 ходов";
+        public const string AddMoves = "+5 moves";
 
-        public const string RocketBooster = "Ракета";
+        public const string RocketBooster = "Rocket";
 
-        public const string BombBooster = "Бомба";
+        public const string BombBooster = "Bomb";
 
-        public const string RainbowBooster = "Радужный шар";
+        public const string RainbowBooster = "Rainbow ball";
 
-        public const string AirplaneBooster = "Самолётик";
+        public const string AirplaneBooster = "Airplane";
 
-        public const string DisarmBooster = "Снять выбор";
+        public const string DisarmBooster = "Clear selection";
 
-        public const string BoosterNotArmed = "Бустер не выбран";
+        public const string BoosterNotArmed = "No booster armed";
 
-        public const string BoosterArmedFormat = "Выбран: {0} — тапни по клетке";
+        public const string BoosterArmedFormat = "Armed: {0} — tap a cell";
 
         public const string SeedPlaceholder = "seed";
 
@@ -48,20 +48,20 @@ namespace Match3.Cheats
 
         public const string SeedUnknown = "Seed: —";
 
-        public const string ApplySeed = "Применить";
+        public const string ApplySeed = "Apply";
 
-        public const string RestartAttempt = "Заново";
+        public const string RestartAttempt = "Restart";
 
-        public const string FreeMoves = "Ходы бесплатно";
+        public const string FreeMoves = "Free moves";
 
-        public const string CoordinateGrid = "Показать сетку координат";
+        public const string CoordinateGrid = "Show coordinate grid";
 
-        public const string DisableHints = "Отключить подсказки";
+        public const string DisableHints = "Disable hints";
 
-        public const string HintNow = "Подсказка сейчас";
+        public const string HintNow = "Hint now";
 
         /// <summary>Marked as a dev extension: it is deliberately outside the §12 list.</summary>
-        public const string DumpTranscript = "Дамп транскрипта в лог (dev)";
+        public const string DumpTranscript = "Dump transcript to log (dev)";
 
         public static string BoosterName(BoosterType booster)
         {

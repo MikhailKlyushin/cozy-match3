@@ -142,32 +142,32 @@ namespace Match3.EditorTools
 
             _cursor = -ContentPadding;
 
-            TMP_InputField levelInput = AddInput(content, "LevelInput", "Номер уровня");
-            Button goTo = AddButton(content, "GoToLevelButton", "Перейти");
+            TMP_InputField levelInput = AddInput(content, "LevelInput", "Level #");
+            Button goTo = AddButton(content, "GoToLevelButton", "Go");
             TextMeshProUGUI levelStatus = AddLabel(content, "LevelStatus", string.Empty, 24);
 
-            Button win = AddButton(content, "WinLevelButton", "Выиграть уровень");
-            Button lose = AddButton(content, "LoseLevelButton", "Проиграть уровень");
-            Button addMoves = AddButton(content, "AddMovesButton", "+5 ходов");
+            Button win = AddButton(content, "WinLevelButton", "Win level");
+            Button lose = AddButton(content, "LoseLevelButton", "Lose level");
+            Button addMoves = AddButton(content, "AddMovesButton", "+5 moves");
 
-            Button rocket = AddButton(content, "RocketBoosterButton", "Ракета");
-            Button bomb = AddButton(content, "BombBoosterButton", "Бомба");
-            Button rainbow = AddButton(content, "RainbowBoosterButton", "Радужный шар");
-            Button airplane = AddButton(content, "AirplaneBoosterButton", "Самолётик");
-            Button disarm = AddButton(content, "DisarmBoosterButton", "Убрать выбор");
+            Button rocket = AddButton(content, "RocketBoosterButton", "Rocket");
+            Button bomb = AddButton(content, "BombBoosterButton", "Bomb");
+            Button rainbow = AddButton(content, "RainbowBoosterButton", "Rainbow ball");
+            Button airplane = AddButton(content, "AirplaneBoosterButton", "Airplane");
+            Button disarm = AddButton(content, "DisarmBoosterButton", "Clear selection");
             TextMeshProUGUI armedLabel = AddLabel(content, "ArmedBoosterLabel", string.Empty, 24);
             Image armedIcon = AddIcon(content, "ArmedBoosterIcon");
 
             TextMeshProUGUI seedLabel = AddLabel(content, "SeedLabel", "Seed:", 24);
             TMP_InputField seedInput = AddInput(content, "SeedInput", "Seed");
-            Button applySeed = AddButton(content, "ApplySeedButton", "Применить");
-            Button restart = AddButton(content, "RestartAttemptButton", "Заново");
+            Button applySeed = AddButton(content, "ApplySeedButton", "Apply");
+            Button restart = AddButton(content, "RestartAttemptButton", "Restart");
 
-            Toggle freeMoves = AddToggle(content, "FreeMovesToggle", "Ходы бесплатно");
-            Toggle grid = AddToggle(content, "CoordinateGridToggle", "Показать сетку координат");
-            Toggle hints = AddToggle(content, "DisableHintsToggle", "Отключить подсказки");
-            Button hintNow = AddButton(content, "HintNowButton", "Подсказка сейчас");
-            Button dump = AddButton(content, "DumpTranscriptButton", "Дамп транскрипта в лог");
+            Toggle freeMoves = AddToggle(content, "FreeMovesToggle", "Free moves");
+            Toggle grid = AddToggle(content, "CoordinateGridToggle", "Show coordinate grid");
+            Toggle hints = AddToggle(content, "DisableHintsToggle", "Disable hints");
+            Button hintNow = AddButton(content, "HintNowButton", "Hint now");
+            Button dump = AddButton(content, "DumpTranscriptButton", "Dump transcript to log");
 
             // What the ScrollRect scrolls: the rows are laid out by hand, so the height is known
             // exactly and no layout group has to run for the panel to be usable.
@@ -216,7 +216,7 @@ namespace Match3.EditorTools
             rect.offsetMin = new Vector2(WindowPadding + 4f, -HeaderHeight + 10f);
             rect.offsetMax = new Vector2(-136f, -10f);
 
-            TextMeshProUGUI text = PrefabAuthoring.CreateText("Text", rect, "Читы", 30);
+            TextMeshProUGUI text = PrefabAuthoring.CreateText("Text", rect, "Cheats", 30);
             Stretch((RectTransform)text.transform);
             text.alignment = TextAlignmentOptions.Left;
             text.color = LabelColor;
@@ -235,7 +235,7 @@ namespace Match3.EditorTools
             rect.anchoredPosition = new Vector2(-WindowPadding - 4f, -10f);
             rect.sizeDelta = new Vector2(112f, 44f);
 
-            Button button = PrefabAuthoring.CreateButton("Button", rect, "Закрыть", rect.sizeDelta);
+            Button button = PrefabAuthoring.CreateButton("Button", rect, "Close", rect.sizeDelta);
             Stretch((RectTransform)button.transform);
             SetFontSize(button, ButtonFontSize);
             return button;

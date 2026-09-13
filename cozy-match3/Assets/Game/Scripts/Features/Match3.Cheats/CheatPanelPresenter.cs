@@ -12,7 +12,7 @@ namespace Match3.Cheats
     /// <summary>
     /// Drives the §12 cheat panel. Every board-changing element goes through the attempt's turn
     /// runner, which executes it with <c>TurnRule.ExecuteCheat</c> and replays the transcript like
-    /// an ordinary turn (A10); «Перейти» and the seed buttons rebuild the attempt through
+    /// an ordinary turn (A10); "Go" and the seed buttons rebuild the attempt through
     /// <c>LevelFlowRule</c> instead, because they do not mutate a board - they replace it (§15).
     /// Everything here is driven by on-screen widgets: there is not one hot key.
     /// </summary>
@@ -34,7 +34,7 @@ namespace Match3.Cheats
         private bool _showCoordinates;
         private bool _disposed;
 
-        /// <summary>§12: the button reads «+5 ходов», so the amount is not a tuning knob.</summary>
+        /// <summary>§12: the button reads "+5 moves", so the amount is not a tuning knob.</summary>
         public const int AddMovesAmount = 5;
 
         public CheatPanelPresenter(
@@ -337,7 +337,7 @@ namespace Match3.Cheats
             Execute(CheatCommand.SetSeed(seed));
         }
 
-        /// <summary>«Заново»: the seed of the live attempt, so the same game runs again (D12).</summary>
+        /// <summary>"Restart": the seed of the live attempt, so the same game runs again (D12).</summary>
         private void OnRestartAttemptClicked()
         {
             if (_binding == null)
@@ -513,7 +513,7 @@ namespace Match3.Cheats
         }
 
         /// <summary>
-        /// «Перейти» is disabled for a number the catalog does not hold. The catalog is asked, not
+        /// "Go" is disabled for a number the catalog does not hold. The catalog is asked, not
         /// a hardcoded range: level ids are data and need not be contiguous (§8.3).
         /// </summary>
         private void RefreshLevelStatus(string text)
