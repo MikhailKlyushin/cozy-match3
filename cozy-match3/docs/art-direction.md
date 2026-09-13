@@ -259,6 +259,12 @@ _particleColor:  C1 #F6B7C7 · C2 #5E93C4 · C3 #F8DC96 · C4 #9CBF96 · C5 #E08
 | **Кадр на странице** | **леттербокс 9:16**: канвас вписан в окно браузера, поля по бокам залиты цветом стены `#F3E7D6` | WebGL-шаблон |
 | **Drawing buffer** | CSS-размер × `min(devicePixelRatio, 2)`, **потолок 1080 × 1920** | WebGL-шаблон |
 
+Реализовано в T33: шаблон `Assets/WebGLTemplates/Match3/index.html`, выбран в
+`PlayerSettings.WebGL.template = PROJECT:Match3`. Страница сама владеет буфером
+(`config.matchWebGLToCanvasSize = false`) и пересчитывает его на `resize` и на смену
+`devicePixelRatio`; `WebGlBuildPipeline.ApplyPageSettings` переставляет шаблон и размеры на каждом
+билде, чтобы они не зависели от того, что осталось в редакторе.
+
 **Почему леттербокс.** При аспекте, точно равном референсному, `CanvasScaler` даёт канвас-юниты
 ровно `1080 × 1920` на любом мониторе. Значит композиция кадра одинакова везде с точностью до
 пикселя, а захардкоженные `BoardMargin = 30` и `HudTopHeight = 260` (`GameSceneAuthoring.cs:28-29`)

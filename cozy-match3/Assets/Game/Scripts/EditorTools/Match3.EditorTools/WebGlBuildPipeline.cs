@@ -17,6 +17,9 @@ namespace Match3.EditorTools
         private const string CheatsDefine = "MATCH3_CHEATS";
         private const string BootScene = "Assets/Game/Scenes/Boot.unity";
         private const string GameScene = "Assets/Game/Scenes/Game.unity";
+        private const string WebGlTemplate = "PROJECT:Match3";
+        private const int ReferenceWidth = 1080;
+        private const int ReferenceHeight = 1920;
 
         /// <summary>unity run . -- -executeMethod Match3.EditorTools.WebGlBuildPipeline.BuildDevelopmentBatch</summary>
         public static void BuildDevelopmentBatch() => RunBatch(development: true);
@@ -98,6 +101,26 @@ namespace Match3.EditorTools
             PlayerSettings.WebGL.linkerTarget = WebGLLinkerTarget.Wasm;
             PlayerSettings.WebGL.compressionFormat = WebGLCompressionFormat.Gzip;
             PlayerSettings.WebGL.decompressionFallback = true;
+
+            ApplyPageSettings();
+        }
+
+        /// <summary>
+        /// Template and reference resolution of the page (§13 GDD, `art-direction.md` §3.1). Kept
+        /// apart from the build so a checkout can be brought to the right settings without
+        /// building, and applied on every build so it cannot inherit whatever template the
+        /// previous developer happened to leave selected.
+        /// </summary>
+        [MenuItem("Match3/Build/Apply WebGL Player Settings")]
+        public static void ApplyPageSettings()
+        {
+            PlayerSettings.WebGL.template = WebGlTemplate;
+            PlayerSettings.defaultWebScreenWidth = ReferenceWidth;
+            PlayerSettings.defaultWebScreenHeight = ReferenceHeight;
+
+            AssetDatabase.SaveAssets();
+            Debug.Log("[Match3] WebGL page settings: template " + WebGlTemplate + ", "
+                + ReferenceWidth.ToString() + "x" + ReferenceHeight.ToString());
         }
 
         /// <summary>

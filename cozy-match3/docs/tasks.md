@@ -133,7 +133,7 @@ W5 к критическому пути не относится: игра про
 | [x] T30 | Защита арта от `Generate All` | `Match3.EditorTools` | T15 | W5 |
 | [ ] T31 | Роли FX: beam / burst / impact | `Match3.Content`, `Match3.Gameplay` | T18, T27 | W5 |
 | [ ] T32 | Sprite Atlas 2048², мип-мапы, сжатие под WebGL, замер билда | контент | T25, T29 | W5 |
-| [ ] T33 | WebGL-шаблон: леттербокс 9:16, потолок буфера 1080×1920 | шаблон, `ProjectSettings` | T23 | W5 |
+| [x] T33 | WebGL-шаблон: леттербокс 9:16, потолок буфера 1080×1920 | шаблон, `ProjectSettings` | T23 | W5 |
 
 ---
 
