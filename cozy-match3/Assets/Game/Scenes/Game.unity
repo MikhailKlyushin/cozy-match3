@@ -7398,8 +7398,8 @@ MonoBehaviour:
   - {fileID: 21300000, guid: 40ab3682c1f52fd4d80ab0012cba1dcf, type: 3}
   - {fileID: 21300000, guid: f75524c51a9ae594bb7fef9f69b65b7d, type: 3}
   - {fileID: 21300000, guid: 5bbf7418ec5ad0341bd4c7ad1cac354a, type: 3}
-  _framesPerSecond: 12
-  _holdSeconds: 2
+  _framesPerSecond: 10
+  _holdSeconds: 5
   _holdFrame: 0
 --- !u!1001 &7207331992476588480
 PrefabInstance:
