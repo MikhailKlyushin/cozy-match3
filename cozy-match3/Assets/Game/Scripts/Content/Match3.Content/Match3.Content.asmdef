@@ -1,0 +1,17 @@
+{
+    "name": "Match3.Content",
+    "rootNamespace": "Match3.Content",
+    "references": [
+        "Match3.Core",
+        "Match3.Board"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "defineConstraints": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "versionDefines": [],
+    "noEngineReferences": false
+}

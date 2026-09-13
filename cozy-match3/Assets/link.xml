@@ -1,0 +1,24 @@
+<linker>
+  <!-- Zenject resolves bindings through reflection, so IL2CPP managed stripping
+       removes constructors and types that nothing references statically.
+       Note: Zenject's own link.xml preserves "Zenject-usage", an assembly this
+       project does not have - Source/Usage compiles into "Zenject" here. -->
+  <assembly fullname="Zenject" preserve="all"/>
+
+  <!-- Types below are instantiated by the container, not by direct calls. -->
+  <assembly fullname="Match3.Bootstrap" preserve="all"/>
+  <assembly fullname="Match3.Content" preserve="all"/>
+  <assembly fullname="Match3.Core" preserve="all"/>
+  <assembly fullname="Match3.Board" preserve="all"/>
+  <assembly fullname="Match3.Boosters" preserve="all"/>
+  <assembly fullname="Match3.Goals" preserve="all"/>
+  <assembly fullname="Match3.Levels" preserve="all"/>
+  <assembly fullname="Match3.Levels.Authoring" preserve="all"/>
+  <assembly fullname="Match3.Matching" preserve="all"/>
+  <assembly fullname="Match3.Resolve" preserve="all"/>
+  <assembly fullname="Match3.Gameplay" preserve="all"/>
+  <assembly fullname="Match3.Hud" preserve="all"/>
+  <assembly fullname="Match3.Progression" preserve="all"/>
+  <assembly fullname="Match3.Diagnostics" preserve="all"/>
+  <assembly fullname="Match3.Cheats" preserve="all"/>
+</linker>

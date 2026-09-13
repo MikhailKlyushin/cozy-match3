@@ -1,0 +1,14 @@
+{
+    "name": "Match3.Levels",
+    "rootNamespace": "Match3.Levels",
+    "references": ["Match3.Core", "Match3.Board", "Match3.Goals", "Match3.Matching"],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": true
+}

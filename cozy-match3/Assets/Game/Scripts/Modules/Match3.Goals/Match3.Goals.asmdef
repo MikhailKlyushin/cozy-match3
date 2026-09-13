@@ -1,0 +1,14 @@
+{
+    "name": "Match3.Goals",
+    "rootNamespace": "Match3.Goals",
+    "references": ["Match3.Core", "Match3.Board"],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": true
+}

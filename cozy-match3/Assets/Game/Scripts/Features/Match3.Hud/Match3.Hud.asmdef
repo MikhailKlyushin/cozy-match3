@@ -1,0 +1,26 @@
+{
+    "name": "Match3.Hud",
+    "rootNamespace": "Match3.Hud",
+    "references": [
+        "Match3.Content",
+        "Match3.Core",
+        "Match3.Goals",
+        "Match3.Resolve",
+        "Match3.Levels",
+        "Match3.Progression",
+        "Zenject",
+        "UniTask",
+        "DOTween.Modules",
+        "UnityEngine.UI",
+        "Unity.TextMeshPro"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "defineConstraints": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "versionDefines": [],
+    "noEngineReferences": false
+}

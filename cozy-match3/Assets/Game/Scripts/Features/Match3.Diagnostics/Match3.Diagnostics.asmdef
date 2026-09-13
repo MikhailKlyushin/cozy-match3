@@ -1,0 +1,14 @@
+{
+    "name": "Match3.Diagnostics",
+    "rootNamespace": "Match3.Diagnostics",
+    "references": ["Match3.Core", "Match3.Goals", "Match3.Resolve", "Zenject"],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "defineConstraints": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "versionDefines": [],
+    "noEngineReferences": false
+}
