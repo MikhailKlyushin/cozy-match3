@@ -16,26 +16,32 @@ MonoBehaviour:
   - _color: 1
     _sprite: {fileID: 21300000, guid: cc709757d22a36c459c773302f661d4f, type: 3}
     _particleColor: {r: 0.9960785, g: 0.7607844, b: 0.80392164, a: 1}
+    _destroyFxTint: {r: 1, g: 0.25, b: 0.38750005, a: 1}
     _destroyFx: {fileID: 6803775967923023857, guid: 2b3a9eeb679fc2e4d84bf8713525d2ae, type: 3}
   - _color: 2
     _sprite: {fileID: 21300000, guid: cbfe08acd45d92247b88a3105b1694d9, type: 3}
     _particleColor: {r: 0.5058824, g: 0.3529412, b: 0.6392157, a: 1}
+    _destroyFxTint: {r: 0.65068483, g: 0.25, b: 1, a: 1}
     _destroyFx: {fileID: 6803775967923023857, guid: 2b3a9eeb679fc2e4d84bf8713525d2ae, type: 3}
   - _color: 3
     _sprite: {fileID: 21300000, guid: 9b5837ed74de0af43a6aa16ca4413807, type: 3}
     _particleColor: {r: 0.98823535, g: 0.8705883, b: 0.6039216, a: 1}
+    _destroyFxTint: {r: 0.85927224, g: 0.66199034, b: 0.21481806, a: 1}
     _destroyFx: {fileID: 6803775967923023857, guid: 2b3a9eeb679fc2e4d84bf8713525d2ae, type: 3}
   - _color: 4
     _sprite: {fileID: 21300000, guid: 321e9b9aa60222949900c1915f6d163b, type: 3}
     _particleColor: {r: 0.48235297, g: 0.627451, b: 0.7607844, a: 1}
+    _destroyFxTint: {r: 0.25, g: 0.64084506, b: 1, a: 1}
     _destroyFx: {fileID: 6803775967923023857, guid: 2b3a9eeb679fc2e4d84bf8713525d2ae, type: 3}
   - _color: 5
     _sprite: {fileID: 21300000, guid: 82a7539a847ee004e88bd7ba6d83b4c2, type: 3}
     _particleColor: {r: 0.92156863, g: 0.5803922, b: 0.40784314, a: 1}
+    _destroyFxTint: {r: 1, g: 0.5019084, b: 0.25, a: 1}
     _destroyFx: {fileID: 6803775967923023857, guid: 2b3a9eeb679fc2e4d84bf8713525d2ae, type: 3}
   - _color: 6
     _sprite: {fileID: 21300000, guid: 93c935d7d77a69d4cb9b3f1f1557ce1e, type: 3}
     _particleColor: {r: 0.6666667, g: 0.7607844, b: 0.6156863, a: 1}
+    _destroyFxTint: {r: 0.44738084, g: 0.87121546, b: 0.21780387, a: 1}
     _destroyFx: {fileID: 6803775967923023857, guid: 2b3a9eeb679fc2e4d84bf8713525d2ae, type: 3}
   _boosters:
   - _booster: 1

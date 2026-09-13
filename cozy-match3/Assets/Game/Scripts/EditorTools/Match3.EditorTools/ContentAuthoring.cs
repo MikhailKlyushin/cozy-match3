@@ -102,9 +102,17 @@ namespace Match3.EditorTools
                     entry.FindPropertyRelative("_sprite"),
                     ChipArtRegistry.ChipAssetNameOf(colorIndex),
                     preserveAuthored);
+                SerializedProperty particleColor = entry.FindPropertyRelative("_particleColor");
                 WriteParticleColor(
-                    entry.FindPropertyRelative("_particleColor"),
+                    particleColor,
                     ChipArtRegistry.ChipColorOf(colorIndex),
+                    preserveAuthored);
+
+                // Derived from the colour just above, not from the registry fallback: the profile
+                // usually carries a hand-authored chip colour, and the flash has to match THAT.
+                WriteParticleColor(
+                    entry.FindPropertyRelative("_destroyFxTint"),
+                    Match3Palette.FlashTint(particleColor.colorValue),
                     preserveAuthored);
                 WriteFx(
                     entry.FindPropertyRelative("_destroyFx"),

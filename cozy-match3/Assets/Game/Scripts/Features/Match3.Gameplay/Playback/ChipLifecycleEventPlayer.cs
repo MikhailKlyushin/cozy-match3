@@ -105,11 +105,13 @@ namespace Match3.Gameplay.Playback
             }
 
             float cellSize = context.Board.Layout.CellSize;
-            // White: the colour lives in the sprite, as it does for every other chip visual (§3.2).
+
+            // The flash carries the chip's own colour. On a board where six colours die in the
+            // same cascade, a white flash says something died; this one says which.
             view.Prepare(
                 context.Board.Layout.CellCenter(cell),
                 new Vector2(cellSize * FxStartCells, cellSize * FxStartCells),
-                Color.white,
+                _chipProfile.GetDestroyTint(color),
                 duration);
 
             // A flash that neither grows nor fades reads as a blink, and a blink is what the eye

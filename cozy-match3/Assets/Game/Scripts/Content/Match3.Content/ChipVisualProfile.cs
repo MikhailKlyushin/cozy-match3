@@ -26,6 +26,16 @@ namespace Match3.Content
             return visual != null ? visual.ParticleColor : Color.white;
         }
 
+        /// <summary>
+        /// Tint of the destruction flash. White when the profile carries none, so a profile
+        /// written before the field existed plays exactly as it did - the prefab's own colour.
+        /// </summary>
+        public Color GetDestroyTint(ChipColor color)
+        {
+            ChipVisual visual = FindChip(color);
+            return visual != null && visual.DestroyTint.a > 0f ? visual.DestroyTint : Color.white;
+        }
+
         public GameObject GetDestroyFx(ChipColor color)
         {
             ChipVisual visual = FindChip(color);
@@ -111,6 +121,19 @@ namespace Match3.Content
             // Qualified: the Color property below shadows UnityEngine.Color in this scope.
             [SerializeField] private Color _particleColor = UnityEngine.Color.white;
 
+            /// <summary>
+            /// Colour of the flash this chip dies under. Not <c>_particleColor</c> itself: the
+            /// chip colours sit at the lightness of the board they are drawn on, and a flash of
+            /// that lightness is invisible - the pink yarn clears the cell by 4 luminance steps
+            /// of 255. This is the same hue carried to a lightness that reads (§2.2).
+            /// <para>
+            /// Left fully transparent it means "unset" and the flash stays the prefab's own
+            /// colour. No white default: to this authoring an opaque value IS the authored one,
+            /// and a default would make the field unwritable.
+            /// </para>
+            /// </summary>
+            [SerializeField] private Color _destroyFxTint;
+
             [SerializeField] private GameObject _destroyFx;
 
             public ChipColor Color => _color;
@@ -118,6 +141,8 @@ namespace Match3.Content
             public Sprite Sprite => _sprite;
 
             public Color ParticleColor => _particleColor;
+
+            public Color DestroyTint => _destroyFxTint;
 
             public GameObject DestroyFx => _destroyFx;
         }
