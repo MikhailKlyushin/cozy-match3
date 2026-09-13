@@ -22,6 +22,7 @@ namespace Match3.Bootstrap
         private readonly PopupService _popups;
         private readonly MovesCounterPresenter _movesCounter;
         private readonly GoalsPanelPresenter _goalsPanel;
+        private readonly LevelLabelView _levelLabel;
         private readonly HudActionsView _hudActions;
         private readonly MetricsReporter _metrics;
         private readonly ISfxPlayer _sfx;
@@ -38,6 +39,7 @@ namespace Match3.Bootstrap
             PopupService popups,
             MovesCounterPresenter movesCounter,
             GoalsPanelPresenter goalsPanel,
+            LevelLabelView levelLabel,
             HudActionsView hudActions,
             MetricsReporter metrics,
             ISfxPlayer sfx,
@@ -48,6 +50,7 @@ namespace Match3.Bootstrap
             _popups = popups ?? throw new ArgumentNullException(nameof(popups));
             _movesCounter = movesCounter ?? throw new ArgumentNullException(nameof(movesCounter));
             _goalsPanel = goalsPanel ?? throw new ArgumentNullException(nameof(goalsPanel));
+            _levelLabel = levelLabel != null ? levelLabel : throw new ArgumentNullException(nameof(levelLabel));
             _hudActions = hudActions != null ? hudActions : throw new ArgumentNullException(nameof(hudActions));
             _metrics = metrics ?? throw new ArgumentNullException(nameof(metrics));
             _sfx = sfx ?? throw new ArgumentNullException(nameof(sfx));
@@ -103,6 +106,7 @@ namespace Match3.Bootstrap
 
             _movesCounter.Bind(session);
             _goalsPanel.Bind(session);
+            _levelLabel.SetLevel(session.LevelId);
             _popups.CloseAll();
 
             _metrics.LevelStart(request.Level.Id, request.Level.Tier, request.Attempt, request.Seed);

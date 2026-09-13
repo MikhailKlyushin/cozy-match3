@@ -61,6 +61,7 @@ namespace Match3.EditorTools
 
             MovesCounterView movesCounter = CreateMovesCounter(hudTop);
             GoalsPanelView goalsPanel = CreateGoalsPanel(hudTop, "GoalsPanel", new Vector2(0.5f, 1f));
+            LevelLabelView levelLabel = CreateLevelLabel(hudTop);
             HudActionsView hudActions = CreateHudActions(hudTop);
             SoundToggleView soundToggle = CreateSoundToggle(canvas.transform);
 
@@ -75,7 +76,8 @@ namespace Match3.EditorTools
             AudioSource ambientSource = CreateAmbientAudio();
 
             CreateSceneContext(
-                boardArea, movesCounter, goalsPanel, hudActions, popups, ambientSource, soundToggle);
+                boardArea, movesCounter, goalsPanel, levelLabel, hudActions, popups, ambientSource,
+                soundToggle);
             SceneAuthoring.CreateEventSystemObject();
 
             EditorSceneManager.SaveScene(scene, ScenePath);
@@ -303,6 +305,23 @@ namespace Match3.EditorTools
             return view;
         }
 
+        /// <summary>Current level number (§11.2), centred in the strip below the goals panel.</summary>
+        private static LevelLabelView CreateLevelLabel(Transform parent)
+        {
+            TextMeshProUGUI text = PrefabAuthoring.CreateText("LevelLabel", parent, "Level 1", 40);
+            var rect = (RectTransform)text.transform;
+            rect.anchorMin = new Vector2(0.5f, 1f);
+            rect.anchorMax = new Vector2(0.5f, 1f);
+            rect.pivot = new Vector2(0.5f, 1f);
+            rect.anchoredPosition = new Vector2(0f, -190f);
+            rect.sizeDelta = new Vector2(520f, 60f);
+            text.color = Match3Palette.TextSecondary;
+
+            var view = text.gameObject.AddComponent<LevelLabelView>();
+            PrefabAuthoring.Wire(view, "_label", text);
+            return view;
+        }
+
         private static GoalsPanelView CreateGoalsPanel(Transform parent, string name, Vector2 anchor)
         {
             var go = new GameObject("GoalsPanel", typeof(RectTransform), typeof(HorizontalLayoutGroup));
@@ -525,6 +544,7 @@ namespace Match3.EditorTools
             RectTransform boardArea,
             MovesCounterView movesCounter,
             GoalsPanelView goalsPanel,
+            LevelLabelView levelLabel,
             HudActionsView hudActions,
             PopupView[] popups,
             AudioSource ambientSource,
@@ -546,6 +566,7 @@ namespace Match3.EditorTools
             PrefabAuthoring.Wire(installer, "_levelContextParent", boardArea);
             PrefabAuthoring.Wire(installer, "_movesCounter", movesCounter);
             PrefabAuthoring.Wire(installer, "_goalsPanel", goalsPanel);
+            PrefabAuthoring.Wire(installer, "_levelLabel", levelLabel);
             PrefabAuthoring.Wire(installer, "_hudActions", hudActions);
             PrefabAuthoring.WireArray(installer, "_popups", popups);
 

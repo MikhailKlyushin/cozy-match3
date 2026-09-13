@@ -8,6 +8,8 @@ namespace Match3.Hud
     {
         public const string MovesCaption = "Moves";
 
+        public const string LevelFormat = "Level {0}";
+
         public const string WinTitle = "Level complete";
 
         public const string WinButton = "Next";

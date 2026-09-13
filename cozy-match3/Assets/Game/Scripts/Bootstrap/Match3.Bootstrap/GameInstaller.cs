@@ -31,6 +31,7 @@ namespace Match3.Bootstrap
         [Header("HUD")]
         [SerializeField] private MovesCounterView _movesCounter;
         [SerializeField] private GoalsPanelView _goalsPanel;
+        [SerializeField] private LevelLabelView _levelLabel;
         [SerializeField] private HudActionsView _hudActions;
         [SerializeField] private PopupView[] _popups = new PopupView[0];
 
@@ -96,6 +97,7 @@ namespace Match3.Bootstrap
         {
             Container.BindInstance(_movesCounter);
             Container.BindInstance(_goalsPanel);
+            Container.BindInstance(_levelLabel);
             Container.BindInstance(_hudActions);
 
             Container.BindInterfacesAndSelfTo<MovesCounterPresenter>().AsSingle();

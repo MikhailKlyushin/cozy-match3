@@ -4,6 +4,7 @@ using Match3.Bootstrap;
 using Match3.Core;
 using Match3.Gameplay;
 using Match3.Gameplay.Playback;
+using Match3.Hud;
 using Match3.Progression;
 using Match3.Resolve;
 using NUnit.Framework;
@@ -32,6 +33,9 @@ namespace Match3.Tests.PlayMode
             Assert.IsNotNull(board, "the level context did not create a BoardView");
             Assert.Greater(board.BoardWidth, 0, "the board was never built");
             Assert.Greater(board.Layout.CellSize, 0f, "the layout has no cell size");
+
+            var levelLabel = Object.FindFirstObjectByType<LevelLabelView>();
+            Assert.IsNotNull(levelLabel, "the HUD has no level label wired to the installer");
         }
 
         [UnityTest]
