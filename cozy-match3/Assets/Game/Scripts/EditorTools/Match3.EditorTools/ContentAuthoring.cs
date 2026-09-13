@@ -9,6 +9,12 @@ namespace Match3.EditorTools
     /// <summary>
     /// Creates the presentation profile assets and wires them to the generated sprites. Run after
     /// <see cref="ArtAuthoring.GenerateArt"/>.
+    /// <para>
+    /// Structure — entry count, token, hit-point stage count — is always rewritten, because it
+    /// follows the rules and not the art. References that an author fills in (sprites, FX prefabs,
+    /// particle colour) are written only while empty: regenerating levels or scenes must not undo
+    /// a hand-made assignment. <see cref="ResetProfiles"/> is the way back to placeholders.
+    /// </para>
     /// </summary>
     internal static class ContentAuthoring
     {
@@ -18,15 +24,37 @@ namespace Match3.EditorTools
         [MenuItem("Match3/Authoring/Generate Content Profiles")]
         public static void GenerateProfiles()
         {
+            Generate(preserveAuthored: true);
+        }
+
+        [MenuItem("Match3/Authoring/Reset Content Profiles")]
+        public static void ResetProfiles()
+        {
+            bool confirmed = EditorUtility.DisplayDialog(
+                "Reset content profiles?",
+                "Every sprite, FX prefab and particle colour in the chip and element profiles goes "
+                + "back to the generated placeholder wiring. Hand-made assignments are lost.",
+                "Reset",
+                "Cancel");
+
+            if (confirmed)
+            {
+                Generate(preserveAuthored: false);
+            }
+        }
+
+        private static void Generate(bool preserveAuthored)
+        {
             SceneAuthoring.EnsureFolder(GameplayConfigFolder);
 
             CreateTimingProfile();
-            CreateChipProfile();
-            CreateElementProfile();
+            CreateChipProfile(preserveAuthored);
+            CreateElementProfile(preserveAuthored);
 
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
-            Debug.Log("[Match3] Content profiles generated in " + GameplayConfigFolder);
+            Debug.Log("[Match3] Content profiles " + (preserveAuthored ? "generated" : "reset")
+                + " in " + GameplayConfigFolder);
         }
 
         private static void CreateTimingProfile()
@@ -36,7 +64,7 @@ namespace Match3.EditorTools
             CreateOrReplace<TimingProfile>(GameplayConfigFolder + "/TimingProfile.asset");
         }
 
-        private static void CreateChipProfile()
+        private static void CreateChipProfile(bool preserveAuthored)
         {
             ChipVisualProfile profile =
                 CreateOrReplace<ChipVisualProfile>(GameplayConfigFolder + "/ChipVisualProfile.asset");
@@ -49,11 +77,16 @@ namespace Match3.EditorTools
             {
                 SerializedProperty entry = chips.GetArrayElementAtIndex(colorIndex - 1);
                 entry.FindPropertyRelative("_color").enumValueIndex = colorIndex;
-                entry.FindPropertyRelative("_sprite").objectReferenceValue =
-                    LoadSprite("T_Chip_Cat0" + colorIndex.ToString() + "_2D");
-                entry.FindPropertyRelative("_particleColor").colorValue =
-                    ProceduralArt.ChipColorOf(colorIndex);
-                entry.FindPropertyRelative("_destroyFx").objectReferenceValue = null;
+
+                WriteSprite(
+                    entry.FindPropertyRelative("_sprite"),
+                    ProceduralArt.ChipAssetNameOf(colorIndex),
+                    preserveAuthored);
+                WriteParticleColor(
+                    entry.FindPropertyRelative("_particleColor"),
+                    ProceduralArt.ChipColorOf(colorIndex),
+                    preserveAuthored);
+                ClearReference(entry.FindPropertyRelative("_destroyFx"), preserveAuthored);
             }
 
             var boosters = new[]
@@ -71,22 +104,23 @@ namespace Match3.EditorTools
             {
                 SerializedProperty entry = boosterArray.GetArrayElementAtIndex(i);
                 entry.FindPropertyRelative("_booster").enumValueIndex = (int)boosters[i].Type;
-                entry.FindPropertyRelative("_sprite").objectReferenceValue = LoadSprite(boosters[i].Sprite);
-                entry.FindPropertyRelative("_activationFx").objectReferenceValue = null;
+
+                WriteSprite(entry.FindPropertyRelative("_sprite"), boosters[i].Sprite, preserveAuthored);
+                ClearReference(entry.FindPropertyRelative("_activationFx"), preserveAuthored);
             }
 
             so.ApplyModifiedPropertiesWithoutUndo();
             EditorUtility.SetDirty(profile);
         }
 
-        private static void CreateElementProfile()
+        private static void CreateElementProfile(bool preserveAuthored)
         {
             ElementVisualProfile profile =
                 CreateOrReplace<ElementVisualProfile>(GameplayConfigFolder + "/ElementVisualProfile.asset");
 
             var so = new SerializedObject(profile);
-            so.FindProperty("_bowOverlay").objectReferenceValue = LoadSprite("T_Element_BoxBow_2D");
-            so.FindProperty("_pipOverlay").objectReferenceValue = LoadSprite("T_Element_BoxPip_2D");
+            WriteSprite(so.FindProperty("_bowOverlay"), "T_Element_BoxBow_2D", preserveAuthored);
+            WriteSprite(so.FindProperty("_pipOverlay"), "T_Element_BoxPip_2D", preserveAuthored);
 
             SerializedProperty elements = so.FindProperty("_elements");
             int count = 3 + ChipColors.MaxColorCount + 2;
@@ -95,9 +129,9 @@ namespace Match3.EditorTools
 
             // Health stages come from the catalogue, so a token with N hit points gets N sprites
             // and the visual changes on every hit (§7.1).
-            WriteElement(elements.GetArrayElementAtIndex(index++), ElementTokens.Box1, 1, false, false);
-            WriteElement(elements.GetArrayElementAtIndex(index++), ElementTokens.Box2, 2, false, false);
-            WriteElement(elements.GetArrayElementAtIndex(index++), ElementTokens.Box3, 3, false, false);
+            WriteElement(elements.GetArrayElementAtIndex(index++), ElementTokens.Box1, 1, false, false, preserveAuthored);
+            WriteElement(elements.GetArrayElementAtIndex(index++), ElementTokens.Box2, 2, false, false, preserveAuthored);
+            WriteElement(elements.GetArrayElementAtIndex(index++), ElementTokens.Box3, 3, false, false, preserveAuthored);
 
             for (int colorIndex = 1; colorIndex <= ChipColors.MaxColorCount; colorIndex++)
             {
@@ -106,7 +140,8 @@ namespace Match3.EditorTools
                     ElementTokens.ColoredBox(colorIndex),
                     healthStages: 1,
                     showBow: true,
-                    showPip: false);
+                    showPip: false,
+                    preserveAuthored: preserveAuthored);
             }
 
             WriteElement(
@@ -114,16 +149,17 @@ namespace Match3.EditorTools
                 ElementTokens.ColoredBoxCycling,
                 healthStages: 1,
                 showBow: true,
-                showPip: true);
+                showPip: true,
+                preserveAuthored: preserveAuthored);
 
             SerializedProperty blocker = elements.GetArrayElementAtIndex(index);
             blocker.FindPropertyRelative("_token").stringValue = ElementTokens.Blocker;
             blocker.FindPropertyRelative("_showBow").boolValue = false;
             blocker.FindPropertyRelative("_showNextColorPip").boolValue = false;
-            blocker.FindPropertyRelative("_destroyFx").objectReferenceValue = null;
+            ClearReference(blocker.FindPropertyRelative("_destroyFx"), preserveAuthored);
             SerializedProperty blockerStages = blocker.FindPropertyRelative("_healthStages");
             blockerStages.arraySize = 1;
-            blockerStages.GetArrayElementAtIndex(0).objectReferenceValue = LoadSprite("T_Element_Blocker_2D");
+            WriteSprite(blockerStages.GetArrayElementAtIndex(0), "T_Element_Blocker_2D", preserveAuthored);
 
             so.ApplyModifiedPropertiesWithoutUndo();
             EditorUtility.SetDirty(profile);
@@ -134,20 +170,62 @@ namespace Match3.EditorTools
             string token,
             int healthStages,
             bool showBow,
-            bool showPip)
+            bool showPip,
+            bool preserveAuthored)
         {
             entry.FindPropertyRelative("_token").stringValue = token;
             entry.FindPropertyRelative("_showBow").boolValue = showBow;
             entry.FindPropertyRelative("_showNextColorPip").boolValue = showPip;
-            entry.FindPropertyRelative("_destroyFx").objectReferenceValue = null;
+            ClearReference(entry.FindPropertyRelative("_destroyFx"), preserveAuthored);
 
             SerializedProperty stages = entry.FindPropertyRelative("_healthStages");
             stages.arraySize = healthStages;
             for (int i = 0; i < healthStages; i++)
             {
-                stages.GetArrayElementAtIndex(i).objectReferenceValue =
-                    LoadSprite("T_Element_BoxBase_S" + i.ToString() + "_2D");
+                WriteSprite(
+                    stages.GetArrayElementAtIndex(i),
+                    "T_Element_BoxBase_S" + i.ToString() + "_2D",
+                    preserveAuthored);
             }
+        }
+
+        /// <summary>
+        /// Assigns the generated sprite unless the field already points at something. The lookup
+        /// itself is skipped in that case, so a project whose art was renamed does not log a
+        /// missing-asset error for a name nobody uses any more.
+        /// </summary>
+        private static void WriteSprite(SerializedProperty property, string assetName, bool preserveAuthored)
+        {
+            if (preserveAuthored && property.objectReferenceValue != null)
+            {
+                return;
+            }
+
+            property.objectReferenceValue = LoadSprite(assetName);
+        }
+
+        /// <summary>
+        /// A colour has no null, so "authored" means "not fully transparent" - the value a fresh
+        /// serialized field carries.
+        /// </summary>
+        private static void WriteParticleColor(SerializedProperty property, Color generated, bool preserveAuthored)
+        {
+            if (preserveAuthored && property.colorValue.a > 0f)
+            {
+                return;
+            }
+
+            property.colorValue = generated;
+        }
+
+        private static void ClearReference(SerializedProperty property, bool preserveAuthored)
+        {
+            if (preserveAuthored)
+            {
+                return;
+            }
+
+            property.objectReferenceValue = null;
         }
 
         private static T CreateOrReplace<T>(string assetPath) where T : ScriptableObject

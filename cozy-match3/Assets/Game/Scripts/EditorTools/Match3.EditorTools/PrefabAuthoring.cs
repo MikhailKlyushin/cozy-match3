@@ -193,7 +193,7 @@ namespace Match3.EditorTools
 
             var image = root.GetComponent<Image>();
             image.raycastTarget = false;
-            image.sprite = LoadSprite("T_Chip_Cat01_2D");
+            image.sprite = LoadSprite(ProceduralArt.ChipAssetNameOf(1));
             image.preserveAspect = true;
 
             var view = root.AddComponent<ChipView>();

@@ -188,9 +188,10 @@ _particleColor:  C1 #F6B7C7 · C2 #5E93C4 · C3 #F8DC96 · C4 #9CBF96 · C5 #E08
 >   Светлотная лестница ≥ 8 L\* между соседними индексами (`docs/art-direction.md` §2.2).
 > - Кот присутствует как **маскот**: спящий кот на фоне комнаты и в реакциях на победу/поражение.
 
-Имена файлов (`T_Chip_Cat01_2D` …) **не меняются**: они зашиты в `ContentAuthoring` и
-`PrefabAuthoring`, переименование стоит правки генератора и ничего не даёт. `Cat` в имени читается
-как «кошачья тема», а не «морда кота».
+Имя файла называет **предмет** (`T_Chip_Ball_2D`, `T_Chip_Bowl_2D` …), а не индекс цвета: индекс —
+деталь профиля, а рисунок живёт своей жизнью. Соответствие «индекс → файл» задано одной таблицей
+`ProceduralArt.ChipAssetNames`, её же читают `ContentAuthoring` и `PrefabAuthoring`;
+переименование стоит правки этой таблицы и реестра §4.1.
 
 ### 2.6 Типографика
 
@@ -331,14 +332,13 @@ _particleColor:  C1 #F6B7C7 · C2 #5E93C4 · C3 #F8DC96 · C4 #9CBF96 · C5 #E08
 - Ориентир: вся графика ≤ 6 МБ в собранном билде. Это не требование заказчика, а порог, за которым
   WebGL-загрузка на среднем канале перестаёт быть мгновенной.
 
-### 3.4 Ловушка `Generate All`
+### 3.4 `Generate All` и арт
 
-`Match3/Authoring/Generate Placeholder Art` делает `File.WriteAllBytes` по тем же путям
-`T_*_2D.png` — **ваши файлы будут перезаписаны заглушками без запроса**, а
-`Generate Content Profiles` обнулит `_activationFx` и `_destroyFx`.
-
-До финального арта просто **не запускайте `Generate All`**. Он нужен только когда меняются уровни,
-префабы или сцены. Постоянное решение — правка `ContentAuthoring`, задача T30 (§10).
+Раньше `Generate Placeholder Art` писал `File.WriteAllBytes` по путям `T_*_2D.png` без запроса, а
+`Generate Content Profiles` обнулял `_activationFx` и `_destroyFx`. T30 это закрыла: существующий
+PNG пропускается, заполненная ссылка не трогается, перезапись вынесена в отдельные пункты меню с
+подтверждением (`Generate Placeholder Art (Force Overwrite)`, `Reset Content Profiles`). Подробности
+— `art-and-fx-guide.md` §2, поведение зафиксировано в `architecture.md` §18.
 
 ---
 
@@ -351,12 +351,12 @@ _particleColor:  C1 #F6B7C7 · C2 #5E93C4 · C3 #F8DC96 · C4 #9CBF96 · C5 #E08
 
 | # | Файл | Размер | Что рисуем | Читается из |
 |---|---|---|---|---|
-| A01 | `T_Chip_Cat01_2D.png` | 256² | Клубок розовой пряжи | `ChipVisualProfile._chips[0]` |
-| A02 | `T_Chip_Cat02_2D.png` | 256² | Плюшевая мышка, синяя | `_chips[1]` |
-| A03 | `T_Chip_Cat03_2D.png` | 256² | Миска с кормом, жёлтая | `_chips[2]` |
-| A04 | `T_Chip_Cat04_2D.png` | 256² | Подушка с рыбкой, зелёная | `_chips[3]` |
-| A05 | `T_Chip_Cat05_2D.png` | 256² | Лапка, оранжевая | `_chips[4]` |
-| A06 | `T_Chip_Cat06_2D.png` | 256² | Колокольчик на ошейнике, фиолетовый | `_chips[5]` |
+| A01 | `T_Chip_Ball_2D.png` | 256² | Клубок розовой пряжи | `ChipVisualProfile._chips[0]` |
+| A02 | `T_Chip_Bell_2D.png` | 256² | Колокольчик на ошейнике, фиолетовый | `_chips[1]` |
+| A03 | `T_Chip_Bowl_2D.png` | 256² | Миска с кормом, жёлтая | `_chips[2]` |
+| A04 | `T_Chip_Mouse_2D.png` | 256² | Плюшевая мышка, синяя | `_chips[3]` |
+| A05 | `T_Chip_Paw_2D.png` | 256² | Лапка, оранжевая | `_chips[4]` |
+| A06 | `T_Chip_Pillow_2D.png` | 256² | Подушка с рыбкой, зелёная | `_chips[5]` |
 | A07 | `T_Booster_RocketH_2D.png` | 256² | Плюшевая ракета, носом **вправо** | `_boosters[0]` |
 | A08 | `T_Booster_RocketV_2D.png` | 256² | Та же ракета, носом **вверх** | `_boosters[1]` |
 | A09 | `T_Booster_Bomb_2D.png` | 256² | Клубок-бомба с фитилём, тёмный | `_boosters[2]` |
@@ -701,7 +701,7 @@ converted to greyscale.
 
 **Поштучно** (референсом подаём лист и оба скриншота):
 
-`T_Chip_Cat01_2D` — клубок:
+`T_Chip_Ball_2D` — клубок:
 
 ```
 {STYLE}
@@ -713,7 +713,7 @@ almost perfect circle. Cosy, soft, with a slightly fuzzy wool edge.
 {NEG}
 ```
 
-`T_Chip_Cat02_2D` — мышка:
+`T_Chip_Mouse_2D` — мышка:
 
 ```
 {STYLE}
@@ -726,7 +726,7 @@ silhouette is a wide horizontal oval with ears on top.
 {NEG}
 ```
 
-`T_Chip_Cat03_2D` — миска:
+`T_Chip_Bowl_2D` — миска:
 
 ```
 {STYLE}
@@ -738,7 +738,7 @@ silhouette is a wide low trapezoid, clearly wider than it is tall.
 {NEG}
 ```
 
-`T_Chip_Cat04_2D` — подушка:
+`T_Chip_Pillow_2D` — подушка:
 
 ```
 {STYLE}
@@ -751,7 +751,7 @@ rounded square.
 {NEG}
 ```
 
-`T_Chip_Cat05_2D` — лапка:
+`T_Chip_Paw_2D` — лапка:
 
 ```
 {STYLE}
@@ -763,7 +763,7 @@ silhouette is the classic paw shape, unmistakable at small size.
 {NEG}
 ```
 
-`T_Chip_Cat06_2D` — колокольчик:
+`T_Chip_Bell_2D` — колокольчик:
 
 ```
 {STYLE}
@@ -1387,7 +1387,7 @@ magick raw.png \
   -resize 215x215 \
   -background none -gravity center -extent 256x256 \
   -define png:color-type=6 \
-  T_Chip_Cat01_2D.png
+  T_Chip_Ball_2D.png
 ```
 
 `215 = 256 × 0.84` — это и есть требуемые 8 % полей с каждой стороны (§3.2).

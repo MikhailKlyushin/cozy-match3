@@ -36,7 +36,25 @@ namespace Match3.EditorTools
             new Color(0.44f, 0.16f, 0.29f), // 6 wine, darkest
         };
 
+        /// <summary>
+        /// Asset name per colour index 1..6. The names are the objects the final art draws
+        /// (`art-direction.md` §4.1), not the colours: a placeholder and the drawing that replaces
+        /// it must share a path, or the profile ends up wired to two different files.
+        /// </summary>
+        private static readonly string[] ChipAssetNames =
+        {
+            "T_Chip_Ball_2D",   // 1 pink yarn ball
+            "T_Chip_Bell_2D",   // 2 purple collar bell
+            "T_Chip_Bowl_2D",   // 3 yellow food bowl
+            "T_Chip_Mouse_2D",  // 4 blue plush mouse
+            "T_Chip_Paw_2D",    // 5 orange paw
+            "T_Chip_Pillow_2D", // 6 green fish pillow
+        };
+
         internal static Color ChipColorOf(int colorIndex) => ChipFill[Mathf.Clamp(colorIndex, 1, 6) - 1];
+
+        internal static string ChipAssetNameOf(int colorIndex) =>
+            ChipAssetNames[Mathf.Clamp(colorIndex, 1, 6) - 1];
 
         internal static Texture2D CreateChip(int colorIndex)
         {
@@ -45,7 +63,7 @@ namespace Match3.EditorTools
             Color outline = Darken(fill, 0.45f);
             Color highlight = Lighten(fill, 0.35f);
 
-            var texture = NewTexture(ChipSize, "T_Chip_Cat0" + colorIndex.ToString() + "_2D");
+            var texture = NewTexture(ChipSize, ChipAssetNameOf(colorIndex));
 
             Rasterise(texture, (x, y) =>
             {
