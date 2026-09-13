@@ -32,7 +32,10 @@ namespace Match3.Gameplay.Playback
         };
 
         /// <summary>The destruction effect covers the whole animation, punch and fade alike.</summary>
-        private const float FxCells = 1f;
+        private const float FxCells = 1.8f;
+
+        /// <summary>Size the puff expands from, so it arrives as a burst rather than a state.</summary>
+        private const float FxStartCells = 0.7f;
 
         public ElementEventPlayer(
             ElementCatalog catalog,
@@ -128,9 +131,14 @@ namespace Match3.Gameplay.Playback
             float cellSize = context.Board.Layout.CellSize;
             fx.Prepare(
                 context.Board.Layout.CellCenter(cell),
-                new Vector2(cellSize * FxCells, cellSize * FxCells),
+                new Vector2(cellSize * FxStartCells, cellSize * FxStartCells),
                 Color.white,
                 duration);
+
+            // A flash that neither grows nor fades reads as a blink, and a blink is what the eye
+            // skips on a board this busy. §11.3 fixes the duration, so the size carries it.
+            fx.SizeTo(new Vector2(cellSize * FxCells, cellSize * FxCells), duration, Ease.OutQuad);
+            fx.FadeOut(duration);
             return fx;
         }
 

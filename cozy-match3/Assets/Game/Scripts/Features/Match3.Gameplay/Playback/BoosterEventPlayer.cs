@@ -31,10 +31,10 @@ namespace Match3.Gameplay.Playback
         };
 
         /// <summary>Beam and trail thickness, in cells.</summary>
-        private const float BeamThickness = 0.34f;
+        private const float BeamThickness = 0.5f;
 
         /// <summary>Size of a beam head, flare or burst before it expands, in cells.</summary>
-        private const float HeadSize = 0.8f;
+        private const float HeadSize = 1.2f;
 
         /// <summary>The airplane destroys a cell plus its four neighbours: three cells across.</summary>
         private const float ImpactCells = 3f;

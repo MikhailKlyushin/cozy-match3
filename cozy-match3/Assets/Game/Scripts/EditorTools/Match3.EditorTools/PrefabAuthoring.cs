@@ -63,6 +63,20 @@ namespace Match3.EditorTools
             so.ApplyModifiedPropertiesWithoutUndo();
         }
 
+        internal static void WireVector2(Component component, string fieldName, Vector2 value)
+        {
+            var so = new SerializedObject(component);
+            SerializedProperty property = so.FindProperty(fieldName);
+            if (property == null)
+            {
+                Debug.LogError("[Match3] " + component.GetType().Name + " has no serialized field " + fieldName);
+                return;
+            }
+
+            property.vector2Value = value;
+            so.ApplyModifiedPropertiesWithoutUndo();
+        }
+
         internal static void WireInt(Component component, string fieldName, int value)
         {
             var so = new SerializedObject(component);

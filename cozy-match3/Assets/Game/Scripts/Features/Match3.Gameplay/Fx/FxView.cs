@@ -17,6 +17,14 @@ namespace Match3.Gameplay
         [SerializeField] private FxFlipbook _flipbook;
 
         /// <summary>
+        /// Share of the sprite frame the drawing actually covers. Every size a caller gives is in
+        /// cells and means the size it wants to SEE, but the pack's textures leave a wide empty
+        /// margin - a beam fills a tenth of its frame's height - so a size handed straight to
+        /// <c>sizeDelta</c> comes out that much smaller on screen. Dividing by the fill undoes it.
+        /// </summary>
+        [SerializeField] private Vector2 _spriteFill = Vector2.one;
+
+        /// <summary>
         /// Colour the prefab was authored with. Every caller rents with <c>Color.white</c> because
         /// §5.1 puts the colour in the effect, not in the call - and with greyscale source
         /// textures that colour has to live somewhere. It lives here, and the rented tint
@@ -58,7 +66,7 @@ namespace Match3.Gameplay
             KillTweens();
 
             _rect.anchoredPosition = anchoredPosition;
-            _rect.sizeDelta = size;
+            _rect.sizeDelta = Fitted(size);
             _rect.localScale = Vector3.one;
             _rect.localRotation = Quaternion.identity;
 
@@ -115,16 +123,21 @@ namespace Match3.Gameplay
             _rect.DOAnchorPos(anchoredPosition, duration).SetEase(Ease.Linear).SetLink(gameObject);
         }
 
-        public void SizeTo(Vector2 size, float duration)
+        /// <summary>Linear, so a growing beam's far end stays exactly under the beam head.</summary>
+        public void SizeTo(Vector2 size, float duration) => SizeTo(size, duration, Ease.Linear);
+
+        /// <summary>An expanding flash takes <see cref="Ease.OutQuad"/>: it has no head to follow.</summary>
+        public void SizeTo(Vector2 size, float duration, Ease ease)
         {
+            Vector2 target = Fitted(size);
+
             if (duration <= 0f)
             {
-                _rect.sizeDelta = size;
+                _rect.sizeDelta = target;
                 return;
             }
 
-            // Linear, so a growing beam's far end stays exactly under the beam head.
-            _rect.DOSizeDelta(size, duration).SetEase(Ease.Linear).SetLink(gameObject);
+            _rect.DOSizeDelta(target, duration).SetEase(ease).SetLink(gameObject);
         }
 
         public void ScaleTo(float scale, float duration)
@@ -190,5 +203,11 @@ namespace Match3.Gameplay
                 _image.DOKill();
             }
         }
+
+        /// <summary>Zero or negative fill means the prefab was authored without one: pass it through.</summary>
+        private Vector2 Fitted(Vector2 size)
+            => new Vector2(
+                _spriteFill.x > 0f ? size.x / _spriteFill.x : size.x,
+                _spriteFill.y > 0f ? size.y / _spriteFill.y : size.y);
     }
 }

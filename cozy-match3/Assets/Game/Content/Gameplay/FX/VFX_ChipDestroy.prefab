@@ -66,7 +66,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 47834b2cea66f684aac29b620d212c43, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 89f7d51de3159654e96598bc13ca3ecc, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -92,3 +92,4 @@ MonoBehaviour:
   _image: {fileID: 7278768413874334187}
   _particles: {fileID: 0}
   _flipbook: {fileID: 0}
+  _spriteFill: {x: 0.6, y: 0.65}

@@ -34,14 +34,14 @@ namespace Match3.EditorTools
             for (int i = 0; i < BoosterRoles.Length; i++)
             {
                 BoosterFx booster = BoosterRoles[i];
-                Create(NameOf(booster.Booster, FxRole.Activation), booster.Sprite, booster.Color);
-                Create(NameOf(booster.Booster, FxRole.Beam), BeamSprite, booster.Color);
+                Create(NameOf(booster.Booster, FxRole.Activation), booster.Activation, booster.Color);
+                Create(NameOf(booster.Booster, FxRole.Beam), booster.Beam, booster.Color);
                 Create(NameOf(booster.Booster, FxRole.Burst), BurstSprite, booster.Color);
                 Create(NameOf(booster.Booster, FxRole.Impact), ImpactSprite, booster.Color);
             }
 
-            Create(ChipDestroyPrefab, "star_01", Match3Palette.HintStroke);
-            Create(ElementDestroyPrefab, "smoke_02", Match3Palette.BoardPanel);
+            Create(ChipDestroyPrefab, ChipDestroySprite, Match3Palette.HintStroke);
+            Create(ElementDestroyPrefab, ElementDestroySprite, Match3Palette.BoardPanel);
 
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
@@ -80,23 +80,46 @@ namespace Match3.EditorTools
             Impact = 3,
         }
 
-        /// <summary>A horizontal streak; the player rotates and stretches it along the ray.</summary>
-        private const string BeamSprite = "Rotated/trace_01_rotated";
+        /// <summary>
+        /// The densest round glow in the pack: the head of a ray, its trail, and the flash of a
+        /// blast. The pack's soft streaks carry almost no alpha at all - `light_03` averages 78
+        /// of 255 against `trace_01`'s 4.6 - and on a board this busy that difference is the
+        /// difference between an effect and nothing (§5.3).
+        /// </summary>
+        private static readonly FxSprite GlowSprite = new FxSprite("light_03", 0.83f, 0.84f);
 
-        /// <summary>A soft ring, so an expanding shockwave stays readable as a wave.</summary>
-        private const string BurstSprite = "circle_05";
+        /// <summary>A ring with four spikes: the rainbow's own flare, and every impact.</summary>
+        private static readonly FxSprite MagicSprite = new FxSprite("magic_03", 0.90f, 0.89f);
 
-        /// <summary>A dense flash for the moment of contact.</summary>
-        private const string ImpactSprite = "muzzle_03";
+        /// <summary>A dense ring, so an expanding shockwave stays readable as a wave.</summary>
+        private static readonly FxSprite BurstSprite = new FxSprite("circle_03", 0.88f, 0.88f);
+
+        /// <summary>
+        /// A bolt drawn edge to edge. Its fill across is 1.0, so a stretched beam ends exactly on
+        /// its target instead of stopping short of it the way a margined streak does.
+        /// </summary>
+        private static readonly FxSprite BoltSprite = new FxSprite("Rotated/spark_06_rotated", 1f, 0.19f);
+
+        /// <summary>Sky-wide glow, wider than it is tall: the airplane.</summary>
+        private static readonly FxSprite SkySprite = new FxSprite("light_02", 0.78f, 0.85f);
+
+        /// <summary>A star with a solid core; the chip that dies under it is gone in 0.20 s.</summary>
+        private static readonly FxSprite ChipDestroySprite = new FxSprite("star_09", 0.60f, 0.65f);
+
+        /// <summary>A thick puff of smoke, against obstacles that are the darkest thing on board.</summary>
+        private static readonly FxSprite ElementDestroySprite = new FxSprite("smoke_09", 0.68f, 0.68f);
+
+        /// <summary>The impact flash is radial, so a square SizeTo does not stretch it.</summary>
+        private static FxSprite ImpactSprite => MagicSprite;
 
         private static readonly BoosterFx[] BoosterRoles =
         {
             // Colours are the booster glows of `art-direction.md` §2.2.
-            new BoosterFx(BoosterType.RocketH, "light_01", Match3Palette.HintGlow),
-            new BoosterFx(BoosterType.RocketV, "light_01", Match3Palette.HintGlow),
-            new BoosterFx(BoosterType.Bomb, "flare_01", BombGlow),
-            new BoosterFx(BoosterType.Rainbow, "magic_04", RainbowGlow),
-            new BoosterFx(BoosterType.Airplane, "light_02", AirplaneGlow),
+            new BoosterFx(BoosterType.RocketH, GlowSprite, GlowSprite, Match3Palette.HintGlow),
+            new BoosterFx(BoosterType.RocketV, GlowSprite, GlowSprite, Match3Palette.HintGlow),
+            new BoosterFx(BoosterType.Bomb, GlowSprite, GlowSprite, BombGlow),
+            new BoosterFx(BoosterType.Rainbow, MagicSprite, BoltSprite, RainbowGlow),
+            new BoosterFx(BoosterType.Airplane, SkySprite, GlowSprite, AirplaneGlow),
         };
 
         private static Color BombGlow => Parse("#FF9A5C");
@@ -105,7 +128,7 @@ namespace Match3.EditorTools
 
         private static Color AirplaneGlow => Parse("#BFE3FF");
 
-        private static void Create(string prefabName, string spriteName, Color color)
+        private static void Create(string prefabName, FxSprite sprite, Color color)
         {
             var root = new GameObject(prefabName, typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
             var rect = (RectTransform)root.transform;
@@ -115,13 +138,14 @@ namespace Match3.EditorTools
             rect.sizeDelta = new Vector2(100f, 100f);
 
             var image = root.GetComponent<Image>();
-            image.sprite = ArtPackAuthoring.LoadVfxSprite(spriteName);
+            image.sprite = ArtPackAuthoring.LoadVfxSprite(sprite.Name);
             image.color = color;
             image.raycastTarget = false;
 
             var view = root.AddComponent<FxView>();
             PrefabAuthoring.Wire(view, "_rect", rect);
             PrefabAuthoring.Wire(view, "_image", image);
+            PrefabAuthoring.WireVector2(view, "_spriteFill", sprite.Fill);
 
             PrefabAuthoring.SaveAndCleanUp(root, FxFolder + "/" + prefabName + ".prefab");
         }
@@ -137,16 +161,35 @@ namespace Match3.EditorTools
             return color;
         }
 
+        /// <summary>
+        /// A texture of the pack together with the share of its frame the drawing covers. The two
+        /// travel as one because they are useless apart: a size in cells means nothing until it is
+        /// divided by the fill of the sprite that has to show it (<see cref="FxView"/>).
+        /// </summary>
+        private readonly struct FxSprite
+        {
+            internal readonly string Name;
+            internal readonly Vector2 Fill;
+
+            internal FxSprite(string name, float fillX, float fillY)
+            {
+                Name = name;
+                Fill = new Vector2(fillX, fillY);
+            }
+        }
+
         private readonly struct BoosterFx
         {
             internal readonly BoosterType Booster;
-            internal readonly string Sprite;
+            internal readonly FxSprite Activation;
+            internal readonly FxSprite Beam;
             internal readonly Color Color;
 
-            internal BoosterFx(BoosterType booster, string sprite, Color color)
+            internal BoosterFx(BoosterType booster, FxSprite activation, FxSprite beam, Color color)
             {
                 Booster = booster;
-                Sprite = sprite;
+                Activation = activation;
+                Beam = beam;
                 Color = color;
             }
         }

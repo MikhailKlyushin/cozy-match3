@@ -92,3 +92,4 @@ MonoBehaviour:
   _image: {fileID: 603161727180252088}
   _particles: {fileID: 0}
   _flipbook: {fileID: 0}
+  _spriteFill: {x: 0.78, y: 0.85}

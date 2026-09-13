@@ -31,8 +31,15 @@ namespace Match3.Gameplay.Playback
         /// <summary>Last ComboStep offset seen, so a series is paced by its increments (§6.3).</summary>
         private int _lastTransformOffsetMs;
 
-        /// <summary>The destruction effect covers the whole animation, punch and fade alike.</summary>
-        private const float FxCells = 1f;
+        /// <summary>
+        /// The destruction effect covers the whole animation, punch and fade alike. It is wider
+        /// than the cell on purpose: cells sit edge to edge and the chips fill them, so an effect
+        /// held inside one has no empty pixel to be seen against.
+        /// </summary>
+        private const float FxCells = 1.8f;
+
+        /// <summary>Size the flash expands from, so it arrives as a burst rather than a state.</summary>
+        private const float FxStartCells = 0.7f;
 
         public ChipLifecycleEventPlayer(FxRegistry fx, ChipVisualProfile chipProfile, IMatch3Logger logger)
         {
@@ -101,9 +108,14 @@ namespace Match3.Gameplay.Playback
             // White: the colour lives in the sprite, as it does for every other chip visual (§3.2).
             view.Prepare(
                 context.Board.Layout.CellCenter(cell),
-                new Vector2(cellSize * FxCells, cellSize * FxCells),
+                new Vector2(cellSize * FxStartCells, cellSize * FxStartCells),
                 Color.white,
                 duration);
+
+            // A flash that neither grows nor fades reads as a blink, and a blink is what the eye
+            // skips on a board this busy. §11.3 fixes the duration, so the size carries it.
+            view.SizeTo(new Vector2(cellSize * FxCells, cellSize * FxCells), duration, Ease.OutQuad);
+            view.FadeOut(duration);
             return view;
         }
 
