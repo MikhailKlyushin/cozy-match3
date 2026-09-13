@@ -108,11 +108,17 @@ namespace Match3.EditorTools
             Image second = PrefabAuthoring.CreateImageNode("SecondMarker", root);
             Image arrow = PrefabAuthoring.CreateImageNode("Arrow", root);
 
-            Sprite marker = PrefabAuthoring.LoadSprite("T_Board_Cell_2D");
-            Sprite glow = PrefabAuthoring.LoadSprite("T_Fx_Glow_2D");
+            // The marker sits on top of the chip it points at, so it has to be a ring and not a
+            // filled tile: the board cell sprite used to cover the chip completely. The arrow is
+            // a real arrow for the same reason - a radial glow shows no direction at all.
+            Sprite marker = ArtPackAuthoring.LoadVfxSprite("circle_03");
             first.sprite = marker;
             second.sprite = marker;
-            arrow.sprite = glow;
+            arrow.sprite = ArtPackAuthoring.LoadUiSprite("arrow_basic_e");
+
+            first.color = Match3Palette.HintGlow;
+            second.color = Match3Palette.HintGlow;
+            arrow.color = Match3Palette.HintStroke;
 
             var hint = root.gameObject.AddComponent<HintView>();
             PrefabAuthoring.Wire(hint, "_rect", root);

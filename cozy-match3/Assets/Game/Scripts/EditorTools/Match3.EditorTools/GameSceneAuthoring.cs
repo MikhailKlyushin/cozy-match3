@@ -184,8 +184,11 @@ namespace Match3.EditorTools
             tickRect.anchorMax = new Vector2(1f, 1f);
             tickRect.pivot = new Vector2(1f, 1f);
             tickRect.sizeDelta = new Vector2(40f, 40f);
-            tick.sprite = PrefabAuthoring.LoadSprite("T_Fx_Glow_2D");
-            tick.color = new Color(0.45f, 0.9f, 0.5f, 1f);
+            // A checkmark glyph, not a green blob: the glow sprite carried no shape, so a closed
+            // goal read as a smear of colour.
+            tick.sprite = ArtPackAuthoring.LoadUiSprite("icon_checkmark");
+            tick.preserveAspect = true;
+            tick.color = Match3Palette.Success;
             tick.enabled = false;
 
             var view = go.AddComponent<GoalRowView>();

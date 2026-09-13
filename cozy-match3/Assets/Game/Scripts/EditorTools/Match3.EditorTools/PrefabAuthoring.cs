@@ -230,8 +230,8 @@ namespace Match3.EditorTools
             pipRect.anchorMin = new Vector2(1f, 1f);
             pipRect.anchorMax = new Vector2(1f, 1f);
             pipRect.pivot = new Vector2(1f, 1f);
-            pipRect.anchoredPosition = new Vector2(-4f, -4f);
-            pipRect.sizeDelta = new Vector2(30f, 30f);
+            // Size and inset are not authored here: ElementView.ApplyLayout derives both from the
+            // cell size on every layout pass, so they cannot go out of proportion on a 9x9 board.
             pip.enabled = false;
 
             var view = root.AddComponent<ElementView>();

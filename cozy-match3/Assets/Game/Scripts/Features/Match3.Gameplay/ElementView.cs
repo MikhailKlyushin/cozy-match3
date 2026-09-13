@@ -22,6 +22,15 @@ namespace Match3.Gameplay
         private ElementVisualProfile.ElementVisual _visual;
         private int _maxHealth;
 
+        /// <summary>
+        /// Pip diameter as a share of the cell. It used to be a fixed 30 px, which on a 9x9 board
+        /// in a narrow window covered a third of the obstacle (`art-direction.md` §4.1).
+        /// </summary>
+        private const float PipSizeShare = 0.3f;
+
+        /// <summary>Inset of the pip from the top-right corner, in the same share of the cell.</summary>
+        private const float PipInsetShare = 0.04f;
+
         public RectTransform Rect => _rect;
 
         public string Token { get; private set; }
@@ -53,12 +62,27 @@ namespace Match3.Gameplay
             _maxHealth = maxHealth;
             _elementProfile.TryGet(token, out _visual);
 
-            _rect.sizeDelta = new Vector2(cellSize, cellSize);
-            _rect.anchoredPosition = anchoredPosition;
+            ApplyLayout(anchoredPosition, cellSize);
             _rect.localScale = Vector3.one;
 
             SetHealth(health);
             SetColor(color, nextColor);
+        }
+
+        /// <summary>
+        /// Moves and resizes the obstacle for the current board layout. Called on every relayout,
+        /// so the pip keeps its share of the cell when the window changes shape.
+        /// </summary>
+        public void ApplyLayout(Vector2 anchoredPosition, float cellSize)
+        {
+            _rect.sizeDelta = new Vector2(cellSize, cellSize);
+            _rect.anchoredPosition = anchoredPosition;
+
+            RectTransform pip = _pip.rectTransform;
+            float pipSize = cellSize * PipSizeShare;
+            float inset = cellSize * PipInsetShare;
+            pip.sizeDelta = new Vector2(pipSize, pipSize);
+            pip.anchoredPosition = new Vector2(-inset, -inset);
         }
 
         /// <summary>§7.1: the visual must change on every hit point lost.</summary>

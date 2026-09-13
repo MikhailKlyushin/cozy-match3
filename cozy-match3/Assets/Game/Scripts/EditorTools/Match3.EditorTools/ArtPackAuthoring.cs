@@ -16,8 +16,33 @@ namespace Match3.EditorTools
         internal const string UiPackFolder = "Assets/Game/Content/Hud/UI_Pack";
         internal const string VfxPackFolder = "Assets/Game/Content/Hud/VFX_Pack";
 
+        /// <summary>
+        /// The packs ship every widget twice; `Double` is the 2x set, and the HUD is authored
+        /// against a 1080 x 1920 reference, so the crisper one is the default everywhere.
+        /// </summary>
+        private const string UiSpriteFolder = UiPackFolder + "/PNG/Grey/Double";
+
+        private const string VfxSpriteFolder = VfxPackFolder + "/PNG";
+
         /// <summary>Pack sheets that document the pack itself and never ship in a build.</summary>
         private static readonly string[] SkippedFiles = { "Preview.png", "Sample.png" };
+
+        internal static Sprite LoadUiSprite(string assetName) => Load(UiSpriteFolder, assetName);
+
+        internal static Sprite LoadVfxSprite(string assetName) => Load(VfxSpriteFolder, assetName);
+
+        private static Sprite Load(string folder, string assetName)
+        {
+            string path = folder + "/" + assetName + ".png";
+            var sprite = AssetDatabase.LoadAssetAtPath<Sprite>(path);
+            if (sprite == null)
+            {
+                Debug.LogError("[Match3] Missing pack sprite " + path
+                    + " - run Match3/Authoring/Configure Art Pack Importers");
+            }
+
+            return sprite;
+        }
 
         [MenuItem("Match3/Authoring/Configure Art Pack Importers")]
         public static void ConfigurePacks()
