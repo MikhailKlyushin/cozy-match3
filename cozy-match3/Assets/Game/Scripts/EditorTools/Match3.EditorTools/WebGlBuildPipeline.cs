@@ -79,6 +79,11 @@ namespace Match3.EditorTools
             }
         }
 
+        /// <summary>
+        /// Everything a build needs, including the cheat define. The define is deliberately not
+        /// part of <see cref="ApplyPlayerProfile"/>: <see cref="Build"/> restores it afterwards,
+        /// and a settings-only run must not quietly turn the cheat panel off in the editor.
+        /// </summary>
         private static void ApplySettings(bool development)
         {
             var webgl = UnityEditor.Build.NamedBuildTarget.WebGL;
@@ -92,6 +97,13 @@ namespace Match3.EditorTools
             }
 
             PlayerSettings.SetScriptingDefineSymbols(webgl, string.Join(";", parts));
+            ApplyPlayerProfile(development);
+        }
+
+        /// <summary>Size, speed and page settings of a configuration; no scripting defines.</summary>
+        private static void ApplyPlayerProfile(bool development)
+        {
+            var webgl = UnityEditor.Build.NamedBuildTarget.WebGL;
 
             // Exception support costs size and speed, so only the dev build keeps it (§14).
             PlayerSettings.WebGL.exceptionSupport = development
@@ -99,8 +111,28 @@ namespace Match3.EditorTools
                 : WebGLExceptionSupport.None;
 
             PlayerSettings.WebGL.linkerTarget = WebGLLinkerTarget.Wasm;
-            PlayerSettings.WebGL.compressionFormat = WebGLCompressionFormat.Gzip;
+
+            // Brotli, with the JavaScript fallback on: the smaller payload, and the fallback is
+            // what lets it play from a plain static host that sends no Content-Encoding header -
+            // which is how a reviewer opens the link.
+            PlayerSettings.WebGL.compressionFormat = WebGLCompressionFormat.Brotli;
             PlayerSettings.WebGL.decompressionFallback = true;
+
+            // Second visit costs no download; the data file is the bulk of it.
+            PlayerSettings.WebGL.dataCaching = true;
+
+            // Stripping is the single biggest lever on wasm size, and the release build has no
+            // reflection to lose: DI is Zenject's compile-time binding, not Activator.
+            PlayerSettings.SetManagedStrippingLevel(
+                webgl,
+                development ? ManagedStrippingLevel.Low : ManagedStrippingLevel.High);
+            PlayerSettings.stripEngineCode = !development;
+            PlayerSettings.SetIl2CppCompilerConfiguration(
+                webgl,
+                development ? Il2CppCompilerConfiguration.Debug : Il2CppCompilerConfiguration.Master);
+            PlayerSettings.WebGL.debugSymbolMode = development
+                ? WebGLDebugSymbolMode.External
+                : WebGLDebugSymbolMode.Off;
 
             ApplyPageSettings();
         }
@@ -121,6 +153,31 @@ namespace Match3.EditorTools
             AssetDatabase.SaveAssets();
             Debug.Log("[Match3] WebGL page settings: template " + WebGlTemplate + ", "
                 + ReferenceWidth.ToString() + "x" + ReferenceHeight.ToString());
+        }
+
+        /// <summary>
+        /// Brings the checkout to the release player settings without building. Useful on its own
+        /// and as the headless entry point of a settings-only run:
+        /// unity run . -- -executeMethod Match3.EditorTools.WebGlBuildPipeline.ApplyReleaseSettingsBatch
+        /// </summary>
+        [MenuItem("Match3/Build/Apply WebGL Release Settings")]
+        public static void ApplyReleaseSettings() => ApplyPlayerProfile(development: false);
+
+        public static void ApplyReleaseSettingsBatch()
+        {
+            try
+            {
+                ApplyReleaseSettings();
+                AssetDatabase.SaveAssets();
+            }
+            catch (Exception e)
+            {
+                Debug.LogError("[Match3] Applying release settings failed: " + e);
+                EditorApplication.Exit(1);
+                return;
+            }
+
+            EditorApplication.Exit(0);
         }
 
         /// <summary>
