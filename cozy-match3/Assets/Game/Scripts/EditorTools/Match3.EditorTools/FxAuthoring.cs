@@ -40,8 +40,8 @@ namespace Match3.EditorTools
                 Create(NameOf(booster.Booster, FxRole.Impact), ImpactSprite, booster.Color);
             }
 
-            Create(ChipDestroyPrefab, ChipDestroySprite, Match3Palette.HintStroke);
-            Create(ElementDestroyPrefab, ElementDestroySprite, Match3Palette.BoardPanel);
+            Create(ChipDestroyPrefab, ChipDestroySprite, ChipFlash);
+            Create(ElementDestroyPrefab, ElementDestroySprite, ElementPuff);
 
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
@@ -115,18 +115,37 @@ namespace Match3.EditorTools
         private static readonly BoosterFx[] BoosterRoles =
         {
             // Colours are the booster glows of `art-direction.md` §2.2.
-            new BoosterFx(BoosterType.RocketH, GlowSprite, GlowSprite, Match3Palette.HintGlow),
-            new BoosterFx(BoosterType.RocketV, GlowSprite, GlowSprite, Match3Palette.HintGlow),
+            new BoosterFx(BoosterType.RocketH, GlowSprite, GlowSprite, RocketGlow),
+            new BoosterFx(BoosterType.RocketV, GlowSprite, GlowSprite, RocketGlow),
             new BoosterFx(BoosterType.Bomb, GlowSprite, GlowSprite, BombGlow),
             new BoosterFx(BoosterType.Rainbow, MagicSprite, BoltSprite, RainbowGlow),
             new BoosterFx(BoosterType.Airplane, SkySprite, GlowSprite, AirplaneGlow),
         };
 
-        private static Color BombGlow => Parse("#FF9A5C");
+        /// <summary>
+        /// Booster glows, saturated well past the pastels of §2.2. The board they play on is not
+        /// the palette's: the cell ships at `#D1BCAC`, not `#EEDFC8`, and against it the old
+        /// amber `#FFC978` was one luminance step - an effect and its background of the same
+        /// brightness is an effect nobody sees. Each of these clears the cell by 40 steps or more
+        /// and carries saturation of 0.7 or more, which the desaturated board cannot answer.
+        /// </summary>
+        private static Color RocketGlow => Parse("#FF8A2B");
 
-        private static Color RainbowGlow => Parse("#FFF3DC");
+        private static Color BombGlow => Parse("#FF5A2B");
 
-        private static Color AirplaneGlow => Parse("#BFE3FF");
+        /// <summary>Violet: the board runs warm at hue 25, so this is the far side of the wheel.</summary>
+        private static Color RainbowGlow => Parse("#9B4DFF");
+
+        private static Color AirplaneGlow => Parse("#3DA5E8");
+
+        /// <summary>
+        /// White, and deliberately not a tint: the flash plays on top of the dying chip, which is
+        /// darker than the cell, and white is the one value that clears every chip colour at once.
+        /// </summary>
+        private static Color ChipFlash => Color.white;
+
+        /// <summary>Warm white smoke - obstacles are the darkest thing on the board.</summary>
+        private static Color ElementPuff => Parse("#FFF6EA");
 
         private static void Create(string prefabName, FxSprite sprite, Color color)
         {
