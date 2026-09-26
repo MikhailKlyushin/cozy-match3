@@ -8,7 +8,7 @@ combinations, data-driven obstacles, level goals, 12 levels and an on-screen che
 <!-- TODO: put the gameplay GIF at media/gameplay.gif -->
 <p align="center"><img src="media/gameplay.gif" alt="Gameplay" width="360"></p>
 
-**▶ Play in browser:** [WebGL demo](https://example.com) <!-- TODO: replace with the demo URL -->
+**▶ Play in browser:** [WebGL demo](https://cozy-match3.klyushin-mixail.workers.dev/)
 
 ## Stack
 
