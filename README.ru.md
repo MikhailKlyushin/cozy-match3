@@ -5,6 +5,11 @@ Match-3 на Unity WebGL, портретная ориентация 9:16: пол
 
 *English version: [README.md](README.md)*
 
+<!-- TODO: положить GIF геймплея в media/gameplay.gif -->
+<p align="center"><img src="media/gameplay.gif" alt="Геймплей" width="360"></p>
+
+**▶ Играть в браузере:** [WebGL-демо](https://example.com) <!-- TODO: заменить на ссылку на демо -->
+
 ## Стек
 
 Unity **6000.3.21f1** · WebGL · URP · uGUI · Zenject · UniTask · R3 1.3.1 (NuGet core) · DOTween ·
@@ -12,7 +17,7 @@ New Input System · Unity Test Framework.
 
 ## Как запустить
 
-1. Открыть `match3-test/` в Unity 6000.3.21f1.
+1. Открыть `cozy-match3/` в Unity 6000.3.21f1.
 2. Открыть `Assets/Game/Scenes/Boot.unity` и нажать Play (`Boot` поднимает окружение и грузит `Game`).
 3. WebGL-билд: обе сцены уже в Build Settings; кастомный WebGL-шаблон отвечает за леттербокс 9:16 и
    потолок буфера 1080×1920.
@@ -59,7 +64,7 @@ New Input System · Unity Test Framework.
 ## Структура репозитория
 
 ```
-match3-test/Assets/Game/
+cozy-match3/Assets/Game/
   Scripts/Modules/      чистые правила: Core, Board, Matching, Goals, Boosters, Resolve, Levels(+Authoring)
   Scripts/Features/     Gameplay, Hud, Progression, Cheats, Diagnostics
   Scripts/Bootstrap/    Zenject-инсталлеры, точка композиции
@@ -67,7 +72,7 @@ match3-test/Assets/Game/
   Content/              ассеты уровней, арт, FX, SFX, префабы, профили
   Scenes/               Boot.unity, Game.unity
   Tests/                EditMode (основная масса), PlayMode (smoke)
-match3-test/docs/Internal/   GDD, техзадание, архитектура, план задач
+cozy-match3/docs/Internal/   GDD, архитектура, план задач
 ```
 
 ## Формат уровня
@@ -98,14 +103,20 @@ smoke-тест (Boot → Game, уровень строится, скриптов
 Запуск через `Window > General > Test Runner` либо headless:
 
 ```
-Unity.exe -batchmode -projectPath match3-test -runTests -testPlatform EditMode -testResults results.xml
+Unity.exe -batchmode -projectPath cozy-match3 -runTests -testPlatform EditMode -testResults results.xml
 ```
 
 ## Документация
 
-`match3-test/docs/Internal/` — источник истины: `gdd-match3.md` (дизайн-решения и крайние случаи),
-`Technical Task.md` (критерии приёмки), `architecture.md` (где каждое правило живёт в коде),
-`tasks.md` (план разработки и статус), плюс заметки по арту и балансу.
+`cozy-match3/docs/Internal/` — источник истины: `gdd-match3.md` (дизайн-решения и крайние случаи),
+`architecture.md` (где каждое правило живёт в коде), `tasks.md` (план разработки и статус), плюс
+заметки по арту и балансу.
 
 По `tasks.md` реализовано всё, кроме проверок релизного билда из T25/T32 — сверки Build Report
 релизного WebGL-билда на отсутствие чит-ассетов и замера итогового размера билда.
+
+## Лицензия
+
+Код игры и оригинальный арт распространяются под [лицензией MIT](LICENSE). Сторонние пакеты в
+`cozy-match3/Assets/Plugins/` и `cozy-match3/Assets/Packages/` (Zenject, DOTween, UniTask, R3,
+NuGet-зависимости) и шрифт Nunito остаются под своими лицензиями.

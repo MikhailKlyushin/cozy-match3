@@ -5,6 +5,11 @@ combinations, data-driven obstacles, level goals, 12 levels and an on-screen che
 
 *Русская версия: [README.ru.md](README.ru.md)*
 
+<!-- TODO: put the gameplay GIF at media/gameplay.gif -->
+<p align="center"><img src="media/gameplay.gif" alt="Gameplay" width="360"></p>
+
+**▶ Play in browser:** [WebGL demo](https://example.com) <!-- TODO: replace with the demo URL -->
+
 ## Stack
 
 Unity **6000.3.21f1** · WebGL · URP · uGUI · Zenject · UniTask · R3 1.3.1 (NuGet core) · DOTween ·
@@ -12,7 +17,7 @@ New Input System · Unity Test Framework.
 
 ## Getting started
 
-1. Open `match3-test/` with Unity 6000.3.21f1.
+1. Open `cozy-match3/` with Unity 6000.3.21f1.
 2. Open `Assets/Game/Scenes/Boot.unity` and press Play (`Boot` bootstraps and loads `Game`).
 3. WebGL build: both scenes are already in Build Settings; a custom WebGL template handles the 9:16
    letterbox and the 1080×1920 backbuffer cap.
@@ -61,7 +66,7 @@ the define it does not compile into the build at all.
 ## Repository layout
 
 ```
-match3-test/Assets/Game/
+cozy-match3/Assets/Game/
   Scripts/Modules/      pure rules: Core, Board, Matching, Goals, Boosters, Resolve, Levels(+Authoring)
   Scripts/Features/     Gameplay, Hud, Progression, Cheats, Diagnostics
   Scripts/Bootstrap/    Zenject installers, composition root
@@ -69,7 +74,7 @@ match3-test/Assets/Game/
   Content/              level assets, art, FX, SFX, prefabs, profiles
   Scenes/               Boot.unity, Game.unity
   Tests/                EditMode (bulk), PlayMode (smoke)
-match3-test/docs/Internal/   GDD, technical task, architecture, task plan (Russian)
+cozy-match3/docs/Internal/   GDD, architecture, task plan (Russian)
 ```
 
 ## Level format
@@ -100,15 +105,21 @@ test (Boot → Game, level builds, scripted swap, win popup).
 Run from `Window > General > Test Runner`, or headless:
 
 ```
-Unity.exe -batchmode -projectPath match3-test -runTests -testPlatform EditMode -testResults results.xml
+Unity.exe -batchmode -projectPath cozy-match3 -runTests -testPlatform EditMode -testResults results.xml
 ```
 
 ## Documentation
 
-`match3-test/docs/Internal/` (Russian) is the source of truth: `gdd-match3.md` (design decisions and
-edge cases), `Technical Task.md` (acceptance criteria), `architecture.md` (where each rule lives in
-code), `tasks.md` (development plan and status), plus art and balance notes.
+`cozy-match3/docs/Internal/` (Russian) is the source of truth: `gdd-match3.md` (design decisions and
+edge cases), `architecture.md` (where each rule lives in code), `tasks.md` (development plan and
+status), plus art and balance notes.
 
 Per `tasks.md`, everything is implemented except the release-build checks left open in T25/T32 —
 verifying the Build Report of a release WebGL build for cheat assets, and measuring the final build
 size.
+
+## License
+
+The game code and original art are released under the [MIT License](LICENSE). Third-party packages
+in `cozy-match3/Assets/Plugins/` and `cozy-match3/Assets/Packages/` (Zenject, DOTween, UniTask, R3,
+NuGet dependencies) and the Nunito font keep their own licenses.

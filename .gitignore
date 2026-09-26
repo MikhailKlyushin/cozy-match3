@@ -265,4 +265,4 @@ artifacts/
 test-results.xml
 
 # Art references: multi-megabyte style frames, kept locally
-match3-test/docs/art/
+cozy-match3/docs/art/
