@@ -5,8 +5,7 @@ Match-3 на Unity WebGL, портретная ориентация 9:16: пол
 
 *English version: [README.md](README.md)*
 
-<!-- TODO: положить GIF геймплея в media/gameplay.gif -->
-<p align="center"><img src="media/gameplay.gif" alt="Геймплей" width="360"></p>
+<p align="center"><img src="media/preview.gif" alt="Геймплей" width="360"></p>
 
 **▶ Играть в браузере:** [WebGL-демо](https://cozy-match3.klyushin-mixail.workers.dev/)
 
